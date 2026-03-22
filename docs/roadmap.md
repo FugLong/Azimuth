@@ -40,7 +40,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [ ] **PCB** — Fabrication-ready: DRC clean, BOM fixed, assembly tested on at least one revision.
 - [ ] **Bring-up** — IMU, USB serial, Hatire path verified on the **actual** PCB (not only breadboard).
 - [ ] **Firmware core** — Clear module boundaries (HAL / drivers / app), pins and features match [wiring.md](wiring.md).
-- [ ] **I/O** — Status LED, buttons (recenter / function), buzzer as defined; debouncing and behavior documented.
+- [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
 - [ ] **Wireless** — WiFi tracking path working for normal use (with USB still available for flash / debug / optional wired Hatire).
 - [ ] **Updates** — Story for flashing firmware (USB minimum; OTA/web flashing if promised for V1).

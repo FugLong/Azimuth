@@ -1,10 +1,10 @@
 /**
  * Seeed XIAO ESP32-C3 + BNO08x (SPI) — fused orientation.
  *
- * Wiring (BNO08x breakout: PS0 + PS1 → 3.3 V for SPI):
- *   SPI uses the board default FSPI pins (see variants/XIAO_ESP32C3/pins_arduino.h):
- *     SCK=D8 (GPIO8), MISO=D9 (GPIO9), MOSI=D10 (GPIO10)
- *   CS=D2 (GPIO4), H_INT=D3 (GPIO5), RST=D7 (GPIO20), 3V3, GND
+ * Azimuth PCB (ESP32_BNO086): SPI + BNO086 straps
+ *   FSPI: SCK=D8 (GPIO8), MISO=D9 (GPIO9), MOSI=D10 (GPIO10)
+ *   CS=D3 (GPIO5), H_INT=D4 (GPIO6), NRST=D7 (GPIO20)
+ *   PS0/WAKE=D2 (GPIO4); PS1 + VDD + VDDIO → 3V3 on PCB
  *
  * Modes (set at compile time):
  *   IMU_DEBUG_MODE=1 — human-readable yaw/pitch/roll on USB serial
@@ -27,8 +27,8 @@
 namespace {
 
 /** Chip select — any free GPIO; SparkFun lib drives CS in software. */
-constexpr uint8_t kPinCs = 4;    // D2
-constexpr uint8_t kPinInt = 5;   // D3 (H_INT, active low)
+constexpr uint8_t kPinCs = 5;    // D3
+constexpr uint8_t kPinInt = 6;   // D4 (H_INT, active low)
 constexpr uint8_t kPinRst = 20;  // D7 (NRST)
 
 /** Rotation vector report period passed to enableRotationVector() — milliseconds. */

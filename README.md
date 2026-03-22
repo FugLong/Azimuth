@@ -61,9 +61,10 @@ Summary SPI / control pin map (full table, battery, buttons, LED, buzzer in **[d
 | SCK | D8 | 8 |
 | MISO | D9 | 9 |
 | MOSI | D10 | 10 |
-| CS | D2 | 4 |
-| H_INT | D3 | 5 |
-| RST | D7 | 20 |
+| CS | D3 | 5 |
+| H_INT | D4 | 6 |
+| PS0 / WAKE | D2 | 4 |
+| NRST | D7 | 20 |
 
 ---
 
@@ -90,7 +91,7 @@ In OpenTrack: input **Hatire Arduino**, enable **DTR**, then start tracking and 
 
 ## Firmware layout
 
-- **`src/main.cpp`** — IMU bring-up, rotation vector, optional Hatire packing; adjust `kPinCs` / `kPinInt` / `kPinRst` if your wiring differs.
+- **`src/main.cpp`** — IMU bring-up, rotation vector, optional Hatire packing; `kPinCs` / `kPinInt` / `kPinRst` match the **ESP32_BNO086** PCB (see [docs/wiring.md](docs/wiring.md)).
 - **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library.
 
 If you move SPI off the default D8–D10 pins, call `SPI.begin(sck, miso, mosi, -1)` **before** `imu.beginSPI(...)` so the bus matches your board (the SparkFun driver initializes `SPI` internally; ESP32 keeps an already-started bus).
