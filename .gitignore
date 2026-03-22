@@ -3,3 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# KiCad — versioned backups are zipped under *-backups/; no need in git
+*-backups/
+fp-info-cache
