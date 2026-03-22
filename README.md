@@ -6,6 +6,24 @@ It is a cheap but powerful tracker you can build yourself: a small ESP32-based b
 
 This repository holds firmware, PCB designs, 3D print designs, and documentation.
 
+### Development status (toward V1)
+
+| Area | Progress | Notes |
+|------|:--------:|--------|
+| Hardware / BOM | 100% | Parts chosen ([docs/parts-list.md](docs/parts-list.md)). |
+| Custom PCB | ~85% | KiCad; see [docs/kicad.md](docs/kicad.md), [docs/wiring.md](docs/wiring.md). |
+| Firmware | ~8% | SPI IMU + USB debug + Hatire; **board I/O and wireless not wired up yet**. V1 targets **WiFi tracking + battery use** with **USB** still supported. |
+| 3D enclosure | 0% | Not started. Plan: **battery-sized** shell first; optional slimmer **wired-only** enclosure if PH2 is omitted on those builds ([roadmap](docs/roadmap.md)). |
+
+```
+Hardware/BOM   [████████████████████] 100%
+PCB            [████████████████░░░░] ~85%
+Firmware       [█░░░░░░░░░░░░░░░░░░░] ~8%
+Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
+```
+
+**Roadmap & checklists:** [docs/roadmap.md](docs/roadmap.md)
+
 ---
 
 ## Goals
@@ -27,7 +45,7 @@ This repository holds firmware, PCB designs, 3D print designs, and documentation
 | **Debug** | Text telemetry over USB serial (`xiao_esp32c3` build). |
 | **Hardware docs** | **[docs/wiring.md](docs/wiring.md)** (signals, power, GPIO map) · **[docs/parts-list.md](docs/parts-list.md)** (BOM + passives notes) · **[docs/kicad.md](docs/kicad.md)** (custom KiCad libs + collaboration). |
 
-Roadmap items (not implemented in this repo yet) may include companion flashing/calibration tools, wireless transport, enclosure guides, and deeper OpenTrack tuning notes—along the lines of what the archived project experimented with on BLE and a PC app, but implemented for this hardware.
+Planned work (wireless, web flashing, enclosure, richer calibration) is tracked in **[docs/roadmap.md](docs/roadmap.md)**.
 
 ---
 
