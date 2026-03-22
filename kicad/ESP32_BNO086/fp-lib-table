@@ -1,0 +1,10 @@
+(fp_lib_table
+  (version 7)
+  (lib
+    (name "1_MyFootPrints")
+    (type "KiCad")
+    (uri "${KIPRJMOD}/../libraries/1_MyFootPrints.pretty")
+    (options "")
+    (descr "Azimuth project footprints")
+  )
+)

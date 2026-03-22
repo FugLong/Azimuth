@@ -1,6 +1,6 @@
 # Azimuth
 
-**Open, inexpensive PC head tracking**—built for sims, flight games, and anything that speaks [OpenTrack](https://github.com/opentrack/opentrack). The aim matches the earlier **[Nano 33 BLE](https://github.com/FugLong/Nano33_PC_Head_Tracker)** effort: **high-quality head pose** without a four-figure price tag, with room to grow into calibration, companion software, and wireless paths.
+**Open, inexpensive PC head tracking**—built for sims, flight games, and anything that speaks [OpenTrack](https://github.com/opentrack/opentrack). The aim matches the earlier **[Nano 33 BLE](https://github.com/FugLong/Nano33_PC_Head_Tracker)** effort: **high-quality head pose** without a three-figure price tag, with room to grow into calibration, companion software, and wireless paths.
 
 This repository is a **clean reboot**: new hardware (ESP32-class MCU + external IMU), new firmware, and documentation that will accumulate here as the stack matures.
 
@@ -24,7 +24,7 @@ The first version—**Arduino Nano 33 BLE**, onboard **LSM9DS1**, optional BLE +
 | **Firmware** | PlatformIO project for **Seeed XIAO ESP32-C3** + **BNO08x** over **SPI**: fused yaw / pitch / roll from the rotation-vector report. |
 | **OpenTrack (USB)** | **Hatire Arduino**-compatible binary frames (`xiao_esp32c3_hatire` build)—same 30-byte layout used previously for USB head tracking. |
 | **Debug** | Text telemetry over USB serial (`xiao_esp32c3` build). |
-| **Hardware docs** | Pin-level wiring: **[docs/wiring.md](docs/wiring.md)**. |
+| **Hardware docs** | **[docs/wiring.md](docs/wiring.md)** (signals, power, GPIO map) · **[docs/parts-list.md](docs/parts-list.md)** (BOM + passives notes) · **[docs/kicad.md](docs/kicad.md)** (custom KiCad libs + collaboration). |
 
 Roadmap items (not implemented in this repo yet) may include companion flashing/calibration tools, wireless transport, enclosure guides, and deeper OpenTrack tuning notes—similar in spirit to what the [Nano 33 tracker](https://github.com/FugLong/Nano33_PC_Head_Tracker) aimed for with its PC app and wireless workflow, rebuilt for this platform.
 
@@ -33,9 +33,9 @@ Roadmap items (not implemented in this repo yet) may include companion flashing/
 ## Hardware (this revision)
 
 - **MCU:** Seeed **XIAO ESP32-C3** (USB CDC serial, compact footprint).
-- **IMU:** **BNO08x** breakout in **SPI** mode (**PS0** and **PS1** tied to **3.3 V** per the breakout datasheet).
+- **IMU:** **BNO086** on the custom PCB (or **BNO08x** breakout in **SPI** mode with **PS0** / **PS1** → **3.3 V**).
 
-Summary pin map (detail and notes in **[docs/wiring.md](docs/wiring.md)**):
+Summary SPI / control pin map (full table, battery, buttons, LED, buzzer in **[docs/wiring.md](docs/wiring.md)**; BOM in **[docs/parts-list.md](docs/parts-list.md)**):
 
 | Signal | XIAO pin | GPIO |
 |--------|----------|------|

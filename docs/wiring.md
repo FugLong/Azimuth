@@ -1,55 +1,104 @@
-# Wiring — Seeed XIAO ESP32-C3 ↔ BNO08x (SPI)
+# Wiring — Azimuth PCB (`kicad/ESP32_BNO086`)
 
-This document matches the pin assignments used in `src/main.cpp` for the **Azimuth** firmware (SparkFun BNO08x Arduino library, `beginSPI`).
+This document matches the **Azimuth** custom PCB (KiCad project `ESP32_BNO086`) and the firmware defaults in `src/main.cpp`. It also applies if you wire a **XIAO ESP32-C3** to a **BNO08x breakout** by hand using the same net names.
 
-## BNO08x mode
+---
 
-The IMU must be in **SPI** mode: on the breakout, tie **PS0** and **PS1** to **3.3 V** (per your board’s datasheet). Power the sensor from **3.3 V** and connect **GND** to the XIAO ground.
+## MCU
 
-Some breakouts label SPI pins using I²C-style names (e.g. SCL/SDA); use the vendor’s SPI column in their table, not the I²C names.
+| Item | Detail |
+|------|--------|
+| Board | Seeed **XIAO ESP32-C3** (USB CDC) |
+| Footprint in KiCad | `1_MyFootPrints:XIAO-ESP32-C3-DIP-SMD` (SMD pads + castellated holes) |
 
-## Signal map
+---
 
-| BNO08x / function | Seeed XIAO ESP32-C3 | ESP32-C3 GPIO | Notes |
-|-------------------|---------------------|---------------|--------|
-| **SCK** | **D8** | GPIO8 | Hardware SPI clock (FSPI `SCK` in `pins_arduino.h`) |
-| **MISO** (SO / CIPO) | **D9** | GPIO9 | Data from sensor |
-| **MOSI** (SI / COPI) | **D10** | GPIO10 | Data to sensor |
-| **CS** (chip select) | **D2** | GPIO4 | GPIO CS; library controls it in software |
-| **H_INT** (interrupt) | **D3** | GPIO5 | Active low; internal pull-up configured in firmware |
-| **RST** (reset) | **D7** | GPIO20 | Active-low reset from library |
-| **3V3** | 3V3 | — | Same rail as mode pins if PS0/PS1 go to 3.3 V |
+## BNO086 (IC1) — SPI
+
+The bare **BNO086** (LGA) is on the bottom side in the PCB layout. **PS0** and **PS1** are tied to the **3.3 V** rail on the board (SPI / UART mode per datasheet).
+
+| BNO086 function | XIAO pin | GPIO | Firmware (`main.cpp`) |
+|-----------------|----------|------|------------------------|
+| **H_CSN** (CS) | **D2** | 4 | `kPinCs` |
+| **H_INTN** | **D3** | 5 | `kPinInt` |
+| **NRST** | **D7** | 20 | `kPinRst` |
+| **H_SCL / SCK** | **D8** | 8 | FSPI `SCK` |
+| **H_SDA / MISO** | **D9** | 9 | FSPI `MISO` |
+| **SA0 / H_MOSI** | **D10** | 10 | FSPI `MOSI` |
+| **VDD** | 3V3 | — | Sensor core supply |
 | **GND** | GND | — | Common ground |
 
-## Diagram (logical)
+Arduino core pins: `SCK`/`MISO`/`MOSI` match **D8/D9/D10** on this XIAO variant.
+
+### D7 / GPIO20
+
+**D7** is **GPIO20**, which overlaps the **UART RX** function on this board. Using it for **NRST** is fine if you are not using hardware UART RX on that pin.
+
+---
+
+## Power — battery (PH2.0)
+
+| Item | Detail |
+|------|--------|
+| Connector | **JST PH** 2-pin (`PH2.0`, `S2B-PH-SM4-TB` horizontal SMD) |
+| Net | `Bat+` → slide switch **S1** → XIAO **Bat+** / **Bat−** |
+
+**Battery voltage sense** (for ADC on the ESP32):
+
+- **R1**, **R2** — **220 kΩ** (0603), divider from `Bat+` to **GND**, tap to **D0** (GPIO2).
+- **C2** — **0.1 µF** (0603) from `Bat+` to **GND** — HF bypass at the divider / input node.
+
+**Bulk on battery rail:**
+
+- **C1** — **10 µF** (0603) from `Bat+` to **GND**.
+
+---
+
+## User I/O (no extra passives on these nets in v1)
+
+| Ref | Function | XIAO pin | GPIO | Notes |
+|-----|----------|----------|------|--------|
+| **LED1** + **R3** | Status LED | **D1** | 3 | **R3 = 470 Ω** (0402) in series with LED anode; cathode → GND |
+| **RST/Center1** | Tact switch | **D4** | 6 | One side → **GND**, other → GPIO (use **internal pull-up** in firmware) |
+| **FUNC1** | Tact switch | **D6** | 21 | Same; shares EVQP2 footprint style |
+| **LS1** | Buzzer **SMT-0540-T-9-R** | **D5** | 7 | **LOAD+** → GPIO, **LOAD−** → **GND** |
+
+GPIO21 is also **UART TX**; fine for a button if you do not need that UART.
+
+---
+
+## IMU-only passive
+
+| Ref | Value | Role |
+|-----|-------|------|
+| **C3** | **0.1 µF** (0402) | Local decoupling at **BNO086 VDD** (to ground / return) |
+
+---
+
+## Design note (from PCB netlist)
+
+**IC1 pin 28 (VDDIO)** is currently **not** tied to 3.3 V in the KiCad netlist. Many BNO08x designs strap **VDDIO** to the same rail as **VDD**. Confirm against the [BNO080/BNO085 datasheet](https://www.ceva-dsp.com/wp-content/uploads/2019/10/BNO080_085-Datasheet.pdf) and your assembly variant before production.
+
+---
+
+## Bring-up checklist
+
+1. **PS0 / PS1** high for SPI (handled on PCB).
+2. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
+3. After assembly, run firmware **`xiao_esp32c3`** and confirm serial prints before Hatire mode.
+4. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order, then re-run DRC in KiCad.
+
+---
+
+## Logical diagram (SPI + control)
 
 ```
-BNO08x breakout          XIAO ESP32-C3
-─────────────────        ───────────────
-SCK              ───── D8  (SCK)
-MISO / SO        ───── D9  (MISO)
-MOSI / SI        ───── D10 (MOSI)
-CS               ───── D2
-H_INT            ───── D3
-RST              ───── D7
-3V3, GND         ───── 3V3, GND
-PS0, PS1         ───── 3V3  (SPI mode)
+BNO086                XIAO ESP32-C3
+────────              ───────────────
+SCK, MISO, MOSI  ───  D8, D9, D10
+CS, H_INT, NRST  ───  D2, D3, D7
+VDD, GND         ───  3V3, GND
+PS0, PS1         ───  3V3 (on PCB)
 ```
 
-## Pinout reference (XIAO ESP32-C3)
-
-Arduino core defines for this board include:
-
-- `SCK` = GPIO8 (D8), `MISO` = GPIO9 (D9), `MOSI` = GPIO10 (D10)
-- D2 = GPIO4, D3 = GPIO5, D7 = GPIO20
-
-Firmware uses these GPIO numbers in `kPinCs`, `kPinInt`, and `kPinRst` in `src/main.cpp`.
-
-## D7 / GPIO20 note
-
-On this XIAO variant, **D7** is **GPIO20**, which is also the **UART RX** pin for `Serial` on some schematics. Using **D7 for BNO08x RST** is fine for this firmware. If you later need **hardware UART RX** on that pin at the same time, move RST to another free GPIO and update the three `kPin*` constants in `src/main.cpp`.
-
-## Electrical
-
-- SPI bus: keep **SCK** and **INT** leads short and solid grounds for clean communication at 3 MHz.
-- If initialization fails: confirm **PS0/PS1 → 3.3 V**, **INT** and **RST** wired as above, **common ground**, then power-cycle.
+For breadboard bring-up with a **breakout**, follow the breakout silkscreen for pin names; tie **PS0/PS1** to **3.3 V** if using SPI.
