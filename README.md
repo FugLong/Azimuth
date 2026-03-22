@@ -1,6 +1,6 @@
 # Azimuth
 
-**Open, inexpensive PC head tracking**—built for sims, flight games, and anything that speaks [OpenTrack](https://github.com/opentrack/opentrack). The aim is the same one that drove the earlier **Nano 33 BLE** prototype in this workspace: **high-quality 6‑DOF head pose** without a four-figure price tag, with room to grow into calibration, companion software, and optional wireless paths.
+**Open, inexpensive PC head tracking**—built for sims, flight games, and anything that speaks [OpenTrack](https://github.com/opentrack/opentrack). The aim matches the earlier **[Nano 33 BLE](https://github.com/FugLong/Nano33_PC_Head_Tracker)** effort: **high-quality head pose** without a four-figure price tag, with room to grow into calibration, companion software, and wireless paths.
 
 This repository is a **clean reboot**: new hardware (ESP32-class MCU + external IMU), new firmware, and documentation that will accumulate here as the stack matures.
 
@@ -13,7 +13,7 @@ This repository is a **clean reboot**: new hardware (ESP32-class MCU + external 
 - **Interop** — First-class support for **OpenTrack** (and the same ecosystem of games and sims that already support standard head-tracking pipelines).
 - **Evolvability** — Room for richer calibration, on-device UX, and PC-side apps without carrying legacy constraints from the first hardware generation.
 
-The original attempt—**Arduino Nano 33 BLE**, onboard **LSM9DS1**, optional BLE + a Rust PC app, guided calibration via LEDs—is documented in [`../Nano33_PC_Head_Tracker/readme.md`](../Nano33_PC_Head_Tracker/readme.md). That project validated the product direction (wired Hatire, OpenTrack curves, wireless UDP, etc.). **Azimuth** keeps that direction while standardizing on **ESP32** and a **BNO08x** fusion IMU for this generation of hardware.
+The first version—**Arduino Nano 33 BLE**, onboard **LSM9DS1**, optional BLE + PC tooling, guided calibration via LEDs—is archived on GitHub as **[Nano33_PC_Head_Tracker](https://github.com/FugLong/Nano33_PC_Head_Tracker)**. It explored the right product shape (OpenTrack, Hatire, etc.), but **both hardware and software held it back**; it **never reached a level of tracking quality I consider acceptable**, no matter how much time went into fusion tuning. **Azimuth** is a full reset: **ESP32** and an external **BNO08x** fusion IMU, fresh firmware, and docs that live here.
 
 ---
 
@@ -26,7 +26,7 @@ The original attempt—**Arduino Nano 33 BLE**, onboard **LSM9DS1**, optional BL
 | **Debug** | Text telemetry over USB serial (`xiao_esp32c3` build). |
 | **Hardware docs** | Pin-level wiring: **[docs/wiring.md](docs/wiring.md)**. |
 
-Roadmap items (not implemented in this repo yet) may include companion flashing/calibration tools, wireless transport, enclosure guides, and deeper OpenTrack tuning notes—similar in spirit to the Nano project’s PC app and wireless workflow, rebuilt for this platform.
+Roadmap items (not implemented in this repo yet) may include companion flashing/calibration tools, wireless transport, enclosure guides, and deeper OpenTrack tuning notes—similar in spirit to what the [Nano 33 tracker](https://github.com/FugLong/Nano33_PC_Head_Tracker) aimed for with its PC app and wireless workflow, rebuilt for this platform.
 
 ---
 
