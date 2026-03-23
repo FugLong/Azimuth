@@ -73,8 +73,8 @@ GPIO21 is also **UART TX**; fine for the buzzer if you do not need that UART for
 |-----|-------|------|
 | **C3** | **10 µF** (0402) | Bulk on **3.3 V** near **IC1** (`VDD` / `PS1` / `VDDIO` net) |
 | **C4** | **0.1 µF** (0402) | HF decoupling on the same **3.3 V** net to **GND** |
-
-Add per datasheet / bring-up: **100 nF** from **CAP** (pin 9) to **GND**, **10 kΩ** pull-up on **BOOTN** if not yet on the schematic.
+| **C5** | **100 nF** (0402) | **CAP** (pin 9) → **GND** |
+| **R4** | **10 kΩ** (0402) | **BOOTN** → **3.3 V** (normal run; not IMU DFU) |
 
 ---
 

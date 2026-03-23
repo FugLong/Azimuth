@@ -24,9 +24,11 @@ Values and references match the KiCad schematic **`kicad/ESP32_BNO086/ESP32_BNO0
 |-----|-----|--------|-----------|
 | 2 | **R1**, **R2** | **220 kΩ** | `Resistor_SMD:R_0603_1608Metric` |
 | 1 | **R3** | **470 Ω** | `Resistor_SMD:R_0402_1005Metric` |
+| 1 | **R4** | **10 kΩ** | `Resistor_SMD:R_0402_1005Metric` |
 
 **R1 / R2** — divider for **battery voltage** into **GPIO2 (D0)**.  
-**R3** — current limit for **LED1** from **GPIO3 (D1)**.
+**R3** — current limit for **LED1** from **GPIO3 (D1)**.  
+**R4** — pull-up **BNO086 `BOOTN`** → **3.3 V** (normal boot, not IMU DFU).
 
 ---
 
@@ -38,6 +40,7 @@ Values and references match the KiCad schematic **`kicad/ESP32_BNO086/ESP32_BNO0
 | 1 | **C2** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF bypass on **`Bat+`** (near divider) |
 | 1 | **C3** | **10 µF** | `Capacitor_SMD:C_0402_1005Metric` | Bulk on **3.3 V** at **BNO086** (`VDD` / `PS1` / `VDDIO` net) |
 | 1 | **C4** | **0.1 µF** | `Capacitor_SMD:C_0402_1005Metric` | HF decoupling on same **3.3 V** net to **GND** |
+| 1 | **C5** | **100 nF** | `Capacitor_SMD:C_0402_1005Metric` | **BNO086 `CAP`** pin → **GND** (datasheet) |
 
 ---
 
@@ -45,7 +48,7 @@ Values and references match the KiCad schematic **`kicad/ESP32_BNO086/ESP32_BNO0
 
 | Block | What’s on the PCB | Typical practice |
 |-------|-------------------|-------------------|
-| **BNO086** | **C3** + **C4** on **3.3 V** | Add **100 nF** **CAP**→**GND** and **BOOTN** pull-up per datasheet if not yet placed. No RC on **SPI** lines for short traces / 3 MHz. |
+| **BNO086** | **C3**, **C4** on **3.3 V**; **C5** on **`CAP`**; **R4** on **`BOOTN`** | No RC on **SPI** lines for short traces / 3 MHz. |
 | **Tact switch FUNC1** | Switch to **GND** | Use **internal pull-ups** on GPIO in firmware (`INPUT_PULLUP`). Optional: external **10–100 kΩ** for noisy environments. |
 | **Buzzer LS1** | **LOAD+** to GPIO, **LOAD−** to GND | Check **SMT-0540-T-9-R** max current vs GPIO; add transistor + base resistor if needed. |
 | **LED** | **R3** only | Standard. |
