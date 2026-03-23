@@ -1,0 +1,16 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"R2,R1";"R_0603_1608Metric";2;"220K";;;
+2;"PH2.0";"JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal";1;"Conn_01x02_Socket";;;
+3;"C1";"C_0603_1608Metric";1;"10uf";;;
+4;"U1";"XIAO-ESP32-C3-DIP-SMD";1;"XIAO-ESP32-C3/S3";;;
+5;"C2";"C_0603_1608Metric";1;"0.1uf";;;
+6;"S1";"SW_JS102011SAQN";1;"JS102011SAQN";;;
+7;"C5";"C_0402_1005Metric";1;"100nf";;;
+8;"C4";"C_0402_1005Metric";1;"0.1uf";;;
+9;"R4";"R_0402_1005Metric";1;"10k";;;
+10;"FUNC1";"SW_SPST_EVQP2_MiddlePushTravel_H2.5mm";1;"SW_Push";;;
+11;"C3";"C_0402_1005Metric";1;"10uf";;;
+12;"LED1";"LED_0402_1005Metric";1;"LED";;;
+13;"IC1";"LGA-28_5.2x3.8mm_P0.5mm";1;"BNO086";;;
+14;"R3";"R_0402_1005Metric";1;"470R";;;
+15;"LS1";"XDCR_SMT-0540-T-9-R";1;"SMT-0540-T-9-R";;;
