@@ -4,6 +4,35 @@
 .vscode/launch.json
 .vscode/ipch
 
+# Python / local tooling
+.venv/
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
 # KiCad — versioned backups are zipped under *-backups/; no need in git
 *-backups/
 fp-info-cache
+
+# KiCad — session / autosave / lock (never commit)
+**/\#auto_saved_files#
+~*.lck
+
+# KiCad — duplicate PCB export next to .kicad_pcb (regenerate from project)
+*.kicad_pcb.zip
+
+# KiCad — symbol backup when editing from disk
+*.bak
+
+# Fab house exports (gerbers, drill, BOM, positions — regenerate from KiCad)
+**/_pcbway_export_review/
+
+# Scratch / one-off extracts (not source of truth)
+docs/.bno08x_datasheet_extract.txt
+
+# Optional: reference-only downloads (uncomment if you do not want these tracked)
+# kicad/_reference/

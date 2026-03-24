@@ -15,7 +15,7 @@ This document matches the **Azimuth** custom PCB (KiCad project `ESP32_BNO086`) 
 
 ## BNO086 (IC1) — SPI
 
-The bare **BNO086** (LGA) is on the bottom side in the PCB layout. On this PCB, **`PS1`**, **`VDD`**, and **`VDDIO`** share the **3.3 V** net (SPI strap + supplies). **`PS0/WAKE`** is routed to **D2** so the MCU can use it as **WAKE** in SPI mode after reset (not hard-tied to 3.3 V only).
+The bare **BNO086** (LGA) is on the bottom side in the PCB layout. On this PCB, **`PS1`**, **`VDD`**, and **`VDDIO`** share the **3.3 V** net (SPI strap + supplies). **`PS0/WAKE`** is routed to **D2** **and** has a **10 kΩ pull-up to 3.3 V** so SPI strap timing is valid while remaining MCU-drivable after reset.
 
 | BNO086 function | XIAO pin | GPIO | Firmware (`main.cpp`) |
 |-----------------|----------|------|------------------------|
@@ -71,19 +71,25 @@ GPIO21 is also **UART TX**; fine for the buzzer if you do not need that UART for
 
 | Ref | Value | Role |
 |-----|-------|------|
-| **C3** | **10 µF** (0402) | Bulk on **3.3 V** near **IC1** (`VDD` / `PS1` / `VDDIO` net) |
-| **C4** | **0.1 µF** (0402) | HF decoupling on the same **3.3 V** net to **GND** |
+| **C3** | **10 µF** (0603) | Bulk on **3.3 V** near **IC1** (`VDD` / `PS1` / `VDDIO` net) |
+| **C4** | **0.1 µF** (0603) | HF decoupling on the same **3.3 V** net to **GND** |
 | **C5** | **100 nF** (0402) | **CAP** (pin 9) → **GND** |
 | **R4** | **10 kΩ** (0402) | **BOOTN** → **3.3 V** (normal run; not IMU DFU) |
+| **R5** | **10 kΩ** (0402) | **PS0/WAKE** → **3.3 V** (SPI strap high at reset, then WAKE use) |
+| **R6** | **10 kΩ** (0402) | **CLKSEL0** → **3.3 V** (internal oscillator selection with `CLKSEL1` NC) |
+| **R7** | **4.7 kΩ** (0402) | **ENV_SCL** → **3.3 V** pull-up |
+| **R8** | **4.7 kΩ** (0402) | **ENV_SDA** → **3.3 V** pull-up |
 
 ---
 
 ## Bring-up checklist
 
-1. **PS1** (and **VDD** / **VDDIO**) at **3.3 V** as routed; **PS0** on **D2** for WAKE behavior after SPI strap — ensure reset / idle levels match the BNO08x datasheet for your clock option.
-2. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
-3. After assembly, run firmware **`xiao_esp32c3`** and confirm serial prints before Hatire mode.
-4. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order, then re-run DRC in KiCad.
+1. **SPI strap/checks:** **PS1** (and **VDD** / **VDDIO**) at **3.3 V**, **PS0** held high at reset (via pull-up + D2 routing), and **BOOTN** high for application boot.
+2. **Clock/checks:** **CLKSEL0** pulled high (internal clock selection with `CLKSEL1` left unconnected), and **CAP** has dedicated **100 nF** to GND.
+3. **ENV bus/checks:** **ENV_SCL** / **ENV_SDA** have pull-ups (R7/R8) even if no external environmental sensor is populated.
+4. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
+5. After assembly, run firmware **`xiao_esp32c3`** and confirm serial prints before Hatire mode.
+6. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order, then re-run DRC in KiCad.
 
 ---
 
