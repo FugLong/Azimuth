@@ -9,7 +9,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Workstream | Progress | Notes |
 |------------|----------|--------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
-| Custom PCB (KiCad) | **~85%** | Layout/nets mostly done; final DRC, BOM lock, any stragglers (e.g. VDDIO note in [wiring.md](wiring.md)) |
+| Custom PCB (KiCad) | **~90%** | Layout + power nets (**`/Bat+`** / **`vcc`**) aligned with schematic; [wiring.md](wiring.md) / [parts-list.md](parts-list.md) match KiCad—run **DRC/ERC** and lock BOM before fab |
 | Firmware | **~8%** | SPI IMU + debug serial + Hatire-over-USB only; no board IO, power, or wireless yet |
 | 3D enclosure | **0%** | Not started |
 | End-user docs & release | **TBD** | Flashing, build guide, OpenTrack setup—grow with firmware |
@@ -18,7 +18,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 
 ```
 Hardware/BOM     [████████████████████] 100%
-PCB design       [████████████████░░░░] ~85%
+PCB design       [█████████████████░░░] ~90%
 Firmware         [█░░░░░░░░░░░░░░░░░░░] ~8%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
@@ -128,3 +128,4 @@ These are common for head trackers; pick what matches your audience.
 |------|--------|
 | 2026-03-22 | Initial roadmap: workstream snapshot + phases 1–4 + V1 draft criteria. |
 | 2026-03-22 | V1 posture: wireless required; USB supported; enclosure + PH2 assembly tradeoff documented. |
+| 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |

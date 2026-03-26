@@ -39,19 +39,26 @@ Arduino core pins: `SCK`/`MISO`/`MOSI` match **D8/D9/D10** on this XIAO variant.
 
 ## Power — battery (PH2.0)
 
+The schematic splits the cell from the load so the slide switch can cut battery power to the XIAO and the battery-side passives.
+
+| Net (KiCad) | Role |
+|-------------|------|
+| **`/Bat+`** | Raw pack positive: **JST PH2.0** (`PH2.0`) pin 1 and **PWR1** (slide switch **K3-1280S-K1**) pad **2**. |
+| **`vcc`** | Switched rail: **PWR1** pad **1**, XIAO **Bat+** (pin 15), **R2** / **C1** / **C2** high side. |
+
 | Item | Detail |
 |------|--------|
 | Connector | **JST PH** 2-pin (`PH2.0`, `S2B-PH-SM4-TB` horizontal SMD) |
-| Net | `Bat+` → slide switch **S1** → XIAO **Bat+** / **Bat−** |
+| Path | **`Bat+`** → **PWR1** → **`vcc`** → XIAO **Bat+** / **Bat−** → GND |
 
 **Battery voltage sense** (for ADC on the ESP32):
 
-- **R1**, **R2** — **220 kΩ** (0603), divider from `Bat+` to **GND**, tap to **D0** (GPIO2).
-- **C2** — **0.1 µF** (0603) from `Bat+` to **GND** — HF bypass at the divider / input node.
+- **R1**, **R2** — **220 kΩ** (0603), divider from **`vcc`** (switched rail) to **GND**, tap to **D0** (GPIO2). When **PWR1** is off, **`vcc`** is not driven by the cell through this path, so the ADC does not read a meaningful pack voltage until the switch is on (or USB powers the board separately).
+- **C2** — **0.1 µF** (0603) from **`vcc`** to **GND** — HF bypass at the divider / input node.
 
-**Bulk on battery rail:**
+**Bulk on the switched rail:**
 
-- **C1** — **10 µF** (0603) from `Bat+` to **GND**.
+- **C1** — **10 µF** (0603) from **`vcc`** to **GND** (local bulk after the switch; raw **`Bat+`** is only at the connector and switch input pad).
 
 ---
 
@@ -61,7 +68,7 @@ Arduino core pins: `SCK`/`MISO`/`MOSI` match **D8/D9/D10** on this XIAO variant.
 |-----|----------|----------|------|--------|
 | **LED1** + **R3** | Status LED | **D1** | 3 | **R3 = 470 Ω** (0402) in series with LED anode; cathode → GND |
 | **FUNC1** | Tact switch | **D5** | 7 | One side → **GND**, other → GPIO (use **internal pull-up** in firmware) |
-| **LS1** | Buzzer **SMT-0540-T-9-R** | **D6** | 21 | **LOAD+** → GPIO, **LOAD−** → **GND** |
+| **BUZZER1** | **MLT-5020** | **D6** | 21 | **LOAD+** → GPIO, **LOAD−** → **GND** |
 
 GPIO21 is also **UART TX**; fine for the buzzer if you do not need that UART for debug.
 

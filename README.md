@@ -1,3 +1,10 @@
+<div align="center">
+
+<img src="logo/AzimuthLogo_Dark.png#gh-light-mode-only" alt="Azimuth" width="240">
+<img src="logo/AzimuthLogo_Light.png#gh-dark-mode-only" alt="Azimuth" width="240">
+
+</div>
+
 # Azimuth
 
 Azimuth enables high-quality PC head tracking for sims, flight games, and anything that supports [OpenTrack](https://github.com/opentrack/opentrack).
@@ -6,18 +13,27 @@ It is a cheap but powerful tracker you can build yourself: a small ESP32-based b
 
 This repository holds firmware, PCB designs, 3D print designs, and documentation.
 
+<div align="center">
+<table>
+  <tr>
+    <td align="center"><img src="img/BoardTop.png" alt="PCB top" width="380"></td>
+    <td align="center"><img src="img/BoardBottom.png" alt="PCB bottom" width="380"></td>
+  </tr>
+</table>
+</div>
+
 ### Development status (toward V1)
 
 | Area | Progress | Notes |
 |------|:--------:|--------|
 | Hardware / BOM | 100% | Parts chosen ([docs/parts-list.md](docs/parts-list.md)). |
-| Custom PCB | ~85% | KiCad; see [docs/kicad.md](docs/kicad.md), [docs/wiring.md](docs/wiring.md). |
+| Custom PCB | ~90% | KiCad; power nets **/Bat+** / **vcc** in [docs/wiring.md](docs/wiring.md); libs in [docs/kicad.md](docs/kicad.md). |
 | Firmware | ~8% | SPI IMU + USB debug + Hatire; **board I/O and wireless not wired up yet**. V1 targets **WiFi tracking + battery use** with **USB** still supported. |
 | 3D enclosure | 0% | Not started. Plan: **battery-sized** shell first; optional slimmer **wired-only** enclosure if PH2 is omitted on those builds ([roadmap](docs/roadmap.md)). |
 
 ```
 Hardware/BOM   [████████████████████] 100%
-PCB            [████████████████░░░░] ~85%
+PCB            [█████████████████░░░] ~90%
 Firmware       [█░░░░░░░░░░░░░░░░░░░] ~8%
 Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
