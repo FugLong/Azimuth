@@ -31,7 +31,7 @@ constexpr uint8_t kPinCs = 5;    // D3
 constexpr uint8_t kPinInt = 6;   // D4 (H_INT, active low)
 constexpr uint8_t kPinRst = 20;  // D7 (NRST)
 
-/** Rotation vector report period passed to enableRotationVector() — milliseconds. */
+/** Rotation vector report period passed to enableRotationVector() — milliseconds (100 Hz). */
 constexpr uint16_t kRotationVectorPeriodMs = 10;
 
 #if IMU_DEBUG_MODE
@@ -67,6 +67,9 @@ static_assert(sizeof(Hat) == 30, "Hatire struct must be 30 bytes for OpenTrack c
 
 Hat gHat;
 
+/** Tracks USB host presence so we can re-sync Hatire after OpenTrack disconnect/reconnect. */
+bool gHatireUsbWasConnected = false;
+
 void hatireInitPacket() {
   gHat.Begin = static_cast<int16_t>(0xAAAA);
   gHat.Cpt = 0;
@@ -76,6 +79,14 @@ void hatireInitPacket() {
 }
 
 void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
+  // ESP32 USB CDC: writing with no host (or full TX) can block forever — skip/drop instead.
+  if (!Serial) {
+    return;
+  }
+  if (Serial.availableForWrite() < static_cast<int>(sizeof(gHat))) {
+    return;
+  }
+
   // Same axis/sign convention as Nano33_PC_Head_Tracker Rev2 + Fusion NWU output
   gHat.gyro[0] = yawDeg;
   gHat.gyro[1] = -pitchDeg;
@@ -142,6 +153,14 @@ void setup() {
 }
 
 void loop() {
+#if !IMU_DEBUG_MODE
+  const bool usbConnected = static_cast<bool>(Serial);
+  if (usbConnected && !gHatireUsbWasConnected) {
+    hatireInitPacket();
+  }
+  gHatireUsbWasConnected = usbConnected;
+#endif
+
   if (imu.wasReset()) {
 #if IMU_DEBUG_MODE
     Serial.println(F("# sensor reset; re-enabling reports"));
