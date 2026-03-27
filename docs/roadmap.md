@@ -9,17 +9,17 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Workstream | Progress | Notes |
 |------------|----------|--------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
-| Custom PCB (KiCad) | **~90%** | Layout + power nets (**`/Bat+`** / **`vcc`**) aligned with schematic; [wiring.md](wiring.md) / [parts-list.md](parts-list.md) match KiCad—run **DRC/ERC** and lock BOM before fab |
-| Firmware | **~8%** | SPI IMU + debug serial + Hatire-over-USB only; no board IO, power, or wireless yet |
+| Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
+| Firmware | **~30%** | SPI IMU; USB debug; **Hatire USB** + **WiFi STA → OpenTrack UDP** (`include/secrets.h`); still missing on-board I/O (LED/button/buzzer), battery ADC path, NVS/settings, OTA story |
 | 3D enclosure | **0%** | Not started |
-| End-user docs & release | **TBD** | Flashing, build guide, OpenTrack setup—grow with firmware |
+| End-user docs & release | **TBD** | Flashing, build guide, OpenTrack USB + UDP—expand with remaining firmware |
 
 **Visual (rough):**
 
 ```
 Hardware/BOM     [████████████████████] 100%
-PCB design       [█████████████████░░░] ~90%
-Firmware         [█░░░░░░░░░░░░░░░░░░░] ~8%
+PCB design       [███████████████████░] ~95%
+Firmware         [██████░░░░░░░░░░░░░░] ~30%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
 
@@ -27,7 +27,7 @@ Enclosure        [░░░░░░░░░░░░░░░░░░░░] 
 
 ## V1 product posture
 
-**Wireless is a V1 requirement** — The tracker is meant to run untethered with a battery; WiFi is the primary way to get tracking data to the PC in that mode. **USB stays supported** for desk use, flashing, serial debug, and as a fallback path (e.g. Hatire over USB as today).
+**Wireless is a V1 requirement** — The tracker is meant to run untethered with a battery; **WiFi → UDP (OpenTrack)** is implemented in firmware for LAN use; **USB stays supported** for desk use, flashing, serial debug, and **Hatire** as an alternative input path.
 
 **Enclosure** — Default plan is **one enclosure** sized for the **battery** build (internal volume for cell + PH connector clearance). A **second, slimmer** enclosure for **wired-only** builds is possible if there is demand: same PCB, but without a battery installed and ideally without the tall **JST PH2.0** connector populated (see assembly note below).
 
@@ -38,11 +38,12 @@ Enclosure        [░░░░░░░░░░░░░░░░░░░░] 
 Use this as a checklist; tighten or relax before tagging V1.
 
 - [ ] **PCB** — Fabrication-ready: DRC clean, BOM fixed, assembly tested on at least one revision.
-- [ ] **Bring-up** — IMU, USB serial, Hatire path verified on the **actual** PCB (not only breadboard).
+- [ ] **Bring-up** — IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** PCB (breadboard path already exercised).
 - [ ] **Firmware core** — Clear module boundaries (HAL / drivers / app), pins and features match [wiring.md](wiring.md).
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
-- [ ] **Wireless** — WiFi tracking path working for normal use (with USB still available for flash / debug / optional wired Hatire).
+- [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via `secrets.h` for now).
+- [ ] **Wireless (product)** — On-device or web-based credential/settings storage; robust reconnection policy—beyond compile-time `secrets.h`.
 - [ ] **Updates** — Story for flashing firmware (USB minimum; OTA/web flashing if promised for V1).
 - [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered.
 - [ ] **User-facing docs** — Build, flash, OpenTrack connection (USB + wireless), troubleshooting.
@@ -67,15 +68,16 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 ## Phase 2 — WiFi + tracking path
 
-**Goal:** Primary use case is **untethered / battery** operation: a stable wireless path for orientation (or raw) data to a host. **USB Hatire** remains supported in parallel where practical (priority/fallback rules TBD).
+**Goal:** Primary use case is **untethered / battery** operation: a stable wireless path for orientation to a host. **USB Hatire** remains supported in parallel.
 
 | Task | Status |
 |------|--------|
-| WiFi STA (and maybe AP for onboarding — decide) | ⬜ |
-| Transport: protocol choice (UDP vs TCP; OpenTrack / companion expectations) | ⬜ |
-| Reuse or mirror Hatire semantics over network where applicable | ⬜ |
-| Coexistence with USB (priority, fallback) | ⬜ |
-| Security baseline (WiFi credentials storage, at minimum) | ⬜ |
+| WiFi STA | ✅ (UDP client to PC; credentials in `include/secrets.h`) |
+| WiFi AP / onboarding portal | ⬜ (optional; see Phase 4) |
+| Transport: OpenTrack **UDP** (6× `double`, default port 4242) | ✅ |
+| Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ |
+| Coexistence with USB (Hatire + UDP same build) | ✅ |
+| Security baseline (WiFi credentials **not** in git; NVS or UI later) | 🟨 (`secrets.h` local only; Phase 3 for proper settings) |
 
 ---
 
@@ -129,3 +131,4 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-22 | Initial roadmap: workstream snapshot + phases 1–4 + V1 draft criteria. |
 | 2026-03-22 | V1 posture: wireless required; USB supported; enclosure + PH2 assembly tradeoff documented. |
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
+| 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |

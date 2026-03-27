@@ -8,20 +8,26 @@
  *
  * Modes (set at compile time):
  *   IMU_DEBUG_MODE=1 — human-readable yaw/pitch/roll on USB serial
- *   IMU_DEBUG_MODE=0 — Hatire binary frames for OpenTrack “Hatire Arduino” input (115200, DTR on)
+ *   IMU_DEBUG_MODE=0 — Hatire USB (115200) + optional WiFi UDP OpenTrack “UDP over network” (6× double)
  */
 
 #include <Arduino.h>
 #include <SPI.h>
 
-#if !IMU_DEBUG_MODE
-#include <string.h>
-#endif
-
 #include "SparkFun_BNO08x_Arduino_Library.h"
 
 #ifndef IMU_DEBUG_MODE
 #define IMU_DEBUG_MODE 1
+#endif
+
+#if !IMU_DEBUG_MODE
+#include <WiFi.h>
+#include <WiFiUdp.h>
+#include <string.h>
+#include "secrets.h"
+#ifndef OPENTRACK_UDP_PORT
+#define OPENTRACK_UDP_PORT 4242
+#endif
 #endif
 
 namespace {
@@ -99,6 +105,62 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
     gHat.Cpt = 0;
   }
 }
+
+/**
+ * OpenTrack “UDP over network” input: 6 little-endian doubles — Tx, Ty, Tz, Yaw, Pitch, Roll (deg).
+ * Matches opentrack tracker-udp / plugin Axis order (TX..Roll). Translation set to zero (rotation-only).
+ */
+WiFiUDP gOpentrackUdp;
+IPAddress gOpentrackIp;
+bool gOpentrackUdpOk = false;
+
+void initOpentrackUdp() {
+  static const char kSsid[] = WIFI_SSID;
+  if (kSsid[0] == '\0') {
+    return;
+  }
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  constexpr uint32_t kWifiTimeoutMs = 12000;
+  const uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - t0 < kWifiTimeoutMs) {
+    delay(200);
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+  if (!gOpentrackUdp.begin(0)) {
+    return;
+  }
+  if (!gOpentrackIp.fromString(OPENTRACK_UDP_HOST)) {
+    return;
+  }
+  gOpentrackUdpOk = true;
+}
+
+void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
+  if (!gOpentrackUdpOk || WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+
+  // Same Yaw / Pitch / Roll convention as Hatire (pitch negated vs raw fusion).
+  double pose[6] = {
+      0.0,
+      0.0,
+      0.0,
+      static_cast<double>(yawDeg),
+      static_cast<double>(-pitchDeg),
+      static_cast<double>(rollDeg),
+  };
+
+  if (!gOpentrackUdp.beginPacket(gOpentrackIp, OPENTRACK_UDP_PORT)) {
+    return;
+  }
+  gOpentrackUdp.write(reinterpret_cast<const uint8_t*>(pose), sizeof(pose));
+  gOpentrackUdp.endPacket();
+}
 #endif  // !IMU_DEBUG_MODE
 
 void enableReports() {
@@ -125,13 +187,6 @@ void setup() {
   Serial.println(F("BNO08x (SPI) — DEBUG: yaw / pitch / roll (deg)"));
   Serial.println(F("Init..."));
 #else
-  // Hatire: wait for USB host (OpenTrack) to open the port; DTR should be enabled in the plugin.
-  while (!Serial) {
-    delay(10);
-  }
-#endif
-
-#if !IMU_DEBUG_MODE
   hatireInitPacket();
 #endif
 
@@ -150,6 +205,10 @@ void setup() {
 
   enableReports();
   delay(150);
+
+#if !IMU_DEBUG_MODE
+  initOpentrackUdp();
+#endif
 }
 
 void loop() {
@@ -196,5 +255,6 @@ void loop() {
   Serial.println(F("°"));
 #else
   sendHatirePacket(yawDeg, pitchDeg, rollDeg);
+  sendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
 #endif
 }

@@ -34,5 +34,8 @@ fp-info-cache
 # Scratch / one-off extracts (not source of truth)
 docs/.bno08x_datasheet_extract.txt
 
+# WiFi / OpenTrack host (copy from include/secrets.h.example)
+include/secrets.h
+
 # Optional: reference-only downloads (uncomment if you do not want these tracked)
 # kicad/_reference/

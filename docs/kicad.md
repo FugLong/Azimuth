@@ -13,6 +13,10 @@
 
 Open the project via **`kicad/ESP32_BNO086/ESP32_BNO086.kicad_pro`** so **`${KIPRJMOD}`** is that folder (required for the tables and 3D paths above).
 
+## Pre-fabrication
+
+Run **ERC** and **DRC**, freeze the **BOM**, then add **panelization** (array + rails/fiducials per fab house rules) for production ordering. Until the panel step is done, treat the single-board design as layout-complete but not fab-submitted.
+
 ## Board vs library names
 
 | Doc / colloquial | KiCad |

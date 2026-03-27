@@ -27,14 +27,14 @@ This repository holds firmware, PCB designs, 3D print designs, and documentation
 | Area | Progress | Notes |
 |------|:--------:|--------|
 | Hardware / BOM | 100% | Parts chosen ([docs/parts-list.md](docs/parts-list.md)). |
-| Custom PCB | ~90% | KiCad; power nets **/Bat+** / **vcc** in [docs/wiring.md](docs/wiring.md); libs in [docs/kicad.md](docs/kicad.md). |
-| Firmware | ~8% | SPI IMU + USB debug + Hatire; **board I/O and wireless not wired up yet**. V1 targets **WiFi tracking + battery use** with **USB** still supported. |
+| Custom PCB | ~95% | KiCad aligned with [docs/wiring.md](docs/wiring.md); **panelization** (fab-ready panel) is the remaining PCB task before ordering. |
+| Firmware | ~30% | SPI IMU, USB debug, **Hatire + WiFi → OpenTrack UDP** (see [Building and flashing](#building-and-flashing)); `include/secrets.h` for WiFi/host. **Board I/O** (LED, button, buzzer), **battery/ADC**, and **on-device settings** still ahead ([roadmap](docs/roadmap.md)). |
 | 3D enclosure | 0% | Not started. Plan: **battery-sized** shell first; optional slimmer **wired-only** enclosure if PH2 is omitted on those builds ([roadmap](docs/roadmap.md)). |
 
 ```
 Hardware/BOM   [████████████████████] 100%
-PCB            [█████████████████░░░] ~90%
-Firmware       [█░░░░░░░░░░░░░░░░░░░] ~8%
+PCB            [███████████████████░] ~95%
+Firmware       [██████░░░░░░░░░░░░░░] ~30%
 Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
 
@@ -57,11 +57,11 @@ Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 | Area | Status |
 |------|--------|
 | **Firmware** | PlatformIO project for **Seeed XIAO ESP32-C3** + **BNO08x** over **SPI**: fused yaw / pitch / roll from the rotation-vector report. |
-| **OpenTrack (USB)** | **Hatire Arduino**-compatible binary frames (`xiao_esp32c3_hatire` build)—same 30-byte layout used previously for USB head tracking. |
+| **OpenTrack** | `xiao_esp32c3_hatire`: **Hatire Arduino** over USB (30-byte frames) **and** optional **WiFi → UDP** to the PC using OpenTrack’s **UDP over network** input (6× `double`, port 4242 by default). |
 | **Debug** | Text telemetry over USB serial (`xiao_esp32c3` build). |
 | **Hardware docs** | **[docs/wiring.md](docs/wiring.md)** (signals, power, GPIO map) · **[docs/parts-list.md](docs/parts-list.md)** (BOM + passives notes) · **[docs/kicad.md](docs/kicad.md)** (custom KiCad libs + collaboration). |
 
-Planned work (wireless, web flashing, enclosure, richer calibration) is tracked in **[docs/roadmap.md](docs/roadmap.md)**.
+Planned work (board I/O, battery, web flashing / settings UX, enclosure, richer calibration) is tracked in **[docs/roadmap.md](docs/roadmap.md)**.
 
 ---
 
@@ -95,19 +95,23 @@ python3 -m platformio run -e xiao_esp32c3 -t upload
 python3 -m platformio device monitor
 ```
 
-**OpenTrack (Hatire over USB, 115200 baud):**
+**OpenTrack — Hatire (USB) + optional UDP (WiFi):**
 
 ```bash
 python3 -m platformio run -e xiao_esp32c3_hatire -t upload
 ```
 
-In OpenTrack: input **Hatire Arduino**, enable **DTR**, then start tracking and **recenter** after the filter settles. Hatire mode is binary-only—do not leave the serial monitor open while using OpenTrack.
+Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. Leave **`WIFI_SSID` empty (`""`)** for USB-only (no WiFi). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**, OpenTrack’s usual UDP input port).
+
+- **USB:** Input **Hatire Arduino**, **115200**, **DTR** on; start tracking and **recenter** after the filter settles. Do not leave a text serial monitor open on that port.
+- **WiFi / UDP:** Input **UDP over network**, same port as in **`platformio.ini`** (`OPENTRACK_UDP_PORT`); allow the port through the PC firewall. Hatire and UDP both run from the same firmware.
 
 ---
 
 ## Firmware layout
 
-- **`src/main.cpp`** — IMU bring-up, rotation vector, optional Hatire packing; `kPinCs` / `kPinInt` / `kPinRst` match the **ESP32_BNO086** PCB (see [docs/wiring.md](docs/wiring.md)).
+- **`src/main.cpp`** — IMU bring-up, rotation vector, Hatire + optional OpenTrack UDP; `kPinCs` / `kPinInt` / `kPinRst` match the **ESP32_BNO086** PCB (see [docs/wiring.md](docs/wiring.md)).
 - **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library.
+- **`include/secrets.h`** — local WiFi + OpenTrack host (copy from `secrets.h.example`; not tracked by git).
 
 If you move SPI off the default D8–D10 pins, call `SPI.begin(sck, miso, mosi, -1)` **before** `imu.beginSPI(...)` so the bus matches your board (the SparkFun driver initializes `SPI` internally; ESP32 keeps an already-started bus).
