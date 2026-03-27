@@ -12,7 +12,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
 | Firmware | **~30%** | SPI IMU; USB debug; **Hatire USB** + **WiFi STA → OpenTrack UDP** (`include/secrets.h`); still missing on-board I/O (LED/button/buzzer), battery ADC path, NVS/settings, OTA story |
 | 3D enclosure | **0%** | Not started |
-| End-user docs & release | **TBD** | Flashing, build guide, OpenTrack USB + UDP—expand with remaining firmware |
+| End-user docs & release | **TBD** | README: OpenTrack input (Hatire vs UDP), axis mapping, **Natural motion** filter, max **responsiveness**—expand further with remaining firmware |
 
 **Visual (rough):**
 

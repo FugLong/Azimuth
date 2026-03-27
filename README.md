@@ -104,7 +104,22 @@ python3 -m platformio run -e xiao_esp32c3_hatire -t upload
 Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. Leave **`WIFI_SSID` empty (`""`)** for USB-only (no WiFi). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**, OpenTrack’s usual UDP input port).
 
 - **USB:** Input **Hatire Arduino**, **115200**, **DTR** on; start tracking and **recenter** after the filter settles. Do not leave a text serial monitor open on that port.
+- **Hatire axis mapping (important):** In the Hatire tracker settings, set **Yaw axis = Rot 0**, **Pitch axis = Rot 1**, **Roll axis = Rot 2** (some UIs say “axis 0 / 1 / 2”). That lines up with how this firmware fills the packet and keeps USB and UDP identical. OpenTrack’s *old* Hatire defaults use **0 / 2 / 1**, which swaps pitch and roll—change to **0 / 1 / 2** for the simplest setup.
 - **WiFi / UDP:** Input **UDP over network**, same port as in **`platformio.ini`** (`OPENTRACK_UDP_PORT`); allow the port through the PC firewall. Hatire and UDP both run from the same firmware.
+
+### OpenTrack on the PC (recommended)
+
+Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **Input**—not both at once. Pick the one you’re using; the tracker sends both from firmware, but OpenTrack should only listen to one path.
+
+| Step | What to do |
+|------|------------|
+| **Input** | **Hatire Arduino** (correct COM port, **115200**, **DTR** on) **or** **UDP over network** (OpenTrack listens on **`OPENTRACK_UDP_PORT`** from **`platformio.ini`**, usually **4242**; set **`OPENTRACK_UDP_HOST`** in `secrets.h` to **this PC’s LAN IP**; allow UDP in the firewall). |
+| **Hatire axes** | **Yaw / Pitch / Roll** → **Rot 0 / Rot 1 / Rot 2** (see bullet above). |
+| **Filter** | **Natural motion** filter (name in the filter dropdown may vary slightly by OpenTrack version; pick the **Natural motion** / natural-style preset if available). |
+| **Responsiveness** | Turn **responsiveness** up to **maximum** (slider all the way up) so head motion matches the tracker with minimal lag. |
+| **Start** | Click **Start**; use **Center** / **recenter** after the filter settles. |
+
+Tweak filter and output mapping per game if needed; the table above is the baseline for Azimuth.
 
 ---
 

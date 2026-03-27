@@ -93,10 +93,11 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
     return;
   }
 
-  // Same axis/sign convention as Nano33_PC_Head_Tracker Rev2 + Fusion NWU output
+  // Rot[0..2] — Hatire Yaw/Pitch/Roll axis = 0 / 1 / 2 (README). Yaw from fusion; pitch/roll channels
+  // swapped vs raw getPitch/getRoll so OpenTrack head axes match expected game view.
   gHat.gyro[0] = yawDeg;
-  gHat.gyro[1] = -pitchDeg;
-  gHat.gyro[2] = rollDeg;
+  gHat.gyro[1] = rollDeg;
+  gHat.gyro[2] = -pitchDeg;
 
   Serial.write(reinterpret_cast<const uint8_t*>(&gHat), sizeof(gHat));
 
@@ -107,8 +108,8 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
 }
 
 /**
- * OpenTrack “UDP over network” input: 6 little-endian doubles — Tx, Ty, Tz, Yaw, Pitch, Roll (deg).
- * Matches opentrack tracker-udp / plugin Axis order (TX..Roll). Translation set to zero (rotation-only).
+ * OpenTrack “UDP over network”: Tx, Ty, Tz, then Yaw, Pitch, Roll (deg), same semantics as Hatire when
+ * Yaw/Pitch/Roll axis = 0 / 1 / 2 (see README). Matches sendHatirePacket Rot[] order 1:1.
  */
 WiFiUDP gOpentrackUdp;
 IPAddress gOpentrackIp;
@@ -145,14 +146,16 @@ void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
     return;
   }
 
-  // Same Yaw / Pitch / Roll convention as Hatire (pitch negated vs raw fusion).
+  const float r0 = yawDeg;
+  const float r1 = rollDeg;
+  const float r2 = -pitchDeg;
   double pose[6] = {
       0.0,
       0.0,
       0.0,
-      static_cast<double>(yawDeg),
-      static_cast<double>(-pitchDeg),
-      static_cast<double>(rollDeg),
+      static_cast<double>(r0),
+      static_cast<double>(r1),
+      static_cast<double>(r2),
   };
 
   if (!gOpentrackUdp.beginPacket(gOpentrackIp, OPENTRACK_UDP_PORT)) {
