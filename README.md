@@ -101,7 +101,7 @@ python3 -m platformio device monitor
 python3 -m platformio run -e xiao_esp32c3_hatire -t upload
 ```
 
-Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. If there is **no SSID in NVS and `WIFI_SSID` is empty**, the board starts an open provisioning network **`Azimuth-Setup`**: join it, open **`http://192.168.4.1:8080`**, set your home Wi‑Fi, save (it reboots and turns the AP off). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**, OpenTrack’s usual UDP input port).
+Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. If there is **no SSID in NVS and `WIFI_SSID` is empty**, or if it **tries to join a saved network and fails** (wrong password, etc.), the board starts an open provisioning network **`Azimuth-Setup`**. It runs a small **captive portal**: DNS sends lookups to the board, HTTP on **port 80** answers OS “sign in to Wi‑Fi” checks with a redirect to **`http://192.168.4.1/`** (same settings UI as on the LAN). **`azimuth.local` does not apply on this network**—mDNS is only advertised after the board joins your home Wi‑Fi. After you save home Wi‑Fi and reboot, **`Azimuth-Setup` turns off** and normal mode uses **`http://azimuth.local:8080`** (or **`http://<LAN-IP>:8080`**). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**).
 
 - **USB:** Input **Hatire Arduino**, **115200**, **DTR** on; start tracking and **recenter** after the filter settles. Do not leave a text serial monitor open on that port.
 - **Hatire axis mapping (important):** In the Hatire tracker settings, set **Yaw axis = Rot 0**, **Pitch axis = Rot 1**, **Roll axis = Rot 2** (some UIs say “axis 0 / 1 / 2”). That lines up with how this firmware fills the packet and keeps USB and UDP identical. OpenTrack’s *old* Hatire defaults use **0 / 2 / 1**, which swaps pitch and roll—change to **0 / 1 / 2** for the simplest setup.
@@ -112,15 +112,15 @@ Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_
 With the **hatire** build:
 
 - **Already on your LAN:** open **`http://azimuth.local:8080`** (mDNS **`azimuth`**, port **8080**) or **`http://<device-ip>:8080`**.
-- **First boot / nothing saved yet:** join Wi‑Fi **`Azimuth-Setup`** (no password), then **`http://192.168.4.1:8080`**. After you save a real SSID (and password if needed), the device **reboots** and only uses **station** mode—**`Azimuth-Setup` does not stay on**.
+- **Provisioning (`Azimuth-Setup`):** join that network (no password). Many phones **open the settings page automatically**; if not, go to **`http://192.168.4.1/`** on **port 80**. After you save a real SSID (and password if needed), the device **reboots** into **station-only** mode—**`Azimuth-Setup` does not stay on**.
 
 On the page you can set **Wi‑Fi SSID/password** (optional **scan** list), **OpenTrack UDP host/port**, and **UDP on/off** without reflashing. Values live in **NVS** (`Preferences` namespace **`azimuth`**); empty NVS keys still fall back to **`include/secrets.h`**.
 
 The page is served by the stock Arduino **`WebServer`**: when no browser is connected, the firmware only calls **`handleClient()`** once per main loop (no background worker). **Wi‑Fi scan** runs only when you press **Scan networks** and can stall tracking briefly for a second or two.
 
-Saving **new Wi‑Fi credentials** triggers an automatic **reboot** so the radio can reconnect. If the board cannot join Wi‑Fi (wrong password, etc.), the web UI will not come up until you fix credentials—use **`secrets.h`** and reflash, or erase NVS and try again.
+Saving **new Wi‑Fi credentials** triggers an automatic **reboot** so the radio can reconnect. If it **cannot join** the saved network (wrong password, AP missing, etc.) after the boot timeout, it opens the same recovery path: join **`Azimuth-Setup`** (captive portal or **`http://192.168.4.1/`**) to fix SSID/password (no reflash required).
 
-**mDNS / `azimuth.local`:** The page is **supposed** to work at **`http://azimuth.local:8080`** once the board is **connected as a Wi‑Fi client** (not only on **`Azimuth-Setup`**). If the name does not resolve:
+**mDNS / `azimuth.local`:** Use **`http://azimuth.local:8080`** only after the board is on your **home** Wi‑Fi as a client. On **`Azimuth-Setup`**, use **`http://192.168.4.1/`** (port **80**) or wait for the captive portal sheet—**do not expect `azimuth.local` there**. If the name does not resolve on your LAN:
 
 - **Windows:** Install **Bonjour Print Services** (Apple) or **iTunes** (includes Bonjour)—plain Windows does not resolve **`.local`** names by default. Then try again or use **`http://<LAN-IP>:8080`** (see your router’s DHCP client list; hostname may appear as **`azimuth`**).
 - **Same Wi‑Fi / VLAN / guest network:** mDNS usually does not cross VLANs or some **guest/isolated** SSIDs; use the **IP** address instead.
