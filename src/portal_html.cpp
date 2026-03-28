@@ -68,7 +68,28 @@ code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var
 }
 .btn-primary{background:linear-gradient(165deg,#4eb0f2,var(--acc));color:#051018}
 .btn-sec{background:var(--bg2);color:var(--tx);border:1px solid var(--bd)}
-.btn-dang{background:#5c2020;color:#fecaca;border:1px solid #7f2d2d}
+.card-danger{
+  border-color:rgba(220,90,90,.2);
+  background:rgba(18,14,16,.75);
+  box-shadow:none;
+}
+.danger-details{margin:0}
+.danger-details>summary{
+  cursor:pointer;list-style:none;font-size:.8125rem;font-weight:500;color:var(--muted);
+  padding:.15rem 0;line-height:1.45
+}
+.danger-details>summary::-webkit-details-marker{display:none}
+.danger-details>summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+.danger-details[open]>summary{color:var(--tx-soft);margin-bottom:.2rem}
+.danger-panel{
+  margin-top:.55rem;padding-top:.65rem;border-top:1px solid rgba(248,113,113,.14)
+}
+.danger-panel .hint{margin:0 0 .65rem}
+.btn-danger-soft{
+  background:var(--bg2);color:#e8a0a0;border:1px solid rgba(248,113,113,.35);
+  font-size:.875rem;font-weight:600;padding:.55rem 1rem;min-height:42px;width:auto;align-self:flex-start
+}
+.btn-danger-soft:active{opacity:.92}
 .toggle{width:3.25rem;height:1.75rem;border-radius:999px;background:var(--bg2);border:1px solid var(--bd);position:relative;cursor:pointer;padding:0;flex-shrink:0}
 .toggle.on{background:linear-gradient(165deg,#2a6090,var(--acc));border-color:transparent}
 .toggle::after{content:'';position:absolute;width:1.35rem;height:1.35rem;border-radius:50%;background:#fff;top:50%;left:.2rem;transform:translateY(-50%);transition:left .18s ease;box-shadow:0 1px 4px rgba(0,0,0,.3)}
@@ -221,9 +242,19 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <button type="button" class="btn btn-primary" id="btnSave">Save</button>
 <button type="button" class="btn btn-sec" id="btnReboot">Reboot</button>
 </div>
-<button type="button" class="btn btn-dang" id="btnFactory" style="width:100%;margin-top:.65rem">Erase saved settings…</button>
 <div id="msg"></div>
 <pre class="stats" id="stats"></pre>
+</div>
+
+<div class="card card-danger">
+<div class="hd">Advanced</div>
+<details class="danger-details">
+<summary>Reset to factory defaults…</summary>
+<div class="danger-panel">
+<p class="hint">Clears Wi‑Fi, OpenTrack, hostname, and other saved options on this board. You’ll set up again through <strong>Azimuth‑Setup</strong> or by reflashing.</p>
+<button type="button" class="btn btn-danger-soft" id="btnFactory">Reset all settings</button>
+</div>
+</details>
 </div>
 </div>
 <script>
@@ -389,10 +420,10 @@ $('btnReboot').onclick=async()=>{
   setMsg('Reboot sent…','ok');
 };
 $('btnFactory').onclick=async()=>{
-  if(!confirm('Erase all saved settings on this device and reboot? You will need to join Azimuth‑Setup or reflash to configure Wi‑Fi again.'))return;
+  if(!confirm('Reset all settings to factory defaults and reboot? You’ll need Azimuth‑Setup or a USB flash to configure Wi‑Fi again.'))return;
   try{
     await fetch('/api/factory_reset',{method:'POST'});
-    setMsg('Erasing…','ok');
+    setMsg('Resetting…','ok');
   }catch(e){setMsg('Request failed','err')}
 };
 hydrateForm();
