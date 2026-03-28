@@ -174,6 +174,12 @@
     }
     .after-steps li { margin-bottom: 0.65rem; }
     .after-steps li:last-child { margin-bottom: 0; }
+    .after-steps a:not(.link-main) {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .after-steps a:not(.link-main):hover { text-decoration: underline; }
     .flash-timing {
       font-size: 0.88rem;
       color: var(--tx-soft);
@@ -224,10 +230,10 @@
     <h2 id="h-after">When it’s done</h2>
     <ol class="after-steps">
       <li>On your phone or computer, connect to the <strong>Azimuth-Setup</strong> Wi‑Fi network. It appears in your Wi‑Fi list after a first-time flash when you power the board on (before home Wi‑Fi is set up).</li>
-      <li>Complete the captive portal or open <code>192.168.4.1</code> and enter your home Wi‑Fi.</li>
-      <li>After it’s online, open <a class="link-main" href="http://azimuth.local:8080/">azimuth.local:8080</a> (same LAN as the device).</li>
+      <li>A setup page should open, or go to <code>192.168.4.1</code> in a browser. Enter your home Wi‑Fi name and password, scroll to the <strong>bottom</strong>, and <strong>save</strong> so the board can join your network.</li>
+      <li>On your home Wi‑Fi, on the <strong>same PC where you run OpenTrack</strong>, open <a class="link-main" href="http://azimuth.local:8080/">azimuth.local:8080</a>. Enter that PC’s network address in the UDP section, scroll down, and save—then use OpenTrack’s <strong>UDP</strong> input. More detail: <a href="https://github.com/FugLong/Azimuth/blob/main/docs/quickstart.md">quick start guide</a>.</li>
     </ol>
-    <p class="fine-print">If that doesn’t open, use the device’s IP from your router in place of <code>azimuth.local</code>, with the same <strong>:8080</strong> at the end.</p>
+    <p class="fine-print">If <code>azimuth.local</code> doesn’t open, use the device’s IP from your router instead, still with <strong>:8080</strong> at the end.</p>
   </section>
 </div>
 <script>
