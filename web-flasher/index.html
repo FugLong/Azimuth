@@ -174,6 +174,12 @@
     }
     .after-steps li { margin-bottom: 0.65rem; }
     .after-steps li:last-child { margin-bottom: 0; }
+    .flash-timing {
+      font-size: 0.88rem;
+      color: var(--tx-soft);
+      margin: 1rem 0 0;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -205,6 +211,7 @@
         <summary>Stuck? Bootloader mode</summary>
         Hold <strong>BOOT</strong>, tap <strong>RST</strong>, release <strong>BOOT</strong>, then try the button again.
       </details>
+      <p class="flash-timing">The progress dialog uses a generic time estimate; on this board, flashing is usually well under a minute.</p>
     </div>
   </section>
 
@@ -233,25 +240,6 @@
   if (steps) steps.hidden = true;
   var el = document.getElementById("serialInstaller");
   if (el) el.hidden = true;
-})();
-</script>
-<script>
-(function () {
-  var mark = "Installation complete!";
-  setInterval(function () {
-    document.querySelectorAll("ewt-install-dialog").forEach(function (host) {
-      if (host.dataset.ewtAutocloseScheduled) return;
-      var root = host.shadowRoot;
-      if (!root) return;
-      if ((root.textContent || "").indexOf(mark) === -1) return;
-      host.dataset.ewtAutocloseScheduled = "1";
-      setTimeout(function () {
-        if (!host.isConnected) return;
-        var inner = host.shadowRoot && host.shadowRoot.querySelector("ew-dialog");
-        if (inner && typeof inner.close === "function") inner.close();
-      }, 700);
-    });
-  }, 200);
 })();
 </script>
 </body>

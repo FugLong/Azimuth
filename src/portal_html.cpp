@@ -143,8 +143,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 
 <div class="card">
 <div class="hd">OpenTrack (PC)</div>
-<p class="hint">Pick <strong>one</strong> input in OpenTrack: USB Hatire <em>or</em> UDP—not both. You can turn USB off below for Wi‑Fi‑only builds.</p>
-<p class="hint" style="margin-top:.5rem">Your PC’s <strong>IPv4</strong> or a hostname your <strong>router’s DNS</strong> knows. <code>.local</code> / mDNS usually <strong>fail</strong> from the board—prefer an address or a DHCP hostname.</p>
+<p class="hint">Your PC’s <strong>IPv4</strong> or a hostname your <strong>router’s DNS</strong> knows. <code>.local</code> / mDNS usually <strong>fail</strong> from the board—prefer an address or a DHCP hostname.</p>
 <div class="row" style="margin-bottom:.6rem">
 <span>USB Hatire output</span>
 <button type="button" class="toggle" id="hatireToggle" aria-label="Toggle Hatire USB"></button>
