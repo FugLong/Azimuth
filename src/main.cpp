@@ -33,8 +33,10 @@ constexpr uint8_t kPinCs = 5;    // D3
 constexpr uint8_t kPinInt = 6;   // D4 (H_INT, active low)
 constexpr uint8_t kPinRst = 20;  // D7 (NRST)
 
+#if IMU_DEBUG_MODE
 /** Rotation vector report period passed to enableRotationVector() — milliseconds (100 Hz). */
 constexpr uint16_t kRotationVectorPeriodMs = 10;
+#endif
 
 #if IMU_DEBUG_MODE
 /** Limit how often we print in debug mode (sensor still runs at full rate). */
@@ -102,7 +104,12 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
 #endif  // !IMU_DEBUG_MODE
 
 void enableReports() {
-  if (!imu.enableRotationVector(kRotationVectorPeriodMs)) {
+#if IMU_DEBUG_MODE
+  const uint16_t periodMs = kRotationVectorPeriodMs;
+#else
+  const uint16_t periodMs = trackNetworkImuRotationPeriodMs();
+#endif
+  if (!imu.enableRotationVector(periodMs)) {
 #if IMU_DEBUG_MODE
     Serial.println(F("enableRotationVector failed"));
 #endif
@@ -126,6 +133,7 @@ void setup() {
   Serial.println(F("Init..."));
 #else
   hatireInitPacket();
+  trackNetworkLoadTrackingPrefs();
 #endif
 
   if (!imu.beginSPI(kPinCs, kPinInt, kPinRst, kSpiHz, SPI)) {
@@ -194,7 +202,9 @@ void loop() {
   Serial.print(rollDeg, 1);
   Serial.println(F("°"));
 #else
-  sendHatirePacket(yawDeg, pitchDeg, rollDeg);
+  if (trackNetworkHatireUsbEnabled()) {
+    sendHatirePacket(yawDeg, pitchDeg, rollDeg);
+  }
   trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
 #endif
 }

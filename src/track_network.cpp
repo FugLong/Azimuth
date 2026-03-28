@@ -6,6 +6,10 @@
 
 #if IMU_DEBUG_MODE
 
+void trackNetworkLoadTrackingPrefs() {}
+uint16_t trackNetworkImuRotationPeriodMs() { return 10; }
+bool trackNetworkHatireUsbEnabled() { return true; }
+
 void trackNetworkInit() {}
 void trackNetworkLoop() {}
 void trackNetworkSendOpentrackUdp(float, float, float) {}
@@ -29,12 +33,15 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #define OPENTRACK_UDP_PORT 4242
 #endif
 
-namespace {
+#ifndef AZIMUTH_FW_VERSION
+#define AZIMUTH_FW_VERSION "dev"
+#endif
+
+namespace azimuth_net {
 
 constexpr uint16_t kWebPortSta = 8080;
 constexpr uint16_t kWebPortAp = 80;
 constexpr const char* kPrefsNs = "azimuth";
-constexpr wifi_power_t kWifiTxPower = WIFI_POWER_8_5dBm;
 constexpr uint32_t kWifiConnectTimeoutMs = 12000;
 constexpr const char* kSetupApSsid = "Azimuth-Setup";
 
@@ -52,6 +59,101 @@ bool gApPortalActive = false;
 bool gSetupApMode = false;
 
 Preferences gPrefs;
+bool gPrefsOpened = false;
+uint16_t gImuPeriodMsRuntime = 10;
+bool gHatireUsbRuntime = true;
+
+bool ensurePrefsOpen() {
+  if (gPrefsOpened) {
+    return true;
+  }
+  gPrefsOpened = gPrefs.begin(kPrefsNs, false);
+  return gPrefsOpened;
+}
+
+wifi_power_t wifiTxFromProfile(uint8_t profile) {
+  switch (profile) {
+    case 0:
+      return WIFI_POWER_2dBm;
+    case 2:
+      return WIFI_POWER_19_5dBm;
+    default:
+      return WIFI_POWER_8_5dBm;
+  }
+}
+
+uint8_t mergedWifiTxProfile() {
+  const uint32_t v = gPrefs.getUInt("wifi_tx", 1);
+  if (v > 2) {
+    return 1;
+  }
+  return static_cast<uint8_t>(v);
+}
+
+uint16_t mergedImuPeriodMs() {
+  const uint32_t v = gPrefs.getUInt("imu_period_ms", 10);
+  if (v != 5 && v != 10 && v != 20 && v != 40) {
+    return 10;
+  }
+  return static_cast<uint16_t>(v);
+}
+
+bool mergedHatireUsb() { return gPrefs.getBool("hatire_usb", true); }
+
+bool mergedMdnsOn() { return gPrefs.getBool("mdns_on", true); }
+
+String mergedHostname() {
+  String h = gPrefs.getString("hostname", "");
+  h.trim();
+  for (int i = 0; i < h.length(); ++i) {
+    const char c = h[i];
+    if (c >= 'A' && c <= 'Z') {
+      h.setCharAt(i, static_cast<char>(c - 'A' + 'a'));
+    }
+  }
+  if (h.length() == 0) {
+    return String("azimuth");
+  }
+  return h;
+}
+
+void refreshRuntimeFromPrefs() {
+  if (!gPrefsOpened) {
+    return;
+  }
+  gImuPeriodMsRuntime = mergedImuPeriodMs();
+  gHatireUsbRuntime = mergedHatireUsb();
+}
+
+void applyStaWifiTxPower() {
+  if (WiFi.status() == WL_CONNECTED) {
+    WiFi.setTxPower(wifiTxFromProfile(mergedWifiTxProfile()));
+  }
+}
+
+bool hostnameCharsValid(const char* s) {
+  if (!s || !*s) {
+    return false;
+  }
+  const size_t n = strlen(s);
+  if (n > 24) {
+    return false;
+  }
+  for (size_t i = 0; i < n; ++i) {
+    const unsigned char c = static_cast<unsigned char>(s[i]);
+    if (c >= 'a' && c <= 'z') {
+      continue;
+    }
+    if (c >= '0' && c <= '9') {
+      continue;
+    }
+    if (c == '-') {
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
 
 String mergedSsid() {
   String s = gPrefs.getString("ssid", "");
@@ -147,6 +249,12 @@ void handleStatus(WebServer& http) {
   doc["udp_enabled"] = gUdpSendEnabled;
   doc["ot_target_ok"] = otTargetOk();
   doc["battery_mv"] = nullptr;
+  doc["fw_version"] = AZIMUTH_FW_VERSION;
+  doc["imu_period_ms"] = mergedImuPeriodMs();
+  doc["hatire_usb"] = mergedHatireUsb();
+  doc["hostname"] = mergedHostname();
+  doc["mdns_on"] = mergedMdnsOn();
+  doc["wifi_tx"] = mergedWifiTxProfile();
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -167,6 +275,13 @@ void handleScan(WebServer& http) {
 }
 
 void handleConfigPost(WebServer& http) {
+  if (!ensurePrefsOpen()) {
+    JsonDocument err;
+    err["error"] = "storage unavailable";
+    sendJson(http, 500, err);
+    return;
+  }
+
   if (!http.hasArg("plain")) {
     JsonDocument err;
     err["error"] = "expected JSON body";
@@ -183,7 +298,12 @@ void handleConfigPost(WebServer& http) {
     return;
   }
 
+  const uint16_t prevImuMs = mergedImuPeriodMs();
+  const String prevHostname = mergedHostname();
+  const bool prevMdns = mergedMdnsOn();
+
   bool wifiCredChanged = false;
+  bool needReboot = false;
   const char* errMsg = nullptr;
 
   if (!body["ssid"].isNull()) {
@@ -233,6 +353,79 @@ void handleConfigPost(WebServer& http) {
     }
   }
 
+  if (!errMsg && !body["hatire_usb"].isNull()) {
+    if (!body["hatire_usb"].is<bool>()) {
+      errMsg = "hatire_usb must be boolean";
+    } else {
+      gPrefs.putBool("hatire_usb", body["hatire_usb"].as<bool>());
+    }
+  }
+
+  if (!errMsg && !body["imu_period_ms"].isNull()) {
+    const int p = body["imu_period_ms"].as<int>();
+    if (p != 5 && p != 10 && p != 20 && p != 40) {
+      errMsg = "imu_period_ms must be 5, 10, 20, or 40";
+    } else {
+      gPrefs.putUInt("imu_period_ms", static_cast<uint32_t>(p));
+      if (static_cast<uint16_t>(p) != prevImuMs) {
+        needReboot = true;
+      }
+    }
+  }
+
+  if (!errMsg && !body["wifi_tx"].isNull()) {
+    const int tx = body["wifi_tx"].as<int>();
+    if (tx < 0 || tx > 2) {
+      errMsg = "wifi_tx must be 0, 1, or 2";
+    } else {
+      gPrefs.putUInt("wifi_tx", static_cast<uint32_t>(tx));
+    }
+  }
+
+  if (!errMsg && !body["mdns_on"].isNull()) {
+    if (!body["mdns_on"].is<bool>()) {
+      errMsg = "mdns_on must be boolean";
+    } else {
+      gPrefs.putBool("mdns_on", body["mdns_on"].as<bool>());
+      if (body["mdns_on"].as<bool>() != prevMdns) {
+        needReboot = true;
+      }
+    }
+  }
+
+  if (!errMsg && !body["hostname"].isNull()) {
+    if (!body["hostname"].is<const char*>()) {
+      errMsg = "hostname must be string";
+    } else {
+      const char* raw = body["hostname"].as<const char*>();
+      if (!raw) {
+        errMsg = "hostname invalid";
+      } else {
+        String h(raw);
+        h.trim();
+        for (int i = 0; i < h.length(); ++i) {
+          const char c = h[i];
+          if (c >= 'A' && c <= 'Z') {
+            h.setCharAt(i, static_cast<char>(c - 'A' + 'a'));
+          }
+        }
+        if (h.length() == 0) {
+          gPrefs.putString("hostname", "");
+          if (prevHostname != String("azimuth")) {
+            needReboot = true;
+          }
+        } else if (!hostnameCharsValid(h.c_str())) {
+          errMsg = "hostname: use lowercase letters, digits, hyphen only (max 24)";
+        } else {
+          gPrefs.putString("hostname", h.c_str());
+          if (h != prevHostname) {
+            needReboot = true;
+          }
+        }
+      }
+    }
+  }
+
   if (errMsg) {
     JsonDocument err;
     err["error"] = errMsg;
@@ -249,12 +442,16 @@ void handleConfigPost(WebServer& http) {
 
   gUdpSendEnabled = mergedUdpOn();
   applyOtTarget();
+  refreshRuntimeFromPrefs();
+  applyStaWifiTxPower();
+
+  const bool restarting = wifiCredChanged || needReboot;
 
   JsonDocument ok;
   ok["ok"] = true;
-  ok["restarting"] = wifiCredChanged;
+  ok["restarting"] = restarting;
 
-  if (wifiCredChanged) {
+  if (restarting) {
     String out;
     serializeJson(ok, out);
     http.send(200, "application/json", out);
@@ -273,6 +470,22 @@ void handleRebootPost(WebServer& http) {
   ESP.restart();
 }
 
+void handleFactoryResetPost(WebServer& http) {
+  if (!ensurePrefsOpen()) {
+    JsonDocument err;
+    err["error"] = "prefs";
+    sendJson(http, 500, err);
+    return;
+  }
+  http.send(200, "application/json", "{\"ok\":true}");
+  http.client().stop();
+  delay(400);
+  gPrefs.clear();
+  gPrefs.end();
+  gPrefsOpened = false;
+  ESP.restart();
+}
+
 void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
   http.on("/", HTTP_GET, [&http]() { handleRoot(http); });
   http.on("/api/status", HTTP_GET, [&http]() { handleStatus(http); });
@@ -288,6 +501,12 @@ void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
       [&http]() {
         http.sendHeader("Access-Control-Allow-Origin", "*");
         handleRebootPost(http);
+      });
+  http.on(
+      "/api/factory_reset", HTTP_POST,
+      [&http]() {
+        http.sendHeader("Access-Control-Allow-Origin", "*");
+        handleFactoryResetPost(http);
       });
   if (captiveProbeRedirect) {
     http.onNotFound([&http]() {
@@ -324,13 +543,12 @@ void startProvisioningPortal() {
   gApPortalActive = true;
 }
 
-}  // namespace
-
-void trackNetworkInit() {
-  if (!gPrefs.begin(kPrefsNs, false)) {
+void networkInit() {
+  if (!ensurePrefsOpen()) {
     return;
   }
 
+  refreshRuntimeFromPrefs();
   gUdpSendEnabled = mergedUdpOn();
   applyOtTarget();
 
@@ -343,7 +561,7 @@ void trackNetworkInit() {
 
   gSetupApMode = false;
   WiFi.persistent(false);
-  WiFi.setHostname("azimuth");
+  WiFi.setHostname(mergedHostname().c_str());
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), mergedPass().c_str());
 
@@ -361,14 +579,16 @@ void trackNetworkInit() {
   // Let the STA netif settle before mDNS (avoids flaky hostname registration on some routers).
   delay(100);
 
-  WiFi.setTxPower(kWifiTxPower);
+  applyStaWifiTxPower();
   tryOpenUdpSocket();
   // Modem sleep can drop or delay mDNS multicast; keep radio awake so `azimuth.local` resolves reliably.
   WiFi.setSleep(false);
 
-  if (MDNS.begin("azimuth")) {
-    (void)MDNS.addService("http", "tcp", kWebPortSta);
-    (void)MDNS.enableWorkstation(ESP_IF_WIFI_STA);
+  if (mergedMdnsOn()) {
+    if (MDNS.begin(mergedHostname().c_str())) {
+      (void)MDNS.addService("http", "tcp", kWebPortSta);
+      (void)MDNS.enableWorkstation(ESP_IF_WIFI_STA);
+    }
   }
 
   registerRoutes(gWebSta, false);
@@ -376,7 +596,7 @@ void trackNetworkInit() {
   gStaWebActive = true;
 }
 
-void trackNetworkLoop() {
+void networkLoop() {
   if (gApPortalActive) {
     gDnsCaptive.processNextRequest();
     gWebAp.handleClient();
@@ -389,7 +609,7 @@ void trackNetworkLoop() {
   }
 }
 
-void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
+void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   if (!gUdpSocketOk || !gUdpSendEnabled || WiFi.status() != WL_CONNECTED || !otTargetOk()) {
     return;
   }
@@ -410,6 +630,43 @@ void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   }
   gUdp.write(reinterpret_cast<const uint8_t*>(pose), sizeof(pose));
   gUdp.endPacket();
+}
+
+void loadTrackingPrefs() {
+  if (!ensurePrefsOpen()) {
+    return;
+  }
+  refreshRuntimeFromPrefs();
+}
+
+uint16_t imuPeriodMsValue() { return gImuPeriodMsRuntime; }
+
+bool hatireUsbValue() { return gHatireUsbRuntime; }
+
+}  // namespace azimuth_net
+
+void trackNetworkLoadTrackingPrefs() {
+  azimuth_net::loadTrackingPrefs();
+}
+
+uint16_t trackNetworkImuRotationPeriodMs() {
+  return azimuth_net::imuPeriodMsValue();
+}
+
+bool trackNetworkHatireUsbEnabled() {
+  return azimuth_net::hatireUsbValue();
+}
+
+void trackNetworkInit() {
+  azimuth_net::networkInit();
+}
+
+void trackNetworkLoop() {
+  azimuth_net::networkLoop();
+}
+
+void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
+  azimuth_net::sendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
 }
 
 #endif  // !IMU_DEBUG_MODE

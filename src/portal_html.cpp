@@ -23,7 +23,7 @@ body{
   background:var(--bg);
   background-image:radial-gradient(ellipse 100% 60% at 50% -15%,#1a4a6e 0%,transparent 55%),radial-gradient(ellipse 80% 50% at 100% 100%,rgba(61,158,229,.08),transparent);
 }
-.wrap{max-width:26rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 2.5rem}
+.wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 2.5rem}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:1.1rem}
 .logo-wrap{width:min(92vw,232px);margin:0 auto;color:#e8eef5;filter:drop-shadow(0 3px 20px rgba(61,158,229,.2))}
 .logo-wrap svg{display:block;width:100%;height:auto}
@@ -52,6 +52,14 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   transition:background-color 99999s ease-out
 }
 input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-dim)}
+select{
+  width:100%;padding:.65rem .75rem;border-radius:10px;border:1px solid var(--bd);
+  background-color:#121a24;color:#eef4fa;font-size:16px;line-height:1.35;
+  -webkit-appearance:none;appearance:none
+}
+select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-dim)}
+.hint{font-size:.75rem;color:var(--muted);margin:-.25rem 0 .85rem;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var(--acc)}
 .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
 .row-tight{justify-content:flex-start}
 .btn{
@@ -90,6 +98,7 @@ pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 
 
 <div class="card">
 <div class="hd">Wi‑Fi</div>
+<p class="hint">Home network credentials. Saving a <strong>new</strong> SSID or password reboots the device.</p>
 <label for="ssid">Network name (SSID)</label>
 <input type="text" id="ssid" name="ssid" autocomplete="username" autocapitalize="none" spellcheck="false"/>
 <label for="pass">Password <span class="muted-hint">· leave blank to keep saved</span></label>
@@ -101,24 +110,60 @@ pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 
 </div>
 
 <div class="card">
-<div class="hd">OpenTrack UDP</div>
-<div class="row" style="margin-bottom:.25rem">
-<span>Send UDP to PC</span>
+<div class="hd">LAN & discovery</div>
+<p class="hint">mDNS advertises <code>http://&lt;hostname&gt;.local:8080</code>. Changing hostname or mDNS requires a reboot.</p>
+<div class="row" style="margin-bottom:.75rem">
+<span>mDNS (Bonjour)</span>
+<button type="button" class="toggle" id="mdnsToggle" aria-label="Toggle mDNS"></button>
+</div>
+<label for="hostname">Device hostname</label>
+<input type="text" id="hostname" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="24" placeholder="azimuth"/>
+</div>
+
+<div class="card">
+<div class="hd">OpenTrack (PC)</div>
+<p class="hint">Use <strong>either</strong> USB Hatire or UDP in OpenTrack, not both. USB can be disabled for Wi‑Fi‑only use.</p>
+<div class="row" style="margin-bottom:.6rem">
+<span>USB Hatire output</span>
+<button type="button" class="toggle" id="hatireToggle" aria-label="Toggle Hatire USB"></button>
+</div>
+<div class="row" style="margin-bottom:.75rem">
+<span>UDP to PC</span>
 <button type="button" class="toggle" id="udpToggle" aria-label="Toggle UDP"></button>
 </div>
-<label for="otHost">Host (IP or hostname)</label>
+<label for="otHost">UDP host (IP or hostname)</label>
 <input type="text" id="otHost" autocomplete="off" autocapitalize="none"/>
-<label for="otPort">Port</label>
+<label for="otPort">UDP port</label>
 <input type="number" id="otPort" min="1" max="65535" inputmode="numeric"/>
 </div>
 
 <div class="card">
+<div class="hd">Tracking & radio</div>
+<p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. Wi‑Fi TX power trades range vs heat.</p>
+<label for="imuPeriod">IMU report interval</label>
+<select id="imuPeriod" aria-label="IMU period">
+<option value="5">200 Hz (5 ms) — lowest latency</option>
+<option value="10" selected>100 Hz (10 ms) — default</option>
+<option value="20">50 Hz (20 ms)</option>
+<option value="40">25 Hz (40 ms) — cooler / lower power</option>
+</select>
+<label for="wifiTx">Wi‑Fi TX power</label>
+<select id="wifiTx" aria-label="WiFi TX power">
+<option value="0">Low (~2 dBm) — coolest</option>
+<option value="1" selected>Balanced (~8.5 dBm) — default</option>
+<option value="2">High (~19.5 dBm) — weak AP / long range</option>
+</select>
+<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
+</div>
+
+<div class="card">
 <div class="hd">Device</div>
-<p class="sub" style="margin:0 0 1rem">Battery: not wired yet.</p>
+<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: not wired yet.</p>
 <div class="row row-actions">
 <button type="button" class="btn btn-primary" id="btnSave">Save</button>
-<button type="button" class="btn btn-dang" id="btnReboot">Reboot</button>
+<button type="button" class="btn btn-sec" id="btnReboot">Reboot</button>
 </div>
+<button type="button" class="btn btn-dang" id="btnFactory" style="width:100%;margin-top:.65rem">Erase saved settings…</button>
 <div id="msg"></div>
 <pre class="stats" id="stats"></pre>
 </div>
@@ -126,16 +171,20 @@ pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 
 <script>
 const $=id=>document.getElementById(id);
 function setMsg(t,cls){const m=$('msg');m.textContent=t||'';m.className=cls||''}
-function setUdpUi(on){$('udpToggle').classList.toggle('on',on)}
-let udpTouched=false;
+function setToggle(id,on){$(id).classList.toggle('on',on)}
+const uiTouched={udp:false,mdns:false,hatire:false};
 function applyShell(j){
   const ap=!!j.setup_ap;
   $('setupBanner').style.display=ap?'block':'none';
   $('subLine').textContent=ap?'Provisioning · join your Wi‑Fi below':'On your network · idle until you use this page';
   if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
-  const st=(ap?'AP mode · ':'')+'IP '+(j.ip||'—')+(ap?'':' · RSSI '+(j.rssi??'—'))+' · heap '+j.heap_free+' · up '+Math.round(j.uptime_ms/1000)+'s\nUDP '+((j.ot_target_ok)?'target OK':'target bad')+' · STA '+(j.wifi_connected?'up':'down');
+  const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
+  const st=(ap?'AP mode · ':'')+'IP '+(j.ip||'—')+(ap?'':' · RSSI '+(j.rssi??'—'))+' · heap '+j.heap_free+' · up '+Math.round(j.uptime_ms/1000)+'s\nFW '+(j.fw_version||'?')+' · IMU ~'+hz+' Hz · host '+(j.hostname||'azimuth')+' · UDP '+(j.ot_target_ok?'OK':'bad')+' · STA '+(j.wifi_connected?'up':'down');
   $('stats').textContent=st;
-  if(!udpTouched)setUdpUi(!!j.udp_enabled);
+  if($('fwVer'))$('fwVer').textContent=j.fw_version||'—';
+  if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
+  if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
+  if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
 }
 function fillInput(el,v){
   if(!el)return;
@@ -146,7 +195,7 @@ function fillInput(el,v){
 }
 function nudgeInputPaint(){
   requestAnimationFrame(()=>{
-    ['ssid','otHost','otPort'].forEach(id=>{
+    ['ssid','hostname','otHost','otPort','imuPeriod','wifiTx'].forEach(id=>{
       const el=$(id);
       if(!el)return;
       el.style.transform='translateZ(1px)';
@@ -159,17 +208,22 @@ async function hydrateForm(){
   const r=await fetch('/api/status');const j=await r.json();
   fillInput($('ssid'),j.ssid||'');
   fillInput($('pass'),'');
+  fillInput($('hostname'),j.hostname||'');
   fillInput($('otHost'),j.ot_host||'');
   fillInput($('otPort'),j.ot_port||4242);
-  udpTouched=false;
-  setUdpUi(!!j.udp_enabled);
+  const p=j.imu_period_ms||10;
+  $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
+  $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
+  uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
   applyShell(j);
   nudgeInputPaint();
 }
 async function pollOnly(){
   try{const r=await fetch('/api/status');applyShell(await r.json());}catch(e){}
 }
-$('udpToggle').onclick=()=>{udpTouched=true;setUdpUi(!$('udpToggle').classList.contains('on'))};
+$('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
+$('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
+$('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
 $('btnScan').onclick=async()=>{
   setMsg('Scanning… (tracking may hitch briefly)','');
   $('scanList').style.display='none';
@@ -190,7 +244,18 @@ $('btnScan').onclick=async()=>{
 };
 $('btnSave').onclick=async()=>{
   setMsg('Saving…','');
-  const body={ssid:$('ssid').value.trim(),ot_host:$('otHost').value.trim(),ot_port:parseInt($('otPort').value,10)||4242,udp_enabled:$('udpToggle').classList.contains('on')};
+  const body={
+    ssid:$('ssid').value.trim(),
+    ot_host:$('otHost').value.trim(),
+    ot_port:parseInt($('otPort').value,10)||4242,
+    udp_enabled:$('udpToggle').classList.contains('on'),
+    hatire_usb:$('hatireToggle').classList.contains('on'),
+    mdns_on:$('mdnsToggle').classList.contains('on'),
+    hostname:$('hostname').value.trim().toLowerCase(),
+    imu_period_ms:parseInt($('imuPeriod').value,10)||10,
+    wifi_tx:parseInt($('wifiTx').value,10)
+  };
+  if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
   const pw=$('pass').value;
   if(pw.length)body.password=pw;
   try{
@@ -205,6 +270,13 @@ $('btnReboot').onclick=async()=>{
   if(!confirm('Reboot device?'))return;
   await fetch('/api/reboot',{method:'POST'});
   setMsg('Reboot sent…','ok');
+};
+$('btnFactory').onclick=async()=>{
+  if(!confirm('Erase all saved settings on this device and reboot? You will need to join Azimuth‑Setup or reflash to configure Wi‑Fi again.'))return;
+  try{
+    await fetch('/api/factory_reset',{method:'POST'});
+    setMsg('Erasing…','ok');
+  }catch(e){setMsg('Request failed','err')}
 };
 hydrateForm();
 setInterval(pollOnly,8000);

@@ -111,10 +111,20 @@ Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_
 
 With the **hatire** build:
 
-- **Already on your LAN:** open **`http://azimuth.local:8080`** (mDNS **`azimuth`**, port **8080**) or **`http://<device-ip>:8080`**.
+- **Already on your LAN:** open **`http://<hostname>.local:8080`** (default hostname **`azimuth`**) or **`http://<device-ip>:8080`**.
 - **Provisioning (`Azimuth-Setup`):** join that network (no password). Many phones **open the settings page automatically**; if not, go to **`http://192.168.4.1/`** on **port 80**. After you save a real SSID (and password if needed), the device **reboots** into **station-only** mode—**`Azimuth-Setup` does not stay on**.
 
-On the page you can set **Wi‑Fi SSID/password** (optional **scan** list), **OpenTrack UDP host/port**, and **UDP on/off** without reflashing. Values live in **NVS** (`Preferences` namespace **`azimuth`**); empty NVS keys still fall back to **`include/secrets.h`**.
+The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**, **Tracking & radio**, and **Device**:
+
+| Section | What you can change |
+|--------|---------------------|
+| **Wi‑Fi** | SSID / password, **Scan networks** (brief tracking hitch). New Wi‑Fi credentials → **reboot**. |
+| **LAN & discovery** | **mDNS** on/off, **device hostname** (letters, digits, hyphen; max 24). Changing these → **reboot** so DHCP/mDNS apply. |
+| **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **host** / **port** for OpenTrack’s *UDP over network* input. |
+| **Tracking & radio** | **IMU report interval** (5 / 10 / 20 / 40 ms → 200 / 100 / 50 / 25 Hz). Change → **reboot** so the BNO08x report rate is reapplied. **Wi‑Fi TX power** (low / balanced / high) applies on save without reboot. |
+| **Device** | Firmware version string, **Reboot**, **Erase saved settings** (clears NVS `azimuth` namespace and reboots into provisioning if no compile-time Wi‑Fi in `secrets.h`). |
+
+Values live in **NVS** (`Preferences` namespace **`azimuth`**); empty NVS keys still fall back to **`include/secrets.h`**. Firmware version is set at build time (`AZIMUTH_FW_VERSION` in **`platformio.ini`** for the hatire env).
 
 The page is served by the stock Arduino **`WebServer`**: when no browser is connected, the firmware only calls **`handleClient()`** once per main loop (no background worker). **Wi‑Fi scan** runs only when you press **Scan networks** and can stall tracking briefly for a second or two.
 
@@ -130,7 +140,7 @@ Saving **new Wi‑Fi credentials** triggers an automatic **reboot** so the radio
 
 ### OpenTrack on the PC (recommended)
 
-Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **Input**—not both at once. Pick the one you’re using; the tracker sends both from firmware, but OpenTrack should only listen to one path.
+Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **Input**—not both at once. Pick the one you’re using. By default the firmware can drive **both** outputs; you can turn **USB Hatire** off in the portal for Wi‑Fi‑only use. OpenTrack should still only subscribe to **one** path.
 
 | Step | What to do |
 |------|------------|
