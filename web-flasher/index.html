@@ -2,87 +2,224 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-  <meta name="color-scheme" content="dark"/>
-  <title>Azimuth — Web flasher</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="dark light"/>
+  <title>Install Azimuth firmware</title>
   <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
   <style>
-    :root{
-      --bg:#0a0e14;--bg2:#121a24;--card:rgba(26,35,50,.92);--bd:rgba(61,158,229,.22);
-      --tx:#eef4fa;--muted:#8b9cb3;--acc:#3d9ee5;--acc-dim:rgba(61,158,229,.15);
-      --ok:#4ade80;--shadow:0 8px 32px rgba(0,0,0,.35);
+    :root {
+      --bg: #0c1118;
+      --bg-elev: #151d28;
+      --tx: #e8eef4;
+      --tx-soft: #9aa8b8;
+      --line: rgba(61, 158, 229, 0.22);
+      --accent: #3d9ee5;
+      --accent-soft: rgba(61, 158, 229, 0.14);
+      --warn-bg: rgba(248, 113, 113, 0.1);
+      --warn-bd: rgba(248, 113, 113, 0.35);
+      --radius: 16px;
+      --font: system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    *{box-sizing:border-box}
-    html{-webkit-text-size-adjust:100%}
-    body{
-      margin:0;min-height:100dvh;
-      font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      color:var(--tx);
-      background:var(--bg);
-      background-image:radial-gradient(ellipse 100% 60% at 50% -15%,#1a4a6e 0%,transparent 55%),radial-gradient(ellipse 80% 50% at 100% 100%,rgba(61,158,229,.08),transparent);
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f0f4f8;
+        --bg-elev: #fff;
+        --tx: #0f172a;
+        --tx-soft: #5c6b7a;
+        --line: rgba(15, 23, 42, 0.12);
+        --accent-soft: rgba(61, 158, 229, 0.12);
+        --warn-bg: #fff1f2;
+        --warn-bd: #fecdd3;
+      }
     }
-    .wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 2.5rem}
-    .brand{text-align:center;margin-bottom:1.1rem}
-    .brand h1{font-size:1.35rem;font-weight:700;margin:0;letter-spacing:.02em;background:linear-gradient(165deg,#e8eef5,var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .sub{color:var(--muted);font-size:.8125rem;margin:.5rem 0 0;line-height:1.45}
-    .card{
-      background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:1rem;
-      box-shadow:var(--shadow)
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font: 17px/1.55 var(--font);
+      color: var(--tx);
+      background: var(--bg);
     }
-    .hd{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--acc);margin:0 0 .75rem}
-    .hint{font-size:.75rem;color:var(--muted);margin:0 0 .85rem;line-height:1.45}
-    .btn-row{display:flex;flex-direction:column;gap:.65rem;margin-top:.5rem;align-items:stretch}
-    .btn-row esp-web-install-button{
-      --esp-tools-button-color:var(--acc);
-      --esp-tools-button-text-color:#051018;
-      --esp-tools-button-border-radius:10px;
-      display:block;width:100%;
+    .page {
+      max-width: 28rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
     }
-    .link-card a{color:var(--acc);text-decoration:none;font-weight:600}
-    .link-card a:hover{text-decoration:underline}
-    .callout{margin-top:.75rem;padding:.75rem .85rem;border-radius:11px;background:var(--bg2);border:1px solid var(--bd);font-size:.8125rem;color:var(--muted);line-height:1.5}
-    .callout strong{color:var(--tx)}
-    code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var(--acc)}
-    #msg{margin-top:.75rem;font-size:.8125rem;min-height:1.25em}
-    .err{color:#f87171}
+    .logo {
+      display: block;
+      width: min(220px, 72vw);
+      height: auto;
+      margin: 0 auto 1.75rem;
+    }
+    .lede {
+      text-align: center;
+      font-size: 1.05rem;
+      color: var(--tx-soft);
+      margin: 0 0 2rem;
+      line-height: 1.5;
+    }
+    .panel {
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .panel + .panel { margin-top: 1.5rem; }
+    h2 {
+      font-size: 1rem;
+      font-weight: 650;
+      margin: 0 0 0.85rem;
+      letter-spacing: -0.02em;
+      color: var(--tx);
+    }
+    p {
+      margin: 0 0 1rem;
+      color: var(--tx-soft);
+      font-size: 0.94rem;
+      line-height: 1.55;
+    }
+    p:last-child { margin-bottom: 0; }
+    .browser-problem {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-bd);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      margin: 0 0 1.15rem;
+      font-size: 0.92rem;
+      color: var(--tx);
+      line-height: 1.5;
+    }
+    .steps {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.25rem;
+      counter-reset: s;
+    }
+    .steps li {
+      position: relative;
+      padding-left: 2.35rem;
+      margin-bottom: 0.85rem;
+      color: var(--tx-soft);
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+    .steps li:last-child { margin-bottom: 0; }
+    .steps li::before {
+      counter-increment: s;
+      content: counter(s);
+      position: absolute;
+      left: 0;
+      top: 0.1rem;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .flash-wrap {
+      margin-top: 0.25rem;
+    }
+    .flash-wrap esp-web-install-button {
+      --esp-tools-button-color: var(--accent);
+      --esp-tools-button-text-color: #071018;
+      --esp-tools-button-border-radius: 12px;
+      display: block;
+      width: 100%;
+    }
+    details {
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      color: var(--tx-soft);
+      line-height: 1.5;
+    }
+    details summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-weight: 600;
+      padding: 0.35rem 0;
+    }
+    .link-main {
+      display: inline-block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .link-main:hover { text-decoration: underline; }
+    code {
+      font-family: ui-monospace, "SF Mono", monospace;
+      font-size: 0.88em;
+      color: var(--accent);
+    }
+    .fine-print {
+      font-size: 0.85rem;
+      margin-top: 0.9rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--line);
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="brand">
-    <h1>Azimuth</h1>
-    <p class="sub">Flash <strong>Azimuth</strong> release firmware over USB — same look as the on-device portal.</p>
-  </header>
+<div class="page">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="logo/AzimuthLogo_Dark.png"/>
+    <img class="logo" src="logo/AzimuthLogo_Light.png" width="220" alt="Azimuth"/>
+  </picture>
 
-  <div class="card">
-    <div class="hd">Install firmware</div>
-    <p class="hint">Use a <strong>USB data</strong> cable. Works in <strong>Chrome</strong> or <strong>Edge</strong> on desktop (Web Serial). Connect your <strong>Seeed XIAO ESP32-C3</strong>, put it in <strong>bootloader</strong> if prompted (hold BOOT, tap RST, release BOOT).</p>
-    <div class="btn-row">
-      <esp-web-install-button manifest="manifest.json">
-        <button slot="activate" type="button">Connect &amp; flash Azimuth</button>
-      </esp-web-install-button>
+  <p class="lede">Put the latest firmware on your tracker from the browser.</p>
+
+  <section class="panel" aria-labelledby="h-flash">
+    <h2 id="h-flash">Install</h2>
+    <div id="browserProblem" class="browser-problem" hidden role="alert">
+      Use <strong>Chrome</strong> or <strong>Edge</strong> on a <strong>computer</strong> (not a phone). This browser can’t use USB serial, so flashing from here won’t work.
     </div>
-    <div class="callout">
-      <strong>Factory reset / clean install:</strong> When the installer asks, choose to <strong>erase flash</strong> first. That clears saved Wi‑Fi and portal settings (like “Erase saved settings” on the device). Then the image is written fresh.
+    <ol class="steps" id="installSteps">
+      <li>Use a USB cable that carries data (not charge-only).</li>
+      <li>Plug in a <strong>Seeed XIAO ESP32-C3</strong>.</li>
+      <li>Click the button below and pick the serial port.</li>
+    </ol>
+    <div id="serialInstaller">
+      <div class="flash-wrap">
+        <esp-web-install-button manifest="manifest.json">
+          <button slot="activate" type="button">Install firmware</button>
+        </esp-web-install-button>
+      </div>
+      <details>
+        <summary>Stuck? Bootloader mode</summary>
+        Hold <strong>BOOT</strong>, tap <strong>RST</strong>, release <strong>BOOT</strong>, then try the button again.
+      </details>
     </div>
-  </div>
+  </section>
 
-  <div class="card link-card">
-    <div class="hd">After flashing</div>
-    <p class="hint">On your home Wi‑Fi, open the settings portal (mDNS):</p>
-    <p style="margin:0;font-size:1rem"><a href="http://azimuth.local:8080/" rel="noopener">http://azimuth.local:8080/</a></p>
-    <p class="hint" style="margin-top:.65rem;margin-bottom:0">If <code>.local</code> does not resolve, use your router’s DHCP list for the board IP and port <strong>8080</strong>. First-time setup can use the <strong>Azimuth-Setup</strong> AP at <code>http://192.168.4.1/</code> (port 80).</p>
-  </div>
+  <section class="panel" aria-labelledby="h-erase">
+    <h2 id="h-erase">Start fresh (optional)</h2>
+    <p>If the installer asks whether to erase memory first, say yes if you want Wi‑Fi and saved settings cleared—the same idea as “erase saved settings” on the device.</p>
+  </section>
 
-  <p id="msg" class="err" style="display:none"></p>
+  <section class="panel" aria-labelledby="h-after">
+    <h2 id="h-after">When it’s done</h2>
+    <p>On your home network, open the setup page:</p>
+    <p><a class="link-main" href="http://azimuth.local:8080/">azimuth.local:8080</a></p>
+    <p class="fine-print">If that link doesn’t open, find the board in your router’s device list and use its IP with port <strong>8080</strong>. Brand-new devices can join Wi‑Fi through the <strong>Azimuth-Setup</strong> network, then open <code>192.168.4.1</code> in the browser (port 80).</p>
+  </section>
 </div>
 <script>
-(function(){
-  if(!("serial" in navigator)){
-    var m=document.getElementById("msg");
-    m.style.display="block";
-    m.textContent="This browser does not support Web Serial. Use Chrome or Edge on a desktop to flash.";
-  }
+(function () {
+  if ("serial" in navigator) return;
+  var bp = document.getElementById("browserProblem");
+  if (bp) bp.hidden = false;
+  var steps = document.getElementById("installSteps");
+  if (steps) steps.hidden = true;
+  var el = document.getElementById("serialInstaller");
+  if (el) el.hidden = true;
 })();
 </script>
 </body>

@@ -1,5 +1,6 @@
 # Build env azimuth_main and deploy web-flasher/ (USB install via esp-web-tools).
 # Repo: Settings → Pages → Source: GitHub Actions.
+# Deploy job uses a custom environment name so Deployments / Environments UI reads "azimuth-flasher" (not the generic github-pages label).
 
 name: Deploy web flasher (GitHub Pages)
 
@@ -63,6 +64,9 @@ jobs:
               f.write("\n")
           PY
 
+      - name: Sync flasher logos from logo/
+        run: mkdir -p web-flasher/logo && cp logo/AzimuthLogo_Dark.png logo/AzimuthLogo_Light.png web-flasher/logo/
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web-flasher
@@ -71,7 +75,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
+      name: azimuth-flasher
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
