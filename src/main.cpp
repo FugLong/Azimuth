@@ -115,6 +115,12 @@ WiFiUDP gOpentrackUdp;
 IPAddress gOpentrackIp;
 bool gOpentrackUdpOk = false;
 
+/**
+ * SDK default is near max (~19 dBm). Use a lower cap for desk / same-room AP: less PA draw and heat.
+ * If UDP becomes unreliable, raise in steps (e.g. WIFI_POWER_11dBm, …) toward WIFI_POWER_19_5dBm.
+ */
+constexpr wifi_power_t kWifiTxPower = WIFI_POWER_8_5dBm;
+
 void initOpentrackUdp() {
   static const char kSsid[] = WIFI_SSID;
   if (kSsid[0] == '\0') {
@@ -132,6 +138,7 @@ void initOpentrackUdp() {
   if (WiFi.status() != WL_CONNECTED) {
     return;
   }
+  WiFi.setTxPower(kWifiTxPower);
   if (!gOpentrackUdp.begin(0)) {
     return;
   }
@@ -139,6 +146,9 @@ void initOpentrackUdp() {
     return;
   }
   gOpentrackUdpOk = true;
+  // Modem sleep between beacons — much less RF duty cycle than always-on; main heat win vs tiny UDP payload.
+  // If UDP to OpenTrack gets choppy, try commenting this out.
+  WiFi.setSleep(true);
 }
 
 void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
@@ -231,6 +241,7 @@ void loop() {
   }
 
   if (!imu.getSensorEvent()) {
+    yield();  // avoid 100% CPU busy-spin between 100 Hz IMU reports (major heat / power)
     return;
   }
 

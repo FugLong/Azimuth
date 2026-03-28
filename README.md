@@ -121,6 +121,28 @@ Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **Inp
 
 Tweak filter and output mapping per game if needed; the table above is the baseline for Azimuth.
 
+### Thermal / power (why the board feels warm)
+
+A **Seeed XIAO ESP32-C3** runs warm in this use case mostly because of **Wi‑Fi**, not because UDP is “heavy.” The radio stays associated with your AP, listens for beacons, and transmits ~100 packets/s — that RF chain draws far more than the CPU spent packing 48-byte datagrams. **USB serial** adds a bit more. A small board with little heatsinking **will feel hot to the touch** when Wi‑Fi is up; that’s normal for this class of module.
+
+Firmware already helps where it’s safe: **Wi‑Fi modem sleep** after connect (less always-on RF; disable in code if UDP gets flaky) and **`yield()`** when the IMU has no event yet (avoids spinning the CPU at full speed between 100 Hz samples). Firmware caps Wi‑Fi **TX power** at **8.5 dBm** by default (SDK default is near **~19 dBm** max). Same-room tracking usually doesn’t need full power; raising `kWifiTxPower` in `src/main.cpp` helps if UDP drops on a weak path.
+
+### Battery runtime (estimate)
+
+These are **rough order-of-magnitude** figures—not measured on your Azimuth PCB. Use them for planning; **measure** pack current at 3.7 V for a real product number.
+
+**Seeed XIAO ESP32-C3** (Wi‑Fi on, from the [Getting Started specs](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)): **~75 mA** “active” Wi‑Fi, **~25 mA** modem-sleep. **Wi‑Fi dominates**; the IMU adds on the order of **a few mA** (typical for BNO08x-class fusion at ~100 Hz). Current firmware uses modem sleep + ~100 Hz IMU + optional UDP/Hatire.
+
+**Example — a 400 mAh 1S LiPo, wireless tracking (Wi‑Fi + IMU + UDP, no USB):**
+
+| Assumed average current | Ideal hours (400 mAh ÷ I) | After ~85% usable-capacity derating (typical) |
+|-------------------------|---------------------------|-----------------------------------------------|
+| ~40 mA (optimistic) | ~10 h | ~8.5 h |
+| ~55 mA (mid) | ~7.3 h | ~6 h |
+| ~80 mA (pessimistic, nearer “active” Wi‑Fi) | ~5 h | ~4 h |
+
+So **~4–9 hours** on a **400 mAh** cell is a **reasonable band** until you bench it; **~5–7 hours** is a plausible **mid** guess for **UDP + Wi‑Fi** use. **USB-only Hatire** (empty `WIFI_SSID`, Wi‑Fi off) lasts **much longer**—RF is off. **Signal strength, AP distance, cell age, and temperature** all move the number.
+
 ---
 
 ## Firmware layout
