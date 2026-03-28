@@ -34,7 +34,7 @@ This repository holds firmware, PCB designs, 3D print designs, and documentation
 ```
 Hardware/BOM   [████████████████████] 100%
 PCB            [███████████████████░] ~95%
-Firmware       [██████░░░░░░░░░░░░░░] ~30%
+Firmware       [████████░░░░░░░░░░░░] ~40%
 Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
 
@@ -146,7 +146,7 @@ Tweak filter and output mapping per game if needed; the table above is the basel
 
 A **Seeed XIAO ESP32-C3** runs warm in this use case mostly because of **Wi‑Fi**, not because UDP is “heavy.” The radio stays associated with your AP, listens for beacons, and transmits ~100 packets/s — that RF chain draws far more than the CPU spent packing 48-byte datagrams. **USB serial** adds a bit more. A small board with little heatsinking **will feel hot to the touch** when Wi‑Fi is up; that’s normal for this class of module.
 
-Firmware already helps where it’s safe: **Wi‑Fi modem sleep** after connect (less always-on RF; disable in code if UDP gets flaky) and **`yield()`** when the IMU has no event yet (avoids spinning the CPU at full speed between 100 Hz samples). Firmware caps Wi‑Fi **TX power** at **8.5 dBm** by default (SDK default is near **~19 dBm** max). Same-room tracking usually doesn’t need full power; raising `kWifiTxPower` in `src/main.cpp` helps if UDP drops on a weak path.
+Firmware already helps where it’s safe: **Wi‑Fi modem sleep** after connect (less always-on RF; disable in code if UDP gets flaky) and **`yield()`** when the IMU has no event yet (avoids spinning the CPU at full speed between 100 Hz samples). Firmware caps Wi‑Fi **TX power** at **8.5 dBm** by default (SDK default is near **~19 dBm** max). Same-room tracking usually doesn’t need full power; raising `kWifiTxPower` in `src/track_network.cpp` helps if UDP drops on a weak path.
 
 ### Battery runtime (estimate)
 
@@ -169,6 +169,9 @@ So **~4–9 hours** on a **400 mAh** cell is a **reasonable band** until you b
 ## Firmware layout
 
 - **`src/main.cpp`** — IMU bring-up, rotation vector, Hatire + optional OpenTrack UDP; `kPinCs` / `kPinInt` / `kPinRst` match the **ESP32_BNO086** PCB (see [docs/wiring.md](docs/wiring.md)).
+- **`include/opentrack_pose.h`** — Single mapping from fusion Euler (deg) to Hatire / OpenTrack UDP rotation channels (Rot 0–2).
+- **`src/track_network.cpp`** — Hatire build only: Wi‑Fi STA, provisioning AP + captive portal, HTTP handlers (NVS + `secrets.h`), OpenTrack UDP client.
+- **`src/portal_html.cpp`** — PROGMEM settings UI (linked only in the Hatire env; see `platformio.ini`).
 - **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library.
 - **`include/secrets.h`** — local WiFi + OpenTrack host (copy from `secrets.h.example`; not tracked by git).
 

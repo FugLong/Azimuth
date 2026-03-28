@@ -7,19 +7,19 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 ## Snapshot (workstreams)
 
 | Workstream | Progress | Notes |
-|------------|----------|--------|
+|------------|----------|-------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
-| Firmware | **~30%** | SPI IMU; USB debug; **Hatire USB** + **WiFi STA → OpenTrack UDP** (`include/secrets.h`); still missing on-board I/O (LED/button/buzzer), battery ADC path, NVS/settings, OTA story |
+| Firmware | **~40%** | SPI IMU; USB debug; **Hatire** + **WiFi → OpenTrack UDP**; **HTTP settings** + **NVS** + `secrets.h` fallback; **provisioning AP** (`Azimuth-Setup`) + captive portal. Still ahead: board I/O, battery ADC, OTA, layered `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
-| End-user docs & release | **TBD** | README: OpenTrack input (Hatire vs UDP), axis mapping, **Natural motion** filter, max **responsiveness**—expand further with remaining firmware |
+| End-user docs & release | **TBD** | README covers OpenTrack inputs, axis mapping, filter baseline; expand with remaining firmware / release artifacts |
 
 **Visual (rough):**
 
 ```
 Hardware/BOM     [████████████████████] 100%
 PCB design       [███████████████████░] ~95%
-Firmware         [██████░░░░░░░░░░░░░░] ~30%
+Firmware         [████████░░░░░░░░░░░░] ~40%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
 
@@ -43,7 +43,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
 - [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via `secrets.h` for now).
-- [ ] **Wireless (product)** — On-device or web-based credential/settings storage; robust reconnection policy—beyond compile-time `secrets.h`.
+- [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [ ] **Updates** — Story for flashing firmware (USB minimum; OTA/web flashing if promised for V1).
 - [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered.
 - [ ] **User-facing docs** — Build, flash, OpenTrack connection (USB + wireless), troubleshooting.
@@ -72,12 +72,12 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 | Task | Status |
 |------|--------|
-| WiFi STA | ✅ (UDP client to PC; credentials in `include/secrets.h`) |
-| WiFi AP / onboarding portal | ⬜ (optional; see Phase 4) |
+| WiFi STA | ✅ (UDP client to PC; credentials via NVS + `include/secrets.h`) |
+| WiFi AP / onboarding portal | ✅ (`Azimuth-Setup`, captive DNS + HTTP :80; recovery if STA fails) |
 | Transport: OpenTrack **UDP** (6× `double`, default port 4242) | ✅ |
-| Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ |
+| Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ (shared `opentrackMapEulerDegToRot` in `include/opentrack_pose.h`) |
 | Coexistence with USB (Hatire + UDP same build) | ✅ |
-| Security baseline (WiFi credentials **not** in git; NVS or UI later) | 🟨 (`secrets.h` local only; Phase 3 for proper settings) |
+| Security baseline (WiFi credentials **not** in git) | 🟨 (`secrets.h` local; NVS on device; migration / hardening in Phase 3) |
 
 ---
 
@@ -89,7 +89,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 |------|--------|
 | Define artifact: release binaries + manifest/versioning | ⬜ |
 | Web-based flasher (e.g. **esp-web-tools** / browser serial) or documented one-click flow | ⬜ |
-| Settings: schema, storage (NVS), migration between versions | ⬜ |
+| Settings: schema, storage (NVS), migration between versions | 🟨 (NVS keys in use; **versioned schema** / migration ⬜) |
 | Document recovery if flash fails (USB bootloader, button combo, etc.) | ⬜ |
 
 ---
@@ -100,11 +100,11 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 | Task | Status |
 |------|--------|
-| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ⬜ |
+| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ✅ (provisioning + STA settings on :8080; portal HTML in `src/portal_html.cpp`) |
 | **Or** BLE GATT for lightweight config (often nicer for phones; more firmware work) | ⬜ |
-| Same settings backend as Phase 3 (one model, multiple UIs) | ⬜ |
+| Same settings backend as Phase 3 (one model, multiple UIs) | 🟨 (HTTP uses same NVS namespace; BLE not started) |
 
-*Scope note:* V1 already assumes **WiFi streaming** (Phase 2). This phase is **on-device configuration UX** (portal / BLE / etc.)—can slip to **V1.1** if needed, as long as WiFi credentials and behavior are manageable another way (e.g. serial, build flags, or a minimal flow).
+*Scope note:* V1 already assumes **WiFi streaming** (Phase 2). Optional BLE / calibration UX can slip to **V1.1** if needed.
 
 ---
 
@@ -132,3 +132,4 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-22 | V1 posture: wireless required; USB supported; enclosure + PH2 assembly tradeoff documented. |
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
 | 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |
+| 2026-03-27 | Firmware ~40%: NVS + HTTP settings, provisioning portal; roadmap/tasks aligned; shared OpenTrack axis helper; portal HTML split to `portal_html.cpp`. |

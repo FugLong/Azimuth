@@ -22,6 +22,7 @@
 
 #if !IMU_DEBUG_MODE
 #include <string.h>
+#include "opentrack_pose.h"
 #include "track_network.h"
 #endif
 
@@ -88,11 +89,7 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
     return;
   }
 
-  // Rot[0..2] — Hatire Yaw/Pitch/Roll axis = 0 / 1 / 2 (README). Yaw from fusion; pitch/roll channels
-  // swapped vs raw getPitch/getRoll so OpenTrack head axes match expected game view.
-  gHat.gyro[0] = yawDeg;
-  gHat.gyro[1] = rollDeg;
-  gHat.gyro[2] = -pitchDeg;
+  opentrackMapEulerDegToRot(yawDeg, pitchDeg, rollDeg, gHat.gyro);
 
   Serial.write(reinterpret_cast<const uint8_t*>(&gHat), sizeof(gHat));
 

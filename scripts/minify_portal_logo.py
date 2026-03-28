@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 r"""
-Minify logo/AzimuthLogo_traced.svg to one line for embedding in track_network.cpp.
+Minify logo/AzimuthLogo_traced.svg to one line for embedding in src/portal_html.cpp.
 
   python3 scripts/minify_portal_logo.py
 
 Optional: python3 scripts/minify_portal_logo.py path/to/other.svg
 
 Edits logo/AzimuthLogo_traced.svg (official trace); paste output into
-<div class="logo-wrap">…</div> in src/track_network.cpp.
+<div class="logo-wrap">…</div> in src/portal_html.cpp.
 """
 from __future__ import annotations
 
