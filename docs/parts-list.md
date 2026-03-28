@@ -2,6 +2,20 @@
 
 Values, references, and footprints match the KiCad project **`kicad/ESP32_BNO086/`** (schematic **`ESP32_BNO086.kicad_sch`**, layout **`ESP32_BNO086.kicad_pcb`**). Save KiCad before treating this as the single source of truth.
 
+The tables below are the **PCB BOM**. A **battery pack** is **not** a line item on that BOM: the board only has the **JST PH2.0** receptacle (**`PH2.0`** in the schematic). If you want **wireless** operation, you still need a suitable **1S Li-ion / LiPo** with a matching **JST-PH** plug (check polarity against [wiring.md](wiring.md) **`/Bat+`** on pin 1). USB-powered builds can skip the pack.
+
+---
+
+## Wireless battery (off-board — not PCB BOM)
+
+| Field | Example |
+|--------|---------|
+| **Role** | Powers the board through **`PH2.0`** when not on USB; use a **protected** 1S cell and a **proper Li-ion/LiPo charger** (not on this PCB). |
+| **Adafruit** | [**3898**](https://www.adafruit.com/product/3898) — lithium-ion polymer **3.7 V nominal**, **400 mAh**, **JST-PH** lead (~25 mm). Size about **36 × 17 × 7.8 mm** (per vendor). |
+| **DigiKey** | [**1528-2731-ND**](https://www.digikey.com/en/products/detail/adafruit-industries-llc/3898/9685336) — same MPN **3898** / “BATTERY LITH-ION 3.7V 400MAH”. |
+
+Other **JST-PH** 1S packs with the **same polarity** and connector series are fine; pick capacity and dimensions for your enclosure plans ([roadmap](roadmap.md)).
+
 ---
 
 ## Active & modules
