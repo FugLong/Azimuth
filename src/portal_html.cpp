@@ -80,8 +80,29 @@ code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var
 .scan-list div:active{background:var(--acc-dim)}
 .scan-list div:last-child{border-bottom:none}
 .scan-list .rssi{color:var(--muted);font-size:.8125rem;white-space:nowrap}
-pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 0 0;line-height:1.5;font-family:ui-monospace,SFMono-Regular,monospace}
+pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 0 0;line-height:1.55;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-word}
 .muted-hint{font-weight:400;color:var(--muted)}
+.callout{
+  margin:.65rem 0 0;padding:.8rem .9rem;border-radius:11px;background:var(--bg2);
+  border:1px solid var(--bd)
+}
+.callout-hd{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--acc);
+  margin:0 0 .55rem
+}
+.callout-main{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem}
+.ip-readout{
+  font-family:ui-monospace,SFMono-Regular,monospace;font-size:.875rem;font-weight:500;color:var(--tx);
+  letter-spacing:0;line-height:1.35;flex:1;min-width:9ch;word-break:break-all
+}
+.btn-sm{
+  padding:.45rem .9rem;min-height:40px;font-size:.8125rem;font-weight:600;border-radius:9px;
+  flex-shrink:0
+}
+.callout-note{margin:.55rem 0 0;font-size:.72rem;color:var(--muted);line-height:1.5;max-width:24rem}
+.hint.ot-dyn-hint{margin:.4rem 0 .65rem;font-family:ui-monospace,SFMono-Regular,monospace;font-size:.72rem}
+.hint.ot-dyn-hint:not(.warn){color:var(--muted)}
+.hint.ot-dyn-hint.warn{color:#f87171;font-family:inherit;font-size:.75rem}
 @media(min-width:480px){
   .row-actions{flex-wrap:nowrap}
   .row-actions .btn{flex:1}
@@ -122,7 +143,8 @@ pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 
 
 <div class="card">
 <div class="hd">OpenTrack (PC)</div>
-<p class="hint">Use <strong>either</strong> USB Hatire or UDP in OpenTrack, not both. USB can be disabled for Wi‑Fi‑only use.</p>
+<p class="hint">Pick <strong>one</strong> input in OpenTrack: USB Hatire <em>or</em> UDP—not both. You can turn USB off below for Wi‑Fi‑only builds.</p>
+<p class="hint" style="margin-top:.5rem">Your PC’s <strong>IPv4</strong> or a hostname your <strong>router’s DNS</strong> knows. <code>.local</code> / mDNS usually <strong>fail</strong> from the board—prefer an address or a DHCP hostname.</p>
 <div class="row" style="margin-bottom:.6rem">
 <span>USB Hatire output</span>
 <button type="button" class="toggle" id="hatireToggle" aria-label="Toggle Hatire USB"></button>
@@ -131,8 +153,17 @@ pre.stats{font-size:.7rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 
 <span>UDP to PC</span>
 <button type="button" class="toggle" id="udpToggle" aria-label="Toggle UDP"></button>
 </div>
-<label for="otHost">UDP host (IP or hostname)</label>
-<input type="text" id="otHost" autocomplete="off" autocapitalize="none"/>
+<label for="otHost">UDP address</label>
+<input type="text" id="otHost" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="e.g. 192.168.1.42"/>
+<p id="otDynHint" class="hint ot-dyn-hint" style="display:none" role="status"></p>
+<div class="callout" id="clientIpBox" style="display:none">
+<div class="callout-hd">This browser</div>
+<div class="callout-main">
+<span class="ip-readout" id="clientIpVal" aria-live="polite">—</span>
+<button type="button" class="btn btn-sec btn-sm" id="btnUseClientIp">Fill address</button>
+</div>
+<p class="callout-note">Same machine as OpenTrack: your PC’s IPv4 address as the board sees it on the LAN.</p>
+</div>
 <label for="otPort">UDP port</label>
 <input type="number" id="otPort" min="1" max="65535" inputmode="numeric"/>
 </div>
@@ -179,12 +210,42 @@ function applyShell(j){
   $('subLine').textContent=ap?'Provisioning · join your Wi‑Fi below':'On your network · idle until you use this page';
   if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
   const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-  const st=(ap?'AP mode · ':'')+'IP '+(j.ip||'—')+(ap?'':' · RSSI '+(j.rssi??'—'))+' · heap '+j.heap_free+' · up '+Math.round(j.uptime_ms/1000)+'s\nFW '+(j.fw_version||'?')+' · IMU ~'+hz+' Hz · host '+(j.hostname||'azimuth')+' · UDP '+(j.ot_target_ok?'OK':'bad')+' · STA '+(j.wifi_connected?'up':'down');
-  $('stats').textContent=st;
+  const cip=j.http_client_ip;
+  const rssi=ap?'':(j.rssi!=null?j.rssi+' dBm':'—');
+  const line1=ap?('AP · board '+ (j.ip||'—')):('LAN · board '+(j.ip||'—')+' · RSSI '+rssi);
+  const line1b=' · up '+Math.round(j.uptime_ms/1000)+'s · heap '+j.heap_free;
+  let udpSummary=j.udp_enabled===false?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending');
+  if(j.ot_target_ok&&j.ot_resolved_ip)udpSummary+=' → '+j.ot_resolved_ip;
+  const line2='FW '+(j.fw_version||'?')+' · ~'+hz+' Hz · '+ (j.hostname||'azimuth')+' · '+udpSummary+' · STA '+(j.wifi_connected?'on':'off');
+  $('stats').textContent=line1+line1b+'\n'+line2;
   if($('fwVer'))$('fwVer').textContent=j.fw_version||'—';
   if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
   if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
   if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
+  let showClientIp=false;
+  const box=$('clientIpBox'),val=$('clientIpVal');
+  if(box&&val){
+    if(cip&&cip!=='0.0.0.0'){showClientIp=true;box.style.display='block';val.textContent=cip;}
+    else{box.style.display='none'}
+  }
+  const dh=$('otDynHint');
+  if(dh){
+    const hostSet=!!(j.ot_host&&String(j.ot_host).trim().length);
+    const hasRes=j.ot_resolved_ip&&String(j.ot_resolved_ip).length;
+    dh.style.display='none';
+    dh.textContent='';
+    dh.classList.remove('warn');
+    if(j.udp_enabled&&hostSet){
+      if(hasRes&&j.ot_target_ok&&j.ot_using_dns){
+        dh.style.display='block';
+        dh.textContent='→ '+j.ot_resolved_ip+' (DNS)';
+      }else if(!j.ot_target_ok||!hasRes){
+        dh.style.display='block';
+        dh.classList.add('warn');
+        dh.textContent=j.wifi_connected?'Cannot resolve this hostname. Check spelling; avoid .local unless your router supports it.':'Join Wi‑Fi before hostnames can resolve.';
+      }
+    }
+  }
 }
 function fillInput(el,v){
   if(!el)return;
@@ -224,6 +285,10 @@ async function pollOnly(){
 $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
 $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
+$('btnUseClientIp').onclick=()=>{
+  const v=$('clientIpVal')&&$('clientIpVal').textContent;
+  if(v&&v!=='—'){fillInput($('otHost'),v)}
+};
 $('btnScan').onclick=async()=>{
   setMsg('Scanning… (tracking may hitch briefly)','');
   $('scanList').style.display='none';

@@ -120,7 +120,7 @@ The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**,
 |--------|---------------------|
 | **Wi‑Fi** | SSID / password, **Scan networks** (brief tracking hitch). New Wi‑Fi credentials → **reboot**. |
 | **LAN & discovery** | **mDNS** on/off, **device hostname** (letters, digits, hyphen; max 24). Changing these → **reboot** so DHCP/mDNS apply. |
-| **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **host** / **port** for OpenTrack’s *UDP over network* input. |
+| **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **host** / **port** for OpenTrack’s *UDP over network* input. **Host** may be an **IPv4 address** or a **hostname** your **router’s DNS** can resolve (e.g. a machine name from DHCP). **`something.local` (mDNS)** often **does not** resolve from the ESP32; use the numeric LAN IP or a plain hostname if your router supports it. The portal shows **this browser’s IP** (from the HTTP connection) with a one-click **Use as UDP host** when you open the page from the PC running OpenTrack. |
 | **Tracking & radio** | **IMU report interval** (5 / 10 / 20 / 40 ms → 200 / 100 / 50 / 25 Hz). Change → **reboot** so the BNO08x report rate is reapplied. **Wi‑Fi TX power** (low / balanced / high) applies on save without reboot. |
 | **Device** | Firmware version string, **Reboot**, **Erase saved settings** (clears NVS `azimuth` namespace and reboots into provisioning if no compile-time Wi‑Fi in `secrets.h`). |
 

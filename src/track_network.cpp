@@ -50,6 +50,11 @@ WebServer gWebAp(kWebPortAp);
 DNSServer gDnsCaptive;
 WiFiUDP gUdp;
 IPAddress gOtIp;
+/** Trimmed OpenTrack target from NVS / secrets (hostname or IPv4 string). */
+String gOtHostTrimmed;
+/** True when `gOtHostTrimmed` parsed as IPv4; false when using DNS. */
+bool gOtHostIsLiteralIp = false;
+uint32_t gLastOtDnsMs = 0;
 uint16_t gOtPort = OPENTRACK_UDP_PORT;
 bool gUdpSocketOk = false;
 bool gUdpSendEnabled = true;
@@ -189,12 +194,59 @@ uint16_t mergedOtPort() {
 
 bool mergedUdpOn() { return gPrefs.getBool("udp_on", true); }
 
-void applyOtTarget() {
-  gOtPort = mergedOtPort();
-  const String host = mergedOtHost();
-  if (!gOtIp.fromString(host.c_str())) {
+void resolveOtHostnameNow() {
+  if (gOtHostTrimmed.length() == 0 || gOtHostIsLiteralIp) {
+    return;
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    gOtIp = INADDR_NONE;
+    return;
+  }
+  IPAddress resolved;
+  if (WiFi.hostByName(gOtHostTrimmed.c_str(), resolved)) {
+    gOtIp = resolved;
+  } else {
     gOtIp = INADDR_NONE;
   }
+  gLastOtDnsMs = millis();
+}
+
+void maybeRefreshOtHostname() {
+  if (gOtHostIsLiteralIp || gOtHostTrimmed.length() == 0) {
+    return;
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+  const uint32_t now = millis();
+  if (now - gLastOtDnsMs < 45000) {
+    return;
+  }
+  resolveOtHostnameNow();
+}
+
+void applyOtTarget() {
+  gOtPort = mergedOtPort();
+  gOtHostTrimmed = mergedOtHost();
+  gOtHostTrimmed.trim();
+
+  if (gOtHostTrimmed.length() == 0) {
+    gOtIp = INADDR_NONE;
+    gOtHostIsLiteralIp = true;
+    return;
+  }
+
+  IPAddress asIp;
+  if (asIp.fromString(gOtHostTrimmed.c_str())) {
+    gOtIp = asIp;
+    gOtHostIsLiteralIp = true;
+    gLastOtDnsMs = millis();
+    return;
+  }
+
+  gOtHostIsLiteralIp = false;
+  gOtIp = INADDR_NONE;
+  resolveOtHostnameNow();
 }
 
 void tryOpenUdpSocket() {
@@ -248,6 +300,13 @@ void handleStatus(WebServer& http) {
   doc["ot_port"] = mergedOtPort();
   doc["udp_enabled"] = gUdpSendEnabled;
   doc["ot_target_ok"] = otTargetOk();
+  doc["http_client_ip"] = http.client().remoteIP().toString();
+  if (otTargetOk()) {
+    doc["ot_resolved_ip"] = gOtIp.toString();
+  } else {
+    doc["ot_resolved_ip"] = nullptr;
+  }
+  doc["ot_using_dns"] = (!gOtHostIsLiteralIp && gOtHostTrimmed.length() > 0);
   doc["battery_mv"] = nullptr;
   doc["fw_version"] = AZIMUTH_FW_VERSION;
   doc["imu_period_ms"] = mergedImuPeriodMs();
@@ -579,6 +638,8 @@ void networkInit() {
   // Let the STA netif settle before mDNS (avoids flaky hostname registration on some routers).
   delay(100);
 
+  applyOtTarget();
+
   applyStaWifiTxPower();
   tryOpenUdpSocket();
   // Modem sleep can drop or delay mDNS multicast; keep radio awake so `azimuth.local` resolves reliably.
@@ -606,6 +667,7 @@ void networkLoop() {
   }
   if (WiFi.status() == WL_CONNECTED) {
     tryOpenUdpSocket();
+    maybeRefreshOtHostname();
   }
 }
 

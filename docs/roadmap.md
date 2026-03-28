@@ -120,6 +120,7 @@ These are common for head trackers; pick what matches your audience.
 | **CI** | Build firmware on every push; optional hardware-in-the-loop later. |
 | **Signed OTA** | If OTA ships, plan keys and rollback. |
 | **Desktop companion** | Small app for WiFi discovery—only if browser tooling is not enough. |
+| **GitHub-hosted web flasher** | esp-web-tools (or similar) for USB flash; page can suggest LAN IP via WebRTC or by asking user to open the on-device portal once (same **Use as UDP host** hint the firmware already exposes). |
 | **Privacy / safety** | No cloud requirement; local network only—state explicitly in README. |
 
 ---
