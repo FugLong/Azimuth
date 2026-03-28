@@ -21,13 +21,8 @@
 #endif
 
 #if !IMU_DEBUG_MODE
-#include <WiFi.h>
-#include <WiFiUdp.h>
 #include <string.h>
-#include "secrets.h"
-#ifndef OPENTRACK_UDP_PORT
-#define OPENTRACK_UDP_PORT 4242
-#endif
+#include "track_network.h"
 #endif
 
 namespace {
@@ -107,73 +102,6 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
   }
 }
 
-/**
- * OpenTrack “UDP over network”: Tx, Ty, Tz, then Yaw, Pitch, Roll (deg), same semantics as Hatire when
- * Yaw/Pitch/Roll axis = 0 / 1 / 2 (see README). Matches sendHatirePacket Rot[] order 1:1.
- */
-WiFiUDP gOpentrackUdp;
-IPAddress gOpentrackIp;
-bool gOpentrackUdpOk = false;
-
-/**
- * SDK default is near max (~19 dBm). Use a lower cap for desk / same-room AP: less PA draw and heat.
- * If UDP becomes unreliable, raise in steps (e.g. WIFI_POWER_11dBm, …) toward WIFI_POWER_19_5dBm.
- */
-constexpr wifi_power_t kWifiTxPower = WIFI_POWER_8_5dBm;
-
-void initOpentrackUdp() {
-  static const char kSsid[] = WIFI_SSID;
-  if (kSsid[0] == '\0') {
-    return;
-  }
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  constexpr uint32_t kWifiTimeoutMs = 12000;
-  const uint32_t t0 = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - t0 < kWifiTimeoutMs) {
-    delay(200);
-  }
-  if (WiFi.status() != WL_CONNECTED) {
-    return;
-  }
-  WiFi.setTxPower(kWifiTxPower);
-  if (!gOpentrackUdp.begin(0)) {
-    return;
-  }
-  if (!gOpentrackIp.fromString(OPENTRACK_UDP_HOST)) {
-    return;
-  }
-  gOpentrackUdpOk = true;
-  // Modem sleep between beacons — much less RF duty cycle than always-on; main heat win vs tiny UDP payload.
-  // If UDP to OpenTrack gets choppy, try commenting this out.
-  WiFi.setSleep(true);
-}
-
-void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
-  if (!gOpentrackUdpOk || WiFi.status() != WL_CONNECTED) {
-    return;
-  }
-
-  const float r0 = yawDeg;
-  const float r1 = rollDeg;
-  const float r2 = -pitchDeg;
-  double pose[6] = {
-      0.0,
-      0.0,
-      0.0,
-      static_cast<double>(r0),
-      static_cast<double>(r1),
-      static_cast<double>(r2),
-  };
-
-  if (!gOpentrackUdp.beginPacket(gOpentrackIp, OPENTRACK_UDP_PORT)) {
-    return;
-  }
-  gOpentrackUdp.write(reinterpret_cast<const uint8_t*>(pose), sizeof(pose));
-  gOpentrackUdp.endPacket();
-}
 #endif  // !IMU_DEBUG_MODE
 
 void enableReports() {
@@ -220,12 +148,13 @@ void setup() {
   delay(150);
 
 #if !IMU_DEBUG_MODE
-  initOpentrackUdp();
+  trackNetworkInit();
 #endif
 }
 
 void loop() {
 #if !IMU_DEBUG_MODE
+  trackNetworkLoop();
   const bool usbConnected = static_cast<bool>(Serial);
   if (usbConnected && !gHatireUsbWasConnected) {
     hatireInitPacket();
@@ -269,6 +198,6 @@ void loop() {
   Serial.println(F("°"));
 #else
   sendHatirePacket(yawDeg, pitchDeg, rollDeg);
-  sendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
+  trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
 #endif
 }

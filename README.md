@@ -28,7 +28,7 @@ This repository holds firmware, PCB designs, 3D print designs, and documentation
 |------|:--------:|--------|
 | Hardware / BOM | 100% | Parts chosen ([docs/parts-list.md](docs/parts-list.md)). |
 | Custom PCB | ~95% | KiCad aligned with [docs/wiring.md](docs/wiring.md); **panelization** (fab-ready panel) is the remaining PCB task before ordering. |
-| Firmware | ~30% | SPI IMU, USB debug, **Hatire + WiFi → OpenTrack UDP** (see [Building and flashing](#building-and-flashing)); `include/secrets.h` for WiFi/host. **Board I/O** (LED, button, buzzer), **battery/ADC**, and **on-device settings** still ahead ([roadmap](docs/roadmap.md)). |
+| Firmware | ~40% | SPI IMU, USB debug, **Hatire + WiFi → OpenTrack UDP**, **on-device settings** over HTTP (NVS + `secrets.h` fallback; see below). **Board I/O** (LED, button, buzzer), **battery/ADC** still ahead ([roadmap](docs/roadmap.md)). |
 | 3D enclosure | 0% | Not started. Plan: **battery-sized** shell first; optional slimmer **wired-only** enclosure if PH2 is omitted on those builds ([roadmap](docs/roadmap.md)). |
 
 ```
@@ -57,7 +57,7 @@ Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 | Area | Status |
 |------|--------|
 | **Firmware** | PlatformIO project for **Seeed XIAO ESP32-C3** + **BNO08x** over **SPI**: fused yaw / pitch / roll from the rotation-vector report. |
-| **OpenTrack** | `xiao_esp32c3_hatire`: **Hatire Arduino** over USB (30-byte frames) **and** optional **WiFi → UDP** to the PC using OpenTrack’s **UDP over network** input (6× `double`, port 4242 by default). |
+| **OpenTrack** | `xiao_esp32c3_hatire`: **Hatire Arduino** over USB (30-byte frames) **and** optional **WiFi → UDP** to the PC using OpenTrack’s **UDP over network** input (6× `double`, port 4242 by default). **HTTP settings** on port **8080** (`http://azimuth.local:8080`) for Wi‑Fi / UDP / reboot (NVS + `secrets.h` fallback). |
 | **Debug** | Text telemetry over USB serial (`xiao_esp32c3` build). |
 | **Hardware docs** | **[docs/wiring.md](docs/wiring.md)** (signals, power, GPIO map) · **[docs/parts-list.md](docs/parts-list.md)** (BOM + passives notes) · **[docs/kicad.md](docs/kicad.md)** (custom KiCad libs + collaboration). |
 
@@ -101,11 +101,32 @@ python3 -m platformio device monitor
 python3 -m platformio run -e xiao_esp32c3_hatire -t upload
 ```
 
-Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. Leave **`WIFI_SSID` empty (`""`)** for USB-only (no WiFi). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**, OpenTrack’s usual UDP input port).
+Copy **`include/secrets.h.example`** to **`include/secrets.h`** and set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, and **`OPENTRACK_UDP_HOST`** (your PC’s LAN IP). `secrets.h` is **gitignored** so credentials are not committed. If there is **no SSID in NVS and `WIFI_SSID` is empty**, the board starts an open provisioning network **`Azimuth-Setup`**: join it, open **`http://192.168.4.1:8080`**, set your home Wi‑Fi, save (it reboots and turns the AP off). UDP port **`OPENTRACK_UDP_PORT`** is set in **`platformio.ini`** (default **4242**, OpenTrack’s usual UDP input port).
 
 - **USB:** Input **Hatire Arduino**, **115200**, **DTR** on; start tracking and **recenter** after the filter settles. Do not leave a text serial monitor open on that port.
 - **Hatire axis mapping (important):** In the Hatire tracker settings, set **Yaw axis = Rot 0**, **Pitch axis = Rot 1**, **Roll axis = Rot 2** (some UIs say “axis 0 / 1 / 2”). That lines up with how this firmware fills the packet and keeps USB and UDP identical. OpenTrack’s *old* Hatire defaults use **0 / 2 / 1**, which swaps pitch and roll—change to **0 / 1 / 2** for the simplest setup.
 - **WiFi / UDP:** Input **UDP over network**, same port as in **`platformio.ini`** (`OPENTRACK_UDP_PORT`); allow the port through the PC firewall. Hatire and UDP both run from the same firmware.
+
+### On-device settings (WiFi + OpenTrack)
+
+With the **hatire** build:
+
+- **Already on your LAN:** open **`http://azimuth.local:8080`** (mDNS **`azimuth`**, port **8080**) or **`http://<device-ip>:8080`**.
+- **First boot / nothing saved yet:** join Wi‑Fi **`Azimuth-Setup`** (no password), then **`http://192.168.4.1:8080`**. After you save a real SSID (and password if needed), the device **reboots** and only uses **station** mode—**`Azimuth-Setup` does not stay on**.
+
+On the page you can set **Wi‑Fi SSID/password** (optional **scan** list), **OpenTrack UDP host/port**, and **UDP on/off** without reflashing. Values live in **NVS** (`Preferences` namespace **`azimuth`**); empty NVS keys still fall back to **`include/secrets.h`**.
+
+The page is served by the stock Arduino **`WebServer`**: when no browser is connected, the firmware only calls **`handleClient()`** once per main loop (no background worker). **Wi‑Fi scan** runs only when you press **Scan networks** and can stall tracking briefly for a second or two.
+
+Saving **new Wi‑Fi credentials** triggers an automatic **reboot** so the radio can reconnect. If the board cannot join Wi‑Fi (wrong password, etc.), the web UI will not come up until you fix credentials—use **`secrets.h`** and reflash, or erase NVS and try again.
+
+**mDNS / `azimuth.local`:** The page is **supposed** to work at **`http://azimuth.local:8080`** once the board is **connected as a Wi‑Fi client** (not only on **`Azimuth-Setup`**). If the name does not resolve:
+
+- **Windows:** Install **Bonjour Print Services** (Apple) or **iTunes** (includes Bonjour)—plain Windows does not resolve **`.local`** names by default. Then try again or use **`http://<LAN-IP>:8080`** (see your router’s DHCP client list; hostname may appear as **`azimuth`**).
+- **Same Wi‑Fi / VLAN / guest network:** mDNS usually does not cross VLANs or some **guest/isolated** SSIDs; use the **IP** address instead.
+- **Firmware:** STA mode uses **Wi‑Fi modem sleep off** while the portal is enabled so mDNS announcements are not starved; if you changed sleep/TX power in code, recheck behavior.
+
+**Always works:** **`http://<device-LAN-IP>:8080`** as long as the board shows **connected** on your AP.
 
 ### OpenTrack on the PC (recommended)
 
