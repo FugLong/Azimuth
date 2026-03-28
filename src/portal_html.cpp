@@ -192,7 +192,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 <label for="otPort">UDP port</label>
 <input type="number" id="otPort" min="1" max="65535" inputmode="numeric"/>
-<p class="hint" style="margin-top:.85rem">Axis mapping applies to <strong>USB Hatire</strong> and <strong>UDP</strong>. Assign yaw, pitch, and roll <strong>once each</strong> to Rot 0–2. In OpenTrack, set input axes to <strong>Yaw→0, Pitch→1, Roll→2</strong> (see README).</p>
+<p class="hint" style="margin-top:.85rem">Axis mapping applies to <strong>USB Hatire</strong> and <strong>UDP</strong>. Assign yaw, pitch, and roll <strong>once each</strong> to Rot 0–2. With the <strong>default</strong> map here, OpenTrack Hatire uses <strong>Yaw→0, Roll→1, Pitch→2</strong> (see README).</p>
 <div class="axis-slot" style="margin-top:.5rem">
 <label for="otSrc0">Rot 0</label>
 <select id="otSrc0" aria-label="Rot 0 source axis">

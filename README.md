@@ -61,7 +61,7 @@ Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 | **Debug** | **`azimuth_debug`**: yaw / pitch / roll over USB serial only (no Wi‑Fi / portal). |
 | **Hardware docs** | **[docs/wiring.md](docs/wiring.md)** (signals, power, GPIO map) · **[docs/parts-list.md](docs/parts-list.md)** (BOM + passives notes) · **[docs/kicad.md](docs/kicad.md)** (custom KiCad libs + collaboration). |
 
-Planned work (board I/O, battery, web flashing / settings UX, enclosure, richer calibration) is tracked in **[docs/roadmap.md](docs/roadmap.md)**.
+Planned work (board I/O, battery, enclosure, richer calibration, OTA if desired) is tracked in **[docs/roadmap.md](docs/roadmap.md)**. **USB browser flashing** (GitHub Pages + **`web-flasher/`**) and **semver / `VERSION`** are already wired; updates are still **USB-only** (no OTA).
 
 ---
 
@@ -120,7 +120,7 @@ python3 -m platformio run -e azimuth_main -t upload
 Most users configure Wi‑Fi and OpenTrack **only in the portal** (NVS) and leave **`include/secrets.h`** empty (copy from **`secrets.h.example`** for a valid build; file is **gitignored**). You *may* set **`WIFI_SSID`**, **`WIFI_PASSWORD`**, **`OPENTRACK_UDP_HOST`** there as compile‑time defaults when NVS has no SSID. If there is **no usable home SSID** (NVS + `secrets.h`), or **STA fails** (wrong password, AP missing), the board opens **`Azimuth-Setup`** and a **captive portal**: HTTP **port 80** redirects to **`http://192.168.4.1/`** (same UI as on the LAN). **`azimuth.local` does not apply** on that AP—mDNS starts after joining home Wi‑Fi. Normal use: **`http://azimuth.local:8080`** or **`http://<LAN-IP>:8080`**. UDP port **`OPENTRACK_UDP_PORT`** is in **`platformio.ini`** (default **4242**).
 
 - **USB:** Input **Hatire Arduino**, **115200**, **DTR** on; start tracking and **recenter** after the filter settles. Do not leave a text serial monitor open on that port.
-- **Hatire axis mapping (important):** In the Hatire tracker settings, set **Yaw axis = Rot 0**, **Pitch axis = Rot 1**, **Roll axis = Rot 2** (some UIs say “axis 0 / 1 / 2”). That lines up with how this firmware fills the packet and keeps USB and UDP identical. OpenTrack’s *old* Hatire defaults use **0 / 2 / 1**, which swaps pitch and roll—change to **0 / 1 / 2** for the simplest setup.
+- **Hatire axis mapping (important):** With the **portal default** axis map (Yaw→**Rot 0**, Roll→**Rot 1**, Pitch→**Rot 2** with pitch inverted in firmware), set OpenTrack Hatire to **Yaw→0, Roll→1, Pitch→2** (some UIs say “axis 0 / 1 / 2”). If you change **Rot 0–2** assignments in the portal, match OpenTrack’s inputs to those slots. USB and UDP use the same mapping.
 - **WiFi / UDP:** Input **UDP over network**, same port as in **`platformio.ini`** (`OPENTRACK_UDP_PORT`); allow the port through the PC firewall. Hatire and UDP both run from the same firmware.
 
 ### On-device settings (WiFi + OpenTrack)
@@ -130,7 +130,7 @@ With **`azimuth_main`**:
 - **Already on your LAN:** open **`http://<hostname>.local:8080`** (default hostname **`azimuth`**) or **`http://<device-ip>:8080`**.
 - **Provisioning (`Azimuth-Setup`):** join that network (no password). Many phones **open the settings page automatically**; if not, go to **`http://192.168.4.1/`** on **port 80**. After you save a real SSID (and password if needed), the device **reboots** into **station-only** mode—**`Azimuth-Setup` does not stay on**.
 
-The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**, **Tracking & radio**, and **Device**:
+The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**, **Tracking & radio**, **Device**, and **Advanced**:
 
 | Section | What you can change |
 |--------|---------------------|
@@ -138,9 +138,10 @@ The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**,
 | **LAN & discovery** | **mDNS** on/off, **device hostname** (letters, digits, hyphen; max 24). Changing these → **reboot** so DHCP/mDNS apply. |
 | **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **UDP address** / **port**, **axis mapping** (which fusion yaw/pitch/roll feeds Hatire/UDP **Rot 0–2**, each axis once, optional **invert** per slot). **`something.local` (mDNS)** often **does not** resolve from the ESP32; prefer numeric LAN IP or a DHCP hostname. **This browser’s IP** + **Fill address** when the portal is opened on the PC running OpenTrack. |
 | **Tracking & radio** | **IMU report interval** (5 / 10 / 20 / 40 ms → 200 / 100 / 50 / 25 Hz). Change → **reboot** so the BNO08x report rate is reapplied. **Wi‑Fi TX power** (low / balanced / high) applies on save without reboot. |
-| **Device** | Firmware version string, **Reboot**; **Advanced → Reset all settings** clears NVS `azimuth` and reboots (provisioning AP if no home SSID in NVS / `secrets.h`). |
+| **Device** | Firmware **version** string (from repo **`VERSION`** at build time), **Save** / **Reboot**, status line. If a **newer** build is published on GitHub Pages, a one-time-per-boot check may show an **update** banner (link to USB installer). |
+| **Advanced** | Collapsible **Reset to factory defaults** — clears NVS `azimuth` and reboots (provisioning AP if no home SSID in NVS / `secrets.h`). |
 
-**NVS** (`Preferences` **`azimuth`**) is the normal source of truth; unset fields fall back to **`include/secrets.h`** (often empty). **`AZIMUTH_FW_VERSION`** in **`platformio.ini`** applies to **`azimuth_main`** only.
+**NVS** (`Preferences` **`azimuth`**) is the normal source of truth; unset fields fall back to **`include/secrets.h`** (often empty). **`AZIMUTH_FW_VERSION`** for **`azimuth_main`** comes from the first line of repo **`VERSION`** via **`scripts/pio_set_version.py`** (see **Firmware version** above); **`platformio.ini`** only sets release **manifest / flasher URLs** and build options.
 
 The page is served by the stock Arduino **`WebServer`**: when no browser is connected, the firmware only calls **`handleClient()`** once per main loop (no background worker). **Wi‑Fi scan** runs only when you press **Scan networks** and can stall tracking briefly for a second or two.
 
@@ -161,7 +162,7 @@ Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **Inp
 | Step | What to do |
 |------|------------|
 | **Input** | **Hatire Arduino** (COM port, **115200**, **DTR** on) **or** **UDP over network** (OpenTrack listens on **`OPENTRACK_UDP_PORT`**, usually **4242**; set UDP target in the **portal** or **`secrets.h`**; allow UDP in the firewall). |
-| **Hatire axes** | **Yaw / Pitch / Roll** → **Rot 0 / Rot 1 / Rot 2** (see bullet above). |
+| **Hatire axes** | With default portal mapping: **Yaw→0, Roll→1, Pitch→2** (see bullet above). |
 | **Filter** | **Natural motion** filter (name in the filter dropdown may vary slightly by OpenTrack version; pick the **Natural motion** / natural-style preset if available). |
 | **Responsiveness** | Turn **responsiveness** up to **maximum** (slider all the way up) so head motion matches the tracker with minimal lag. |
 | **Start** | Click **Start**; use **Center** / **recenter** after the filter settles. |
@@ -172,13 +173,13 @@ Tweak filter and output mapping per game if needed; the table above is the basel
 
 A **Seeed XIAO ESP32-C3** runs warm in this use case mostly because of **Wi‑Fi**, not because UDP is “heavy.” The radio stays associated with your AP, listens for beacons, and transmits ~100 packets/s — that RF chain draws far more than the CPU spent packing 48-byte datagrams. **USB serial** adds a bit more. A small board with little heatsinking **will feel hot to the touch** when Wi‑Fi is up; that’s normal for this class of module.
 
-Firmware already helps where it’s safe: **Wi‑Fi modem sleep** after connect (less always-on RF; disable in code if UDP gets flaky) and **`yield()`** when the IMU has no event yet (avoids spinning the CPU at full speed between 100 Hz samples). Firmware caps Wi‑Fi **TX power** at **8.5 dBm** by default (SDK default is near **~19 dBm** max). Same-room tracking usually doesn’t need full power; raising `kWifiTxPower` in `src/track_network.cpp` helps if UDP drops on a weak path.
+While **STA** is up and the **settings server** is enabled, firmware calls **`WiFi.setSleep(false)`** so **modem sleep does not starve mDNS** (`azimuth.local`); that keeps the radio in a **higher-duty** regime than “modem sleep” marketing figures. **`yield()`** when the IMU has no event yet avoids spinning the CPU between samples. **TX power** is user-selectable in the portal (**Tracking & radio**): **low (~2 dBm)**, **balanced (~8.5 dBm, default)**, **high (~19.5 dBm)** — pick **high** only if UDP is flaky at distance.
 
 ### Battery runtime (estimate)
 
 These are **rough order-of-magnitude** figures—not measured on your Azimuth PCB. Use them for planning; **measure** pack current at 3.7 V for a real product number.
 
-**Seeed XIAO ESP32-C3** (Wi‑Fi on, from the [Getting Started specs](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)): **~75 mA** “active” Wi‑Fi, **~25 mA** modem-sleep. **Wi‑Fi dominates**; the IMU adds on the order of **a few mA** (typical for BNO08x-class fusion at ~100 Hz). Current firmware uses modem sleep + ~100 Hz IMU + optional UDP/Hatire.
+**Seeed XIAO ESP32-C3** (Wi‑Fi on, from the [Getting Started specs](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)): **~75 mA** “active” Wi‑Fi, **~25 mA** modem-sleep. **Wi‑Fi dominates**; the IMU adds on the order of **a few mA** (typical for BNO08x-class fusion at ~100 Hz). **`azimuth_main`** keeps **modem sleep off** on STA while the portal stack is active (see above), so **budget closer to active/associated** figures for wireless use, not the low modem-sleep line item alone.
 
 **Example — a 400 mAh 1S LiPo, wireless tracking (Wi‑Fi + IMU + UDP, no USB):**
 
@@ -198,7 +199,8 @@ So **~4–9 hours** on a **400 mAh** cell is a **reasonable band** until you b
 - **`include/opentrack_pose.h`** — Fusion Euler (deg) → Hatire / OpenTrack UDP **Rot 0–2** with NVS‑configurable **per‑slot axis + invert** (defaults match README **Yaw→0, Roll→1, Pitch→2** with pitch negated).
 - **`src/track_network.cpp`** — Full Wi‑Fi / portal / OpenTrack UDP in **`azimuth_main`**; no‑op stubs in **`azimuth_debug`** (`IMU_DEBUG_MODE`).
 - **`src/portal_html.cpp`** — PROGMEM settings UI (built only in **`azimuth_main`**; excluded from **`azimuth_debug`** via `build_src_filter`).
-- **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library.
+- **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library; **`azimuth_main`** adds **`scripts/pio_set_version.py`**, **`ArduinoJson`**, and default **release manifest / flasher URLs** (overridable for forks).
+- **`VERSION`** — one-line semver for **`azimuth_main`** builds and **`web-flasher/manifest.json`** (via sync scripts / CI).
 - **`include/secrets.h`** — optional compile‑time Wi‑Fi / OpenTrack defaults (copy from `secrets.h.example`; gitignored).
 
 If you move SPI off the default D8–D10 pins, call `SPI.begin(sck, miso, mosi, -1)` **before** `imu.beginSPI(...)` so the bus matches your board (the SparkFun driver initializes `SPI` internally; ESP32 keeps an already-started bus).

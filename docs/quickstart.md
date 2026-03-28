@@ -27,7 +27,11 @@ Do this on the **same computer** where you use **OpenTrack**, on your **home Wi�
 
 Move the tracker—you should see motion. **Recenter** in OpenTrack after things settle.
 
+## Firmware updates
+
+On **home Wi‑Fi**, the portal may show a banner if a **newer** version is published on GitHub Pages (one check per boot). Follow the **USB installer** link and reflash from Chrome or Edge. The flasher page always lists the **version** it ships; your device’s version appears under **Device** on the portal.
+
 ## More help
 
-- Main **[README](../README.md)** — build, USB **Hatire** path, axis mapping, troubleshooting.
-- **Browser flasher** — install firmware from Chrome/Edge (see README *GitHub Pages USB flasher*).
+- Main **[README](../README.md)** — build, USB **Hatire** path, axis mapping, **`VERSION`** / releases, troubleshooting.
+- **Browser flasher** — install or update firmware from Chrome/Edge (see README *GitHub Pages USB flasher*).
