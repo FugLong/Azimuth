@@ -165,6 +165,15 @@
       padding-top: 0.9rem;
       border-top: 1px solid var(--line);
     }
+    .after-steps {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--tx-soft);
+      font-size: 0.94rem;
+      line-height: 1.55;
+    }
+    .after-steps li { margin-bottom: 0.65rem; }
+    .after-steps li:last-child { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -206,9 +215,13 @@
 
   <section class="panel" aria-labelledby="h-after">
     <h2 id="h-after">When it’s done</h2>
-    <p>On your home network, open the setup page:</p>
-    <p><a class="link-main" href="http://azimuth.local:8080/">azimuth.local:8080</a></p>
-    <p class="fine-print">If that link doesn’t open, find the board in your router’s device list and use its IP with port <strong>8080</strong>. Brand-new devices can join Wi‑Fi through the <strong>Azimuth-Setup</strong> network, then open <code>192.168.4.1</code> in the browser (port 80).</p>
+    <p>Connect the device to Wi‑Fi first, then use the normal settings page on your home network.</p>
+    <ol class="after-steps">
+      <li>Join <strong>Azimuth-Setup</strong> from your phone or computer.</li>
+      <li>Complete the captive portal or open <code>192.168.4.1</code> and enter your home Wi‑Fi.</li>
+      <li>After it’s online, open <a class="link-main" href="http://azimuth.local:8080/">azimuth.local:8080</a> (same LAN as the device).</li>
+    </ol>
+    <p class="fine-print">If <code>azimuth.local</code> doesn’t load, use the device’s IP from your router with port <strong>8080</strong>.</p>
   </section>
 </div>
 <script>
@@ -220,6 +233,25 @@
   if (steps) steps.hidden = true;
   var el = document.getElementById("serialInstaller");
   if (el) el.hidden = true;
+})();
+</script>
+<script>
+(function () {
+  var mark = "Installation complete!";
+  setInterval(function () {
+    document.querySelectorAll("ewt-install-dialog").forEach(function (host) {
+      if (host.dataset.ewtAutocloseScheduled) return;
+      var root = host.shadowRoot;
+      if (!root) return;
+      if ((root.textContent || "").indexOf(mark) === -1) return;
+      host.dataset.ewtAutocloseScheduled = "1";
+      setTimeout(function () {
+        if (!host.isConnected) return;
+        var inner = host.shadowRoot && host.shadowRoot.querySelector("ew-dialog");
+        if (inner && typeof inner.close === "function") inner.close();
+      }, 700);
+    });
+  }, 200);
 })();
 </script>
 </body>
