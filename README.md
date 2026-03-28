@@ -120,7 +120,7 @@ The portal is grouped into **Wi‑Fi**, **LAN & discovery**, **OpenTrack (PC)**,
 |--------|---------------------|
 | **Wi‑Fi** | SSID / password, **Scan networks** (brief tracking hitch). New Wi‑Fi credentials → **reboot**. |
 | **LAN & discovery** | **mDNS** on/off, **device hostname** (letters, digits, hyphen; max 24). Changing these → **reboot** so DHCP/mDNS apply. |
-| **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **host** / **port** for OpenTrack’s *UDP over network* input. **Host** may be an **IPv4 address** or a **hostname** your **router’s DNS** can resolve (e.g. a machine name from DHCP). **`something.local` (mDNS)** often **does not** resolve from the ESP32; use the numeric LAN IP or a plain hostname if your router supports it. The portal shows **this browser’s IP** (from the HTTP connection) with a one-click **Use as UDP host** when you open the page from the PC running OpenTrack. |
+| **OpenTrack (PC)** | **USB Hatire** on/off (Wi‑Fi‑only use), **UDP** on/off, **UDP address** / **port**, **axis mapping** (which fusion yaw/pitch/roll feeds Hatire/UDP **Rot 0–2**, each axis once, optional **invert** per slot). **`something.local` (mDNS)** often **does not** resolve from the ESP32; prefer numeric LAN IP or a DHCP hostname. **This browser’s IP** + **Fill address** when the portal is opened on the PC running OpenTrack. |
 | **Tracking & radio** | **IMU report interval** (5 / 10 / 20 / 40 ms → 200 / 100 / 50 / 25 Hz). Change → **reboot** so the BNO08x report rate is reapplied. **Wi‑Fi TX power** (low / balanced / high) applies on save without reboot. |
 | **Device** | Firmware version string, **Reboot**, **Erase saved settings** (clears NVS `azimuth` namespace and reboots into provisioning if no compile-time Wi‑Fi in `secrets.h`). |
 
@@ -179,7 +179,7 @@ So **~4–9 hours** on a **400 mAh** cell is a **reasonable band** until you b
 ## Firmware layout
 
 - **`src/main.cpp`** — IMU bring-up, rotation vector, Hatire + optional OpenTrack UDP; `kPinCs` / `kPinInt` / `kPinRst` match the **ESP32_BNO086** PCB (see [docs/wiring.md](docs/wiring.md)).
-- **`include/opentrack_pose.h`** — Single mapping from fusion Euler (deg) to Hatire / OpenTrack UDP rotation channels (Rot 0–2).
+- **`include/opentrack_pose.h`** — Fusion Euler (deg) → Hatire / OpenTrack UDP **Rot 0–2** with NVS‑configurable **per‑slot axis + invert** (defaults match README **Yaw→0, Roll→1, Pitch→2** with pitch negated).
 - **`src/track_network.cpp`** — Hatire build only: Wi‑Fi STA, provisioning AP + captive portal, HTTP handlers (NVS + `secrets.h`), OpenTrack UDP client.
 - **`src/portal_html.cpp`** — PROGMEM settings UI (linked only in the Hatire env; see `platformio.ini`).
 - **`platformio.ini`** — `espressif32`, `seeed_xiao_esp32c3`, **SparkFun BNO08x** library.

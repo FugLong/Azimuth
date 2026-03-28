@@ -23,6 +23,7 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <cstdio>
 #include <cstring>
 
 #include "opentrack_pose.h"
@@ -38,6 +39,8 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #endif
 
 namespace azimuth_net {
+
+OtAxisMapConfig mergedOtAxisMap();
 
 constexpr uint16_t kWebPortSta = 8080;
 constexpr uint16_t kWebPortAp = 80;
@@ -67,6 +70,7 @@ Preferences gPrefs;
 bool gPrefsOpened = false;
 uint16_t gImuPeriodMsRuntime = 10;
 bool gHatireUsbRuntime = true;
+OtAxisMapConfig gOtAxisMapRuntime{};
 
 bool ensurePrefsOpen() {
   if (gPrefsOpened) {
@@ -124,10 +128,12 @@ String mergedHostname() {
 
 void refreshRuntimeFromPrefs() {
   if (!gPrefsOpened) {
+    otAxisMapSetDefault(&gOtAxisMapRuntime);
     return;
   }
   gImuPeriodMsRuntime = mergedImuPeriodMs();
   gHatireUsbRuntime = mergedHatireUsb();
+  gOtAxisMapRuntime = mergedOtAxisMap();
 }
 
 void applyStaWifiTxPower() {
@@ -193,6 +199,88 @@ uint16_t mergedOtPort() {
 }
 
 bool mergedUdpOn() { return gPrefs.getBool("udp_on", true); }
+
+OtAxisMapConfig mergedOtAxisMap() {
+  OtAxisMapConfig c;
+  otAxisMapSetDefault(&c);
+  if (!gPrefsOpened) {
+    return c;
+  }
+  for (int i = 0; i < 3; ++i) {
+    char ksrc[8];
+    snprintf(ksrc, sizeof(ksrc), "ot_s%d", i);
+    if (gPrefs.isKey(ksrc)) {
+      const uint8_t s = gPrefs.getUChar(ksrc, 255);
+      if (s <= 2) {
+        c.srcForRot[i] = s;
+      }
+    }
+    char kinv[8];
+    snprintf(kinv, sizeof(kinv), "ot_i%d", i);
+    if (gPrefs.isKey(kinv)) {
+      c.invertRot[i] = gPrefs.getBool(kinv, false);
+    }
+  }
+  if (!otAxisMapValid(c)) {
+    otAxisMapSetDefault(&c);
+  }
+  return c;
+}
+
+/** Parse ot_axes: [{src:0..2, inv:bool}, x3]. Returns false on error. */
+bool applyOtAxesFromJson(const JsonArray& arr, const char** errOut) {
+  if (arr.size() != 3) {
+    *errOut = "ot_axes must be an array of 3 objects";
+    return false;
+  }
+  OtAxisMapConfig c;
+  otAxisMapSetDefault(&c);
+  for (size_t i = 0; i < 3; ++i) {
+    JsonObjectConst o = arr[i].as<JsonObjectConst>();
+    if (o.isNull()) {
+      *errOut = "ot_axes[i] must be object";
+      return false;
+    }
+    if (!o["src"].is<int>()) {
+      *errOut = "ot_axes[].src must be integer 0–2";
+      return false;
+    }
+    const int src = o["src"].as<int>();
+    if (src < 0 || src > 2) {
+      *errOut = "ot_axes[].src must be 0–2";
+      return false;
+    }
+    c.srcForRot[i] = static_cast<uint8_t>(src);
+    if (!o["inv"].isNull() && !o["inv"].is<bool>()) {
+      *errOut = "ot_axes[].inv must be boolean";
+      return false;
+    }
+    c.invertRot[i] = o["inv"].is<bool>() ? o["inv"].as<bool>() : false;
+  }
+  if (!otAxisMapValid(c)) {
+    *errOut = "ot_axes must use yaw, pitch, and roll each exactly once";
+    return false;
+  }
+  for (int i = 0; i < 3; ++i) {
+    char ksrc[8];
+    char kinv[8];
+    snprintf(ksrc, sizeof(ksrc), "ot_s%d", i);
+    snprintf(kinv, sizeof(kinv), "ot_i%d", i);
+    (void)gPrefs.putUChar(ksrc, c.srcForRot[i]);
+    (void)gPrefs.putBool(kinv, c.invertRot[i]);
+  }
+  return true;
+}
+
+void appendOtAxesToJson(JsonDocument& doc) {
+  const OtAxisMapConfig c = mergedOtAxisMap();
+  JsonArray ax = doc["ot_axes"].to<JsonArray>();
+  for (int i = 0; i < 3; ++i) {
+    JsonObject o = ax.add<JsonObject>();
+    o["src"] = c.srcForRot[i];
+    o["inv"] = c.invertRot[i];
+  }
+}
 
 void resolveOtHostnameNow() {
   if (gOtHostTrimmed.length() == 0 || gOtHostIsLiteralIp) {
@@ -314,6 +402,7 @@ void handleStatus(WebServer& http) {
   doc["hostname"] = mergedHostname();
   doc["mdns_on"] = mergedMdnsOn();
   doc["wifi_tx"] = mergedWifiTxProfile();
+  appendOtAxesToJson(doc);
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -448,6 +537,18 @@ void handleConfigPost(WebServer& http) {
       gPrefs.putBool("mdns_on", body["mdns_on"].as<bool>());
       if (body["mdns_on"].as<bool>() != prevMdns) {
         needReboot = true;
+      }
+    }
+  }
+
+  if (!errMsg && !body["ot_axes"].isNull()) {
+    const char* axErr = nullptr;
+    if (!body["ot_axes"].is<JsonArray>()) {
+      errMsg = "ot_axes must be a JSON array";
+    } else {
+      JsonArray arr = body["ot_axes"].as<JsonArray>();
+      if (!applyOtAxesFromJson(arr, &axErr)) {
+        errMsg = axErr;
       }
     }
   }
@@ -677,7 +778,7 @@ void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   }
 
   float rot[3];
-  opentrackMapEulerDegToRot(yawDeg, pitchDeg, rollDeg, rot);
+  opentrackMapEulerToRot(yawDeg, pitchDeg, rollDeg, gOtAxisMapRuntime, rot);
   const double pose[6] = {
       0.0,
       0.0,
@@ -705,6 +806,8 @@ uint16_t imuPeriodMsValue() { return gImuPeriodMsRuntime; }
 
 bool hatireUsbValue() { return gHatireUsbRuntime; }
 
+const OtAxisMapConfig& otAxisMapValue() { return gOtAxisMapRuntime; }
+
 }  // namespace azimuth_net
 
 void trackNetworkLoadTrackingPrefs() {
@@ -717,6 +820,10 @@ uint16_t trackNetworkImuRotationPeriodMs() {
 
 bool trackNetworkHatireUsbEnabled() {
   return azimuth_net::hatireUsbValue();
+}
+
+const OtAxisMapConfig& trackNetworkOtAxisMap() {
+  return azimuth_net::otAxisMapValue();
 }
 
 void trackNetworkInit() {

@@ -166,6 +166,34 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 <label for="otPort">UDP port</label>
 <input type="number" id="otPort" min="1" max="65535" inputmode="numeric"/>
+<p class="hint" style="margin-top:.85rem">Axis mapping applies to <strong>USB Hatire</strong> and <strong>UDP</strong>. Assign yaw, pitch, and roll <strong>once each</strong> to Rot 0–2. In OpenTrack, set input axes to <strong>Yaw→0, Pitch→1, Roll→2</strong> (see README).</p>
+<div class="axis-slot" style="margin-top:.5rem">
+<label for="otSrc0">Rot 0</label>
+<select id="otSrc0" aria-label="Rot 0 source axis">
+<option value="0">Yaw</option>
+<option value="1">Pitch</option>
+<option value="2">Roll</option>
+</select>
+<div class="row" style="margin:.45rem 0 .65rem"><span>Invert</span><button type="button" class="toggle" id="otInv0" aria-label="Invert Rot 0"></button></div>
+</div>
+<div class="axis-slot">
+<label for="otSrc1">Rot 1</label>
+<select id="otSrc1" aria-label="Rot 1 source axis">
+<option value="0">Yaw</option>
+<option value="1">Pitch</option>
+<option value="2">Roll</option>
+</select>
+<div class="row" style="margin:.45rem 0 .65rem"><span>Invert</span><button type="button" class="toggle" id="otInv1" aria-label="Invert Rot 1"></button></div>
+</div>
+<div class="axis-slot">
+<label for="otSrc2">Rot 2</label>
+<select id="otSrc2" aria-label="Rot 2 source axis">
+<option value="0">Yaw</option>
+<option value="1">Pitch</option>
+<option value="2">Roll</option>
+</select>
+<div class="row" style="margin:.45rem 0 .65rem"><span>Invert</span><button type="button" class="toggle" id="otInv2" aria-label="Invert Rot 2"></button></div>
+</div>
 </div>
 
 <div class="card">
@@ -254,9 +282,29 @@ function fillInput(el,v){
   el.setAttribute('value',s);
   el.defaultValue=s;
 }
+function otAxesDefault(){
+  return[{src:0,inv:false},{src:2,inv:false},{src:1,inv:true}];
+}
+function applyOtAxesFromStatus(ax){
+  const d=Array.isArray(ax)&&ax.length===3?ax:otAxesDefault();
+  for(let i=0;i<3;i++){
+    const o=d[i]||{src:0,inv:false};
+    const s=([0,1,2].includes(o.src))?o.src:0;
+    $('otSrc'+i).value=String(s);
+    setToggle('otInv'+i,!!o.inv);
+  }
+}
+function collectOtAxes(){
+  const s=[0,1,2].map(i=>parseInt($('otSrc'+i).value,10));
+  if(new Set(s).size!==3){
+    setMsg('Use yaw, pitch, and roll exactly once across Rot 0–2.','err');
+    return null;
+  }
+  return s.map((src,i)=>({src,inv:$('otInv'+i).classList.contains('on')}));
+}
 function nudgeInputPaint(){
   requestAnimationFrame(()=>{
-    ['ssid','hostname','otHost','otPort','imuPeriod','wifiTx'].forEach(id=>{
+    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx'].forEach(id=>{
       const el=$(id);
       if(!el)return;
       el.style.transform='translateZ(1px)';
@@ -275,6 +323,7 @@ async function hydrateForm(){
   const p=j.imu_period_ms||10;
   $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
   $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
+  applyOtAxesFromStatus(j.ot_axes);
   uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
   applyShell(j);
   nudgeInputPaint();
@@ -285,6 +334,7 @@ async function pollOnly(){
 $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
 $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
+[0,1,2].forEach(i=>{const id='otInv'+i;$(id).onclick=()=>setToggle(id,!$(id).classList.contains('on'));});
 $('btnUseClientIp').onclick=()=>{
   const v=$('clientIpVal')&&$('clientIpVal').textContent;
   if(v&&v!=='—'){fillInput($('otHost'),v)}
@@ -309,10 +359,13 @@ $('btnScan').onclick=async()=>{
 };
 $('btnSave').onclick=async()=>{
   setMsg('Saving…','');
+  const otAxes=collectOtAxes();
+  if(!otAxes)return;
   const body={
     ssid:$('ssid').value.trim(),
     ot_host:$('otHost').value.trim(),
     ot_port:parseInt($('otPort').value,10)||4242,
+    ot_axes:otAxes,
     udp_enabled:$('udpToggle').classList.contains('on'),
     hatire_usb:$('hatireToggle').classList.contains('on'),
     mdns_on:$('mdnsToggle').classList.contains('on'),

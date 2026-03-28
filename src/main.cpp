@@ -91,7 +91,7 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
     return;
   }
 
-  opentrackMapEulerDegToRot(yawDeg, pitchDeg, rollDeg, gHat.gyro);
+  opentrackMapEulerToRot(yawDeg, pitchDeg, rollDeg, trackNetworkOtAxisMap(), gHat.gyro);
 
   Serial.write(reinterpret_cast<const uint8_t*>(&gHat), sizeof(gHat));
 
