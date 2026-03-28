@@ -31,3 +31,8 @@ else
 fi
 
 echo "Copied flash images to ${DEST}/"
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+if [[ -f "${ROOT}/VERSION" ]]; then
+  python3 "${ROOT}/scripts/sync_manifest_version.py" "${ROOT}/web-flasher/manifest.json"
+fi

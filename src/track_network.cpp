@@ -20,8 +20,10 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <Preferences.h>
+#include <HTTPClient.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
 #include <cstdio>
 #include <cstring>
@@ -36,6 +38,13 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 
 #ifndef AZIMUTH_FW_VERSION
 #define AZIMUTH_FW_VERSION "dev"
+#endif
+
+#ifndef AZIMUTH_RELEASE_MANIFEST_URL
+#define AZIMUTH_RELEASE_MANIFEST_URL "https://fuglong.github.io/Azimuth/manifest.json"
+#endif
+#ifndef AZIMUTH_RELEASE_FLASHER_URL
+#define AZIMUTH_RELEASE_FLASHER_URL "https://fuglong.github.io/Azimuth/"
 #endif
 
 namespace azimuth_net {
@@ -65,6 +74,10 @@ bool gStaWebActive = false;
 bool gApPortalActive = false;
 /** True while we are serving the portal on SoftAP (provisioning / recovery). */
 bool gSetupApMode = false;
+
+static bool gFwUpdateCheckDone = false;
+static bool gFwUpdateAvailable = false;
+static String gFwLatestVersion;
 
 Preferences gPrefs;
 bool gPrefsOpened = false;
@@ -350,6 +363,79 @@ bool otTargetOk() { return gOtIp != INADDR_NONE && gOtPort != 0; }
 
 String portalHttpUrl() { return String("http://") + WiFi.softAPIP().toString() + "/"; }
 
+struct SemVer {
+  int ma = 0;
+  int mi = 0;
+  int pa = 0;
+};
+
+static bool parseSemVer(const char* s, SemVer& o) {
+  o = {};
+  if (!s || !*s) {
+    return false;
+  }
+  if (s[0] == 'v' || s[0] == 'V') {
+    ++s;
+  }
+  const int n = sscanf(s, "%d.%d.%d", &o.ma, &o.mi, &o.pa);
+  if (n == 1) {
+    o.mi = 0;
+    o.pa = 0;
+  } else if (n == 2) {
+    o.pa = 0;
+  }
+  return n >= 1;
+}
+
+static bool semverLess(const SemVer& a, const SemVer& b) {
+  if (a.ma != b.ma) {
+    return a.ma < b.ma;
+  }
+  if (a.mi != b.mi) {
+    return a.mi < b.mi;
+  }
+  return a.pa < b.pa;
+}
+
+/** Once per STA session, after Wi‑Fi is up — compares VERSION-derived build to hosted manifest.
+ *  Short timeouts: this runs synchronously inside loop(); long stalls would delay IMU + tracking. */
+static void performFirmwareUpdateCheckOnce() {
+  gFwUpdateCheckDone = true;
+  WiFiClientSecure client;
+  client.setTimeout(6000);
+  client.setInsecure();
+  HTTPClient http;
+  http.setTimeout(6000);
+  if (!http.begin(client, AZIMUTH_RELEASE_MANIFEST_URL)) {
+    return;
+  }
+  const int code = http.GET();
+  if (code != HTTP_CODE_OK) {
+    http.end();
+    return;
+  }
+  const String payload = http.getString();
+  http.end();
+  JsonDocument doc;
+  const DeserializationError jerr = deserializeJson(doc, payload);
+  if (jerr) {
+    return;
+  }
+  const char* remoteVer = doc["version"].as<const char*>();
+  if (!remoteVer || !remoteVer[0]) {
+    return;
+  }
+  SemVer cur{};
+  SemVer rem{};
+  if (!parseSemVer(AZIMUTH_FW_VERSION, cur) || !parseSemVer(remoteVer, rem)) {
+    return;
+  }
+  if (semverLess(cur, rem)) {
+    gFwUpdateAvailable = true;
+    gFwLatestVersion = remoteVer;
+  }
+}
+
 void sendCaptiveRedirect(WebServer& http) {
   const String url = portalHttpUrl();
   http.sendHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -397,6 +483,13 @@ void handleStatus(WebServer& http) {
   doc["ot_using_dns"] = (!gOtHostIsLiteralIp && gOtHostTrimmed.length() > 0);
   doc["battery_mv"] = nullptr;
   doc["fw_version"] = AZIMUTH_FW_VERSION;
+  doc["fw_update_available"] = gFwUpdateAvailable;
+  if (gFwUpdateAvailable) {
+    doc["fw_latest_version"] = gFwLatestVersion;
+  } else {
+    doc["fw_latest_version"] = nullptr;
+  }
+  doc["fw_flasher_url"] = AZIMUTH_RELEASE_FLASHER_URL;
   doc["imu_period_ms"] = mergedImuPeriodMs();
   doc["hatire_usb"] = mergedHatireUsb();
   doc["hostname"] = mergedHostname();
@@ -769,6 +862,15 @@ void networkLoop() {
   if (WiFi.status() == WL_CONNECTED) {
     tryOpenUdpSocket();
     maybeRefreshOtHostname();
+  }
+  if (gStaWebActive && WiFi.status() == WL_CONNECTED && !gFwUpdateCheckDone) {
+    static uint32_t sStaStableMs = 0;
+    if (sStaStableMs == 0) {
+      sStaStableMs = millis();
+    }
+    if (millis() - sStaStableMs >= 4000) {
+      performFirmwareUpdateCheckOnce();
+    }
   }
 }
 

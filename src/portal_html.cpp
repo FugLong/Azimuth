@@ -32,6 +32,11 @@ body{
   display:none;background:var(--acc-dim);border:1px solid var(--bd);border-radius:12px;
   padding:.875rem 1rem;font-size:.8125rem;line-height:1.5;color:var(--tx);margin:0 0 1.25rem;text-align:left
 }
+.banner.banner-update{
+  display:none;background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.38)
+}
+.banner.banner-update a{color:var(--acc);font-weight:600;text-decoration:none}
+.banner.banner-update a:hover{text-decoration:underline}
 .card{
   background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:1rem;
   box-shadow:var(--shadow)
@@ -137,6 +142,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <p class="sub" id="subLine">Tracker settings</p>
 </header>
 <p class="banner" id="setupBanner">Join <strong>Azimuth‑Setup</strong> (open network). This page may open automatically; if not, use <strong id="portalUrl">http://192.168.4.1/</strong> on <strong>port 80</strong>. <strong>azimuth.local</strong> works only on your home Wi‑Fi after setup.</p>
+<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
 
 <div class="card">
 <div class="hd">Wi‑Fi</div>
@@ -265,6 +271,16 @@ const uiTouched={udp:false,mdns:false,hatire:false};
 function applyShell(j){
   const ap=!!j.setup_ap;
   $('setupBanner').style.display=ap?'block':'none';
+  const ub=$('updateBanner');
+  if(ub){
+    if(!ap&&j.fw_update_available&&j.fw_latest_version){
+      ub.style.display='block';
+      $('updateBannerLatest').textContent=j.fw_latest_version;
+      $('updateBannerCur').textContent=j.fw_version||'—';
+      const lk=$('updateBannerLink');
+      if(lk&&j.fw_flasher_url){lk.href=j.fw_flasher_url}
+    }else{ub.style.display='none'}
+  }
   $('subLine').textContent=ap?'Provisioning · join your Wi‑Fi below':'On your network · idle until you use this page';
   if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
   const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';

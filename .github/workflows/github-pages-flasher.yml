@@ -47,22 +47,8 @@ jobs:
           chmod +x scripts/prepare_web_flasher_firmware.sh
           ./scripts/prepare_web_flasher_firmware.sh azimuth_main web-flasher/firmware
 
-      - name: Stamp manifest version (git SHA prefix)
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          python3 <<'PY'
-          import json, os
-          path = "web-flasher/manifest.json"
-          with open(path) as f:
-              m = json.load(f)
-          sha = os.environ.get("GITHUB_SHA", "")
-          if sha:
-              m["version"] = sha[:7]
-          with open(path, "w") as f:
-              json.dump(m, f, indent=2)
-              f.write("\n")
-          PY
+      - name: Sync manifest version from VERSION
+        run: python3 scripts/sync_manifest_version.py web-flasher/manifest.json
 
       - name: Sync flasher logos from logo/
         run: mkdir -p web-flasher/logo && cp logo/AzimuthLogo_Dark.png logo/AzimuthLogo_Light.png web-flasher/logo/
