@@ -6,9 +6,9 @@
  *   CS=D3 (GPIO5), H_INT=D4 (GPIO6), NRST=D7 (GPIO20)
  *   PS0/WAKE=D2 (GPIO4); PS1 + VDD + VDDIO → 3V3 on PCB
  *
- * Modes (set at compile time):
- *   IMU_DEBUG_MODE=1 — human-readable yaw/pitch/roll on USB serial
- *   IMU_DEBUG_MODE=0 — Hatire USB (115200) + optional WiFi UDP OpenTrack “UDP over network” (6× double)
+ * PlatformIO: `azimuth_debug` (IMU_DEBUG_MODE=1) vs `azimuth_main` (IMU_DEBUG_MODE=0).
+ *   Debug — yaw/pitch/roll on USB serial only.
+ *   Main — Hatire USB (115200) + optional Wi‑Fi OpenTrack UDP (6× double).
  */
 
 #include <Arduino.h>

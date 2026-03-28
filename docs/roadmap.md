@@ -10,7 +10,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 |------------|----------|-------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
-| Firmware | **~40%** | SPI IMU; USB debug; **Hatire** + **WiFi → OpenTrack UDP**; **HTTP settings** + **NVS** + `secrets.h` fallback; **provisioning AP** (`Azimuth-Setup`) + captive portal. Still ahead: board I/O, battery ADC, OTA, layered `imu/` / `io/` refactor (Phase 1 table below). |
+| Firmware | **~40%** | SPI IMU; **`azimuth_debug`** serial bring-up; **`azimuth_main`**: Hatire + Wi‑Fi OpenTrack UDP, HTTP **NVS** portal (optional `secrets.h`); **Azimuth-Setup** + captive portal. Still ahead: board I/O, battery ADC, OTA, layered `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
 | End-user docs & release | **TBD** | README covers OpenTrack inputs, axis mapping, filter baseline; expand with remaining firmware / release artifacts |
 
@@ -75,7 +75,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 | WiFi STA | ✅ (UDP client to PC; credentials via NVS + `include/secrets.h`) |
 | WiFi AP / onboarding portal | ✅ (`Azimuth-Setup`, captive DNS + HTTP :80; recovery if STA fails) |
 | Transport: OpenTrack **UDP** (6× `double`, default port 4242) | ✅ |
-| Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ (shared `opentrackMapEulerDegToRot` in `include/opentrack_pose.h`) |
+| Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ (`opentrackMapEulerToRot` + NVS axis map in `include/opentrack_pose.h`) |
 | Coexistence with USB (Hatire + UDP same build) | ✅ |
 | Security baseline (WiFi credentials **not** in git) | 🟨 (`secrets.h` local; NVS on device; migration / hardening in Phase 3) |
 
@@ -100,7 +100,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 | Task | Status |
 |------|--------|
-| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ✅ (provisioning + STA settings on :8080; portal HTML in `src/portal_html.cpp`) |
+| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ✅ (provisioning + STA settings on :8080; `src/portal_html.cpp` in **`azimuth_main`**) |
 | **Or** BLE GATT for lightweight config (often nicer for phones; more firmware work) | ⬜ |
 | Same settings backend as Phase 3 (one model, multiple UIs) | 🟨 (HTTP uses same NVS namespace; BLE not started) |
 
@@ -134,3 +134,4 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
 | 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |
 | 2026-03-27 | Firmware ~40%: NVS + HTTP settings, provisioning portal; roadmap/tasks aligned; shared OpenTrack axis helper; portal HTML split to `portal_html.cpp`. |
+| 2026-03-28 | PlatformIO envs renamed **`azimuth_main`** / **`azimuth_debug`**; GitLab CI + GitHub Pages web flasher; OpenTrack axis map in NVS / portal. |

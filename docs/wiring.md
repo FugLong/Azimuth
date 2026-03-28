@@ -95,7 +95,7 @@ GPIO21 is also **UART TX**; fine for the buzzer if you do not need that UART for
 2. **Clock/checks:** **CLKSEL0** pulled high (internal clock selection with `CLKSEL1` left unconnected), and **CAP** has dedicated **100 nF** to GND.
 3. **ENV bus/checks:** **ENV_SCL** / **ENV_SDA** have pull-ups (R7/R8) even if no external environmental sensor is populated.
 4. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
-5. After assembly, run firmware **`xiao_esp32c3`** and confirm serial prints before Hatire mode.
+5. After assembly, run **`azimuth_debug`** (`pio run -e azimuth_debug`) and confirm serial prints before switching to **`azimuth_main`** for OpenTrack / Wi‑Fi.
 6. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order, then re-run DRC in KiCad.
 
 ---

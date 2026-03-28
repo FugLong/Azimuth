@@ -4,7 +4,7 @@
 
 #include "opentrack_pose.h"
 
-/** Track build: WiFi, OpenTrack UDP, NVS settings, HTTP settings UI (idle = cheap handleClient only). */
+/** Wi‑Fi, OpenTrack UDP, NVS, HTTP portal — full impl. in `azimuth_main`; stubs in `azimuth_debug`. */
 void trackNetworkLoadTrackingPrefs();
 uint16_t trackNetworkImuRotationPeriodMs();
 bool trackNetworkHatireUsbEnabled();

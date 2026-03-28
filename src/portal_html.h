@@ -2,5 +2,5 @@
 
 #include <Arduino.h>
 
-/** Settings UI HTML (PROGMEM). Linked only in the Hatire build (see `platformio.ini`). */
+/** Settings UI HTML (PROGMEM). Built only in PlatformIO env `azimuth_main` (see `platformio.ini`). */
 extern const char kPortalIndexHtml[] PROGMEM;

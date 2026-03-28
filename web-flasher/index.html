@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <meta name="color-scheme" content="dark"/>
+  <title>Azimuth — Web flasher</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
+  <style>
+    :root{
+      --bg:#0a0e14;--bg2:#121a24;--card:rgba(26,35,50,.92);--bd:rgba(61,158,229,.22);
+      --tx:#eef4fa;--muted:#8b9cb3;--acc:#3d9ee5;--acc-dim:rgba(61,158,229,.15);
+      --ok:#4ade80;--shadow:0 8px 32px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      margin:0;min-height:100dvh;
+      font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--tx);
+      background:var(--bg);
+      background-image:radial-gradient(ellipse 100% 60% at 50% -15%,#1a4a6e 0%,transparent 55%),radial-gradient(ellipse 80% 50% at 100% 100%,rgba(61,158,229,.08),transparent);
+    }
+    .wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 2.5rem}
+    .brand{text-align:center;margin-bottom:1.1rem}
+    .brand h1{font-size:1.35rem;font-weight:700;margin:0;letter-spacing:.02em;background:linear-gradient(165deg,#e8eef5,var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .sub{color:var(--muted);font-size:.8125rem;margin:.5rem 0 0;line-height:1.45}
+    .card{
+      background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:1rem;
+      box-shadow:var(--shadow)
+    }
+    .hd{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--acc);margin:0 0 .75rem}
+    .hint{font-size:.75rem;color:var(--muted);margin:0 0 .85rem;line-height:1.45}
+    .btn-row{display:flex;flex-direction:column;gap:.65rem;margin-top:.5rem;align-items:stretch}
+    .btn-row esp-web-install-button{
+      --esp-tools-button-color:var(--acc);
+      --esp-tools-button-text-color:#051018;
+      --esp-tools-button-border-radius:10px;
+      display:block;width:100%;
+    }
+    .link-card a{color:var(--acc);text-decoration:none;font-weight:600}
+    .link-card a:hover{text-decoration:underline}
+    .callout{margin-top:.75rem;padding:.75rem .85rem;border-radius:11px;background:var(--bg2);border:1px solid var(--bd);font-size:.8125rem;color:var(--muted);line-height:1.5}
+    .callout strong{color:var(--tx)}
+    code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var(--acc)}
+    #msg{margin-top:.75rem;font-size:.8125rem;min-height:1.25em}
+    .err{color:#f87171}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <h1>Azimuth</h1>
+    <p class="sub">Flash <strong>Azimuth</strong> release firmware over USB — same look as the on-device portal.</p>
+  </header>
+
+  <div class="card">
+    <div class="hd">Install firmware</div>
+    <p class="hint">Use a <strong>USB data</strong> cable. Works in <strong>Chrome</strong> or <strong>Edge</strong> on desktop (Web Serial). Connect your <strong>Seeed XIAO ESP32-C3</strong>, put it in <strong>bootloader</strong> if prompted (hold BOOT, tap RST, release BOOT).</p>
+    <div class="btn-row">
+      <esp-web-install-button manifest="manifest.json">
+        <button slot="activate" type="button">Connect &amp; flash Azimuth</button>
+      </esp-web-install-button>
+    </div>
+    <div class="callout">
+      <strong>Factory reset / clean install:</strong> When the installer asks, choose to <strong>erase flash</strong> first. That clears saved Wi‑Fi and portal settings (like “Erase saved settings” on the device). Then the image is written fresh.
+    </div>
+  </div>
+
+  <div class="card link-card">
+    <div class="hd">After flashing</div>
+    <p class="hint">On your home Wi‑Fi, open the settings portal (mDNS):</p>
+    <p style="margin:0;font-size:1rem"><a href="http://azimuth.local:8080/" rel="noopener">http://azimuth.local:8080/</a></p>
+    <p class="hint" style="margin-top:.65rem;margin-bottom:0">If <code>.local</code> does not resolve, use your router’s DHCP list for the board IP and port <strong>8080</strong>. First-time setup can use the <strong>Azimuth-Setup</strong> AP at <code>http://192.168.4.1/</code> (port 80).</p>
+  </div>
+
+  <p id="msg" class="err" style="display:none"></p>
+</div>
+<script>
+(function(){
+  if(!("serial" in navigator)){
+    var m=document.getElementById("msg");
+    m.style.display="block";
+    m.textContent="This browser does not support Web Serial. Use Chrome or Edge on a desktop to flash.";
+  }
+})();
+</script>
+</body>
+</html>

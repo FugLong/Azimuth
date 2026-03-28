@@ -1,0 +1,78 @@
+# Build env azimuth_main and deploy web-flasher/ (USB install via esp-web-tools).
+# Repo: Settings → Pages → Source: GitHub Actions.
+
+name: Deploy web flasher (GitHub Pages)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-flasher
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install "platformio>=6.1"
+
+      - name: Placeholder secrets for CI build
+        run: cp include/secrets.h.example include/secrets.h
+
+      - name: Build firmware (azimuth_main)
+        run: pio run -e azimuth_main
+
+      - name: Copy images for esp-web-tools
+        run: |
+          chmod +x scripts/prepare_web_flasher_firmware.sh
+          ./scripts/prepare_web_flasher_firmware.sh azimuth_main web-flasher/firmware
+
+      - name: Stamp manifest version (git SHA prefix)
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python3 <<'PY'
+          import json, os
+          path = "web-flasher/manifest.json"
+          with open(path) as f:
+              m = json.load(f)
+          sha = os.environ.get("GITHUB_SHA", "")
+          if sha:
+              m["version"] = sha[:7]
+          with open(path, "w") as f:
+              json.dump(m, f, indent=2)
+              f.write("\n")
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web-flasher
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

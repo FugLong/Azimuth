@@ -1,0 +1,37 @@
+# PlatformIO: build release firmware on main (artifacts = web-flashable .bin set).
+# CI copies secrets.h.example → secrets.h so the build does not require a committed secrets.h.
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  AZIMUTH_PIO_ENV: azimuth_main
+
+cache:
+  key: "${CI_COMMIT_REF_SLUG}-pip"
+  paths:
+    - .cache/pip
+
+stages:
+  - build
+
+.build_azimuth_main:
+  stage: build
+  image: python:3.12-slim
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq git wget && rm -rf /var/lib/apt/lists/*
+    - pip install --upgrade pip
+    - pip install "platformio>=6.1"
+    - cp include/secrets.h.example include/secrets.h
+  script:
+    - pio run -e "$AZIMUTH_PIO_ENV"
+    - chmod +x scripts/prepare_web_flasher_firmware.sh
+    - ./scripts/prepare_web_flasher_firmware.sh "$AZIMUTH_PIO_ENV" ci-artifacts/firmware
+  artifacts:
+    name: "azimuth-main-$CI_COMMIT_SHORT_SHA"
+    expire_in: 30 days
+    paths:
+      - ci-artifacts/firmware/
+
+build:azimuth_main:
+  extends: .build_azimuth_main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
