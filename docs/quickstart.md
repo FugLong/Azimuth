@@ -16,7 +16,7 @@ Do this on the **same computer** where you use **OpenTrack**, on your **home Wi�
 1. Open **`http://azimuth.local:8080/`** in a browser.  
    If that fails, use **`http://<device-ip>:8080`** (find the device in your router’s list). The address must end in **`:8080`**.
 2. Turn **UDP to PC** **on** if it is off.
-3. In **UDP address**, enter this PC’s **IPv4** on your LAN (often something like `192.168.1.x`). If you opened the page on that PC, use any **“fill address”** or similar control the page offers.
+3. Click **Fill address** (the page fills in this PC’s address for you). If you don’t see that button, type this PC’s **IPv4** (e.g. `192.168.1.x`) in **UDP address** instead.
 4. **Scroll down** and **save**.
 
 ## 3. OpenTrack
