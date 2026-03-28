@@ -33,5 +33,7 @@ On **home Wi‑Fi**, the portal may show a banner if a **newer** version is publ
 
 ## More help
 
-- Main **[README](../README.md)** — build, USB **Hatire** path, axis mapping, **`VERSION`** / releases, troubleshooting.
-- **Browser flasher** — install or update firmware from Chrome/Edge (see README *GitHub Pages USB flasher*).
+- **[README](../README.md)** — project overview and doc index.
+- **[Using Azimuth](using-azimuth.md)** — portal details, OpenTrack (USB Hatire + UDP), tips.
+- **[Development](development.md)** — build from source, CI, versioning, repo layout.
+- **Browser flasher:** [https://fuglong.github.io/Azimuth/](https://fuglong.github.io/Azimuth/) (Chrome or Edge).

@@ -10,16 +10,16 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 |------------|----------|-------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
-| Firmware | **~40%** | SPI IMU; **`azimuth_debug`** serial bring-up; **`azimuth_main`**: Hatire + Wi‑Fi OpenTrack UDP, HTTP **NVS** portal (optional `secrets.h`); **Azimuth-Setup** + captive portal. Still ahead: board I/O, battery ADC, OTA, layered `imu/` / `io/` refactor (Phase 1 table below). |
+| Firmware | **60–70%** | SPI IMU; **`azimuth_debug`** bring-up; **`azimuth_main`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
-| End-user docs & release | **~40%** | README + **[docs/quickstart.md](quickstart.md)**; **`VERSION`** / USB flasher / portal update banner documented; OTA TBD |
+| End-user docs & release | **~50%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal banner documented; OTA TBD |
 
 **Visual (rough):**
 
 ```
 Hardware/BOM     [████████████████████] 100%
 PCB design       [███████████████████░] ~95%
-Firmware         [████████░░░░░░░░░░░░] ~40%
+Firmware         [█████████████░░░░░░░] 60–70%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
 
@@ -43,7 +43,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
 - [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via **NVS portal** and optional **`secrets.h`**).
-- [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
+- [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md), [using-azimuth.md](using-azimuth.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [x] **Updates (USB)** — GitHub Pages **esp-web-tools** flasher + repo **`VERSION`** / **`manifest.json`**; portal banner compares to hosted manifest (no OTA).
 - [ ] **Updates (OTA)** — Optional later; not required for current posture.
 - [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered.
@@ -123,7 +123,7 @@ These are common for head trackers; pick what matches your audience.
 | **Signed OTA** | If OTA ships, plan keys and rollback. |
 | **Desktop companion** | Small app for WiFi discovery—only if browser tooling is not enough. |
 | **GitHub-hosted web flasher** | ✅ Shipped: **`web-flasher/`** + GitHub Actions; parking-lot ideas (WebRTC LAN hints, etc.) remain optional. |
-| **Privacy / safety** | No cloud requirement; local network only—state explicitly in README. |
+| **Privacy / safety** | No cloud requirement; local network only—stated in README overview. |
 
 ---
 
@@ -136,4 +136,5 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
 | 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |
 | 2026-03-27 | Firmware ~40%: NVS + HTTP settings, provisioning portal; roadmap/tasks aligned; shared OpenTrack axis helper; portal HTML split to `portal_html.cpp`. |
-| 2026-03-28 | PlatformIO envs renamed **`azimuth_main`** / **`azimuth_debug`**; GitLab CI + GitHub Pages web flasher; OpenTrack axis map in NVS / portal. **`VERSION`** / manifest sync; portal firmware-update banner (HTTPS manifest check); Phase 3 flasher rows advanced; README thermal + Wi‑Fi sleep text aligned with **`WiFi.setSleep(false)`**. |
+| 2026-03-28 | PlatformIO envs **`azimuth_main`** / **`azimuth_debug`**; GitLab CI + GitHub Pages flasher; NVS portal axis map; **`VERSION`** / manifest sync; update banner. Docs split: README for overview; **[using-azimuth.md](using-azimuth.md)**; **[development.md](development.md)**. |
+| 2026-03-28 | Firmware snapshot toward V1 revised to **60–70%** (core tracking + wireless + settings + release path in place; I/O, battery, OTA, refactor still open). |
