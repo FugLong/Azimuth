@@ -7,6 +7,7 @@
 # Python / local tooling
 .venv/
 .venv*/
+.venv_easyeda2kicad/
 venv/
 __pycache__/
 *.py[cod]

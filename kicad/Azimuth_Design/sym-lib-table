@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "1_MyLib")(type "KiCad")(uri "${KIPRJMOD}/../libraries/1_MyLib.kicad_sym")(options "")(descr "Azimuth project symbols (BNO086, XIAO, etc.)"))
+  (lib (name "button_C49108648")(type "KiCad")(uri "/Users/fuglong/Documents/Repos/Azimuth/kicad/easyeda2kicad_parts/easyeda2kicad/button_C49108648.kicad_sym")(options "")(descr ""))
+)

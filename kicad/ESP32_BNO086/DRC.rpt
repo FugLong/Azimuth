@@ -1,0 +1,21 @@
+** Drc report for ESP32_BNO086.kicad_pcb **
+** Created on 2026-03-28T17:42:49-0500 **
+** Report includes: Errors **
+
+** Found 3 DRC violations **
+[annular_width]: Annular width (board setup constraints min annular width 0.1000 mm; actual -0.0047 mm)
+    Rule: board setup constraints; error
+    @(166.6500 mm, 84.2500 mm): PTH pad [<no net>] of PWR1
+[annular_width]: Annular width (board setup constraints min annular width 0.1000 mm; actual -0.0047 mm)
+    Rule: board setup constraints; error
+    @(166.6500 mm, 91.0500 mm): PTH pad [<no net>] of PWR1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(158.5800 mm, 97.9900 mm): Footprint PH2.0
+    @(143.2200 mm, 92.6300 mm): Footprint U1
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

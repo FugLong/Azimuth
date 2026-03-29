@@ -6,16 +6,17 @@
 |------|---------|
 | **`kicad/libraries/1_MyLib.kicad_sym`** | Project symbols: **BNO086**, **XIAO**, **K3-1280S-K1** (PWR1), **MLT-5020** (**BUZZER1**), **HX** tactile (**FUNC1**), **JS102011SAQN** (in library; **not** placed on the current PCB), etc. |
 | **`kicad/libraries/1_MyFootPrints.pretty/`** | Project footprints: **XIAO-ESP32-C3-DIP-SMD**, **SW-SMD_K3-1280S-K1**, **KEY-SMD_L4.0-W3.0-LS4.9-1**, **BUZ-SMD_L5.0-W5.5-P4.60**, etc. |
+| **`kicad/libraries/panelization.pretty/`** | Vendored **[madworm/Panelization.pretty](https://github.com/madworm/Panelization.pretty)** mouse-bite footprints (`mouse-bite-1mm-slot` … `5mm-slot`) for fab panels. |
 | **`kicad/ESP32_BNO086/sym-lib-table`** | Points `${KIPRJMOD}/../libraries/1_MyLib.kicad_sym` — open **`ESP32_BNO086.kicad_pro`** so **`${KIPRJMOD}`** resolves. |
-| **`kicad/ESP32_BNO086/fp-lib-table`** | Points `${KIPRJMOD}/../libraries/1_MyFootPrints.pretty`. |
-| **`kicad/easyeda2kicad_parts/`** | Imported footprints / 3D from EasyEDA (e.g. switch); some **3D model** paths under footprints still reference this tree or absolute paths—verify after clone. |
+| **`kicad/ESP32_BNO086/fp-lib-table`** | Points `${KIPRJMOD}/../libraries/1_MyFootPrints.pretty` and **`panelization.pretty`**. |
+| **`kicad/easyeda2kicad_parts/`** | Imported footprints / 3D from EasyEDA (e.g. switch); some **3D model** paths under footprints still reference this tree or absolute paths—verify after clone. **How to import:** [kicad/easyeda2kicad_parts/README.md](../kicad/easyeda2kicad_parts/README.md) — venv **`.venv_easyeda2kicad`** at repo root, **`scripts/easyeda2kicad_import.sh`**. |
 | **`kicad/3d/*.STEP`** | Local STEP models; PCB may reference `${KIPRJMOD}/../3d/...` from the XIAO footprint. |
 
 Open the project via **`kicad/ESP32_BNO086/ESP32_BNO086.kicad_pro`** so **`${KIPRJMOD}`** is that folder (required for the tables and 3D paths above).
 
 ## Pre-fabrication
 
-Run **ERC** and **DRC**, freeze the **BOM**, then add **panelization** (array + rails/fiducials per fab house rules) for production ordering. Until the panel step is done, treat the single-board design as layout-complete but not fab-submitted.
+Run **ERC** and **DRC**, freeze the **BOM**, then add **panelization** (array + rails/fiducials per fab house rules) for production ordering. Use footprints from library **`panelization`** (e.g. **`mouse-bite-2mm-slot`**) on **Edge.Cuts** per the upstream [README](https://github.com/madworm/Panelization.pretty) in that folder. Until the panel step is done, treat the single-board design as layout-complete but not fab-submitted.
 
 ## Board vs library names
 
