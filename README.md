@@ -18,7 +18,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; the [**web flasher**](https://fuglong.github.io/Azimuth/) ships this build. | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
 | **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**. | **In development** — same app; board polish, DRC/ERC, panelization ([roadmap](docs/roadmap.md)). |
 
-Pinouts (DIY vs PCB, separated): [**docs/wiring.md**](docs/wiring.md) · PlatformIO / GPIO summary: [**docs/hardware-profiles.md**](docs/hardware-profiles.md)
+[**docs/wiring.md**](docs/wiring.md) (pinouts) · [**docs/hardware-profiles.md**](docs/hardware-profiles.md) (PlatformIO / GPIO) · [**docs/parts-list.md**](docs/parts-list.md) (sourcing — DIY store links + PCB BOM)
 
 ---
 
