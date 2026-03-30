@@ -2,7 +2,7 @@
 # Copy ESP32-C3 flash images into web-flasher/firmware/ for GitHub Pages + esp-web-tools manifest.
 set -euo pipefail
 
-ENV_NAME="${1:-azimuth_main}"
+ENV_NAME="${1:-azimuth_main_diy}"
 BUILD="${PLATFORMIO_BUILD_DIR:-.pio/build/${ENV_NAME}}"
 DEST="${2:-web-flasher/firmware}"
 

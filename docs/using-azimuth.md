@@ -4,7 +4,7 @@ How to reach the **settings portal**, connect **OpenTrack**, and interpret a few
 
 ## Settings portal URLs
 
-With normal firmware (**`azimuth_main`**):
+With normal firmware (**`azimuth_main_diy`** or **`azimuth_main_pcb`** — same features):
 
 | Situation | Open in your browser |
 |-----------|----------------------|

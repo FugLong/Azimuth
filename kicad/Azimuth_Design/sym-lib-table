@@ -2,4 +2,7 @@
   (version 7)
   (lib (name "1_MyLib")(type "KiCad")(uri "${KIPRJMOD}/../libraries/1_MyLib.kicad_sym")(options "")(descr "Azimuth project symbols (BNO086, XIAO, etc.)"))
   (lib (name "button_C49108648")(type "KiCad")(uri "/Users/fuglong/Documents/Repos/Azimuth/kicad/easyeda2kicad_parts/easyeda2kicad/button_C49108648.kicad_sym")(options "")(descr ""))
+  (lib (name "easyeda2kicad")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad.kicad_sym")(options "")(descr "ESP32-C3-WROOM-02 (LCSC import)"))
+  (lib (name "usb_type_c_C2765186")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/usb_type_c_C2765186.kicad_sym")(options "")(descr "USB Type-C receptacle C2765186"))
+  (lib (name "rgb_led_C779813")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/rgb_led_C779813.kicad_sym")(options "")(descr "1615 RGB common anode C779813"))
 )

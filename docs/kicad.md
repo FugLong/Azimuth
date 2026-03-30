@@ -4,7 +4,9 @@
 
 | Path | Purpose |
 |------|---------|
-| **`kicad/libraries/1_MyLib.kicad_sym`** | Project symbols: **BNO086**, **XIAO**, **K3-1280S-K1** (PWR1), **MLT-5020** (**BUZZER1**), **HX** tactile (**FUNC1**), **JS102011SAQN** (in library; **not** placed on the current PCB), etc. |
+| **`kicad/ESP32_BNO086/`** | **XIAO ESP32-C3** carrier + BNO086 — bring-up baseline; [wiring.md](wiring.md) describes this netlist. Open **`ESP32_BNO086.kicad_pro`**. |
+| **`kicad/Azimuth_Design/`** | Integrated **ESP32-C3-WROOM-02** + same IMU/peripheral concept — **SMD module** instead of XIAO. GPIO mapping: [hardware-profiles.md](hardware-profiles.md). Open **`Azimuth.kicad_pro`**. |
+| **`kicad/libraries/1_MyLib.kicad_sym`** | Project symbols: **BNO086**, **XIAO**, **ESP32-C3-WROOM-02**, **K3-1280S-K1** (PWR1), **MLT-5020** (**BUZZER1**), **HX** tactile (**FUNC1**), **JS102011SAQN** (in library; **not** placed on every PCB), etc. |
 | **`kicad/libraries/1_MyFootPrints.pretty/`** | Project footprints: **XIAO-ESP32-C3-DIP-SMD**, **SW-SMD_K3-1280S-K1**, **KEY-SMD_L4.0-W3.0-LS4.9-1**, **BUZ-SMD_L5.0-W5.5-P4.60**, etc. |
 | **`kicad/libraries/panelization.pretty/`** | Vendored **[madworm/Panelization.pretty](https://github.com/madworm/Panelization.pretty)** mouse-bite footprints (`mouse-bite-1mm-slot` … `5mm-slot`) for fab panels. |
 | **`kicad/ESP32_BNO086/sym-lib-table`** | Points `${KIPRJMOD}/../libraries/1_MyLib.kicad_sym` — open **`ESP32_BNO086.kicad_pro`** so **`${KIPRJMOD}`** resolves. |
@@ -12,7 +14,7 @@
 | **`kicad/easyeda2kicad_parts/`** | Imported footprints / 3D from EasyEDA (e.g. switch); some **3D model** paths under footprints still reference this tree or absolute paths—verify after clone. **How to import:** [kicad/easyeda2kicad_parts/README.md](../kicad/easyeda2kicad_parts/README.md) — venv **`.venv_easyeda2kicad`** at repo root, **`scripts/easyeda2kicad_import.sh`**. |
 | **`kicad/3d/*.STEP`** | Local STEP models; PCB may reference `${KIPRJMOD}/../3d/...` from the XIAO footprint. |
 
-Open the project via **`kicad/ESP32_BNO086/ESP32_BNO086.kicad_pro`** so **`${KIPRJMOD}`** is that folder (required for the tables and 3D paths above).
+Open a project via its **`.kicad_pro`** so **`${KIPRJMOD}`** is that project folder (required for **`sym-lib-table`** / **`fp-lib-table`** and 3D paths). Example: **`kicad/ESP32_BNO086/ESP32_BNO086.kicad_pro`** or **`kicad/Azimuth_Design/Azimuth.kicad_pro`**. **Azimuth_Design** also loads **`easyeda2kicad`** (WROOM-02) and **`usb_type_c_C2765186`** from **`../easyeda2kicad_parts/easyeda2kicad/`**; other projects use **`../libraries/...`** as in their tables.
 
 ## Pre-fabrication
 
@@ -29,7 +31,7 @@ Run **ERC** and **DRC**, freeze the **BOM**, then add **panelization** (array + 
 
 ## Schematic note
 
-**`ESP32_BNO086.kicad_sch`** embeds copies of custom symbols in `(lib_symbols …)`. Edit **`1_MyLib.kicad_sym`** for future boards; use **Update Symbol from Library** when you want the sheet to track the file on disk.
+KiCad sheets may embed copies of custom symbols in `(lib_symbols …)`. Edit **`kicad/libraries/1_MyLib.kicad_sym`** as the source of truth; use **Update Symbol from Library** when you want a schematic to track the file on disk.
 
 ## 3D models — XIAO / `${AMZPATH}`
 

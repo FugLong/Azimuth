@@ -18,6 +18,7 @@ __pycache__/
 # KiCad — versioned backups are zipped under *-backups/; no need in git
 *-backups/
 fp-info-cache
+kicad/easyeda2kicad_parts/_import_*/
 
 # KiCad — session / autosave / lock (never commit)
 **/\#auto_saved_files#

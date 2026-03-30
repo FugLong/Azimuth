@@ -1,4 +1,4 @@
-# Build env azimuth_main and deploy web-flasher/ (USB install via esp-web-tools).
+# Build env azimuth_main_diy and deploy web-flasher/ (USB install via esp-web-tools).
 # Repo: Settings → Pages → Source: GitHub Actions.
 # Deploy job uses a custom environment name so Deployments / Environments UI reads "azimuth-flasher" (not the generic github-pages label).
 
@@ -39,13 +39,13 @@ jobs:
       - name: Placeholder secrets for CI build
         run: cp include/secrets.h.example include/secrets.h
 
-      - name: Build firmware (azimuth_main)
-        run: pio run -e azimuth_main
+      - name: Build firmware (azimuth_main_diy)
+        run: pio run -e azimuth_main_diy
 
       - name: Copy images for esp-web-tools
         run: |
           chmod +x scripts/prepare_web_flasher_firmware.sh
-          ./scripts/prepare_web_flasher_firmware.sh azimuth_main web-flasher/firmware
+          ./scripts/prepare_web_flasher_firmware.sh azimuth_main_diy web-flasher/firmware
 
       - name: Sync manifest version from VERSION
         run: python3 scripts/sync_manifest_version.py web-flasher/manifest.json

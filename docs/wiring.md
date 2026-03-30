@@ -1,6 +1,10 @@
-# Wiring — Azimuth PCB (`kicad/ESP32_BNO086`)
+# Wiring — Azimuth PCBs and DIY
 
-This document matches the **Azimuth** custom PCB (KiCad project `ESP32_BNO086`) and the firmware defaults in `src/main.cpp`. It also applies if you wire a **XIAO ESP32-C3** to a **BNO08x breakout** by hand using the same net names.
+This document matches the **GPIO netlist** used in firmware (**`include/azimuth_hw.h`**) for:
+
+- **DIY:** **XIAO ESP32-C3** + BNO08x breakout  
+- **KiCad `ESP32_BNO086`:** XIAO footprint on the carrier PCB ([**kicad/ESP32_BNO086**](../kicad/ESP32_BNO086/))  
+- **Integrated module PCB:** **ESP32-C3-WROOM-02** (or compatible) in [**kicad/Azimuth_Design**](../kicad/Azimuth_Design/) — same GPIOs, different physical pins (see [**hardware-profiles.md**](hardware-profiles.md))
 
 ---
 
@@ -8,8 +12,28 @@ This document matches the **Azimuth** custom PCB (KiCad project `ESP32_BNO086`) 
 
 | Item | Detail |
 |------|--------|
-| Board | Seeed **XIAO ESP32-C3** (USB CDC) |
-| Footprint in KiCad | `1_MyFootPrints:XIAO-ESP32-C3-DIP-SMD` (SMD pads + castellated holes) |
+| DIY / ESP32_BNO086 | Seeed **XIAO ESP32-C3** (USB CDC) — footprint `1_MyFootPrints:XIAO-ESP32-C3-DIP-SMD` |
+| Azimuth_Design (module) | **ESP32-C3-WROOM-02** (or same GPIO map) — schematic **U1**; flash with **`azimuth_main_pcb`** |
+
+### XIAO pin map (authoritative — matches Azimuth firmware)
+
+All **D→GPIO** assignments below match Seeed’s published table for **XIAO ESP32-C3** ([Getting Started — Pin Map](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)). **`include/azimuth_hw.h`** uses these GPIO numbers.
+
+| XIAO pin | GPIO | Seeed notes (short) |
+|----------|------|---------------------|
+| D0 | **2** | ADC1_CH2 |
+| D1 | **3** | ADC1_CH3 |
+| D2 | **4** | ADC1_CH4, FSPIHD, MTMS |
+| D3 | **5** | ADC2_CH0, FSPIWP, MTDI |
+| D4 | **6** | FSPICLK, MTCK |
+| D5 | **7** | FSPID, MTDO |
+| D6 | **21** | U0TXD |
+| D7 | **20** | U0RXD |
+| D8 | **8** | SPI SCK |
+| D9 | **9** | SPI MISO |
+| D10 | **10** | MOSI, FSPICS0 |
+
+**Strapping (Seeed + ESP32-C3 datasheet):** **GPIO2**, **GPIO8**, and **GPIO9** can affect boot / download behavior at reset. Azimuth uses **D0/GPIO2** (battery sense), **D8–D10/GPIO8–10** (SPI). This is the same trade-off as routing SPI on the XIAO; ensure IMU and passives keep valid levels at reset (your PCB already mirrors the working XIAO + BNO086 path).
 
 ---
 
@@ -17,12 +41,12 @@ This document matches the **Azimuth** custom PCB (KiCad project `ESP32_BNO086`) 
 
 The bare **BNO086** (LGA) is on the bottom side in the PCB layout. On this PCB, **`PS1`**, **`VDD`**, and **`VDDIO`** share the **3.3 V** net (SPI strap + supplies). **`PS0/WAKE`** is routed to **D2** **and** has a **10 kΩ pull-up to 3.3 V** so SPI strap timing is valid while remaining MCU-drivable after reset.
 
-| BNO086 function | XIAO pin | GPIO | Firmware (`main.cpp`) |
-|-----------------|----------|------|------------------------|
-| **H_CSN** (CS) | **D3** | 5 | `kPinCs` |
-| **H_INTN** | **D4** | 6 | `kPinInt` |
-| **NRST** | **D7** | 20 | `kPinRst` |
-| **PS0 / WAKE** | **D2** | 4 | (strap / WAKE; not a `kPin*` in current firmware) |
+| BNO086 function | XIAO pin | GPIO | Firmware (`azimuth_hw.h`) |
+|-----------------|----------|------|---------------------------|
+| **H_CSN** (CS) | **D3** | 5 | `kPinImuCs` |
+| **H_INTN** | **D4** | 6 | `kPinImuInt` |
+| **NRST** | **D7** | 20 | `kPinImuRst` |
+| **PS0 / WAKE** | **D2** | 4 | `kPinImuPs0Wake` (strap / WAKE; not asserted in current firmware) |
 | **H_SCL / SCK** | **D8** | 8 | FSPI `SCK` |
 | **H_SDA / MISO** | **D9** | 9 | FSPI `MISO` |
 | **SA0 / H_MOSI** | **D10** | 10 | FSPI `MOSI` |
@@ -95,7 +119,7 @@ GPIO21 is also **UART TX**; fine for the buzzer if you do not need that UART for
 2. **Clock/checks:** **CLKSEL0** pulled high (internal clock selection with `CLKSEL1` left unconnected), and **CAP** has dedicated **100 nF** to GND.
 3. **ENV bus/checks:** **ENV_SCL** / **ENV_SDA** have pull-ups (R7/R8) even if no external environmental sensor is populated.
 4. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
-5. After assembly, run **`azimuth_debug`** (`pio run -e azimuth_debug`) and confirm serial prints before switching to **`azimuth_main`** for OpenTrack / Wi‑Fi.
+5. After assembly, run **`azimuth_debug_diy`** or **`azimuth_debug_pcb`** (match your hardware) and confirm serial prints before switching to **`azimuth_main_diy`** / **`azimuth_main_pcb`** for OpenTrack / Wi‑Fi.
 6. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order, then re-run DRC in KiCad.
 
 ---

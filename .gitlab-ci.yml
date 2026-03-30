@@ -3,7 +3,7 @@
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  AZIMUTH_PIO_ENV: azimuth_main
+  AZIMUTH_PIO_ENV: azimuth_main_diy
 
 cache:
   key: "${CI_COMMIT_REF_SLUG}-pip"
@@ -13,7 +13,7 @@ cache:
 stages:
   - build
 
-.build_azimuth_main:
+.build_azimuth_main_diy:
   stage: build
   image: python:3.12-slim
   before_script:
@@ -26,12 +26,12 @@ stages:
     - chmod +x scripts/prepare_web_flasher_firmware.sh
     - ./scripts/prepare_web_flasher_firmware.sh "$AZIMUTH_PIO_ENV" ci-artifacts/firmware
   artifacts:
-    name: "azimuth-main-$CI_COMMIT_SHORT_SHA"
+    name: "azimuth-main-diy-$CI_COMMIT_SHORT_SHA"
     expire_in: 30 days
     paths:
       - ci-artifacts/firmware/
 
-build:azimuth_main:
-  extends: .build_azimuth_main
+build:azimuth_main_diy:
+  extends: .build_azimuth_main_diy
   rules:
     - if: $CI_COMMIT_BRANCH == "main"

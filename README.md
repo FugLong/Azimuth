@@ -51,7 +51,7 @@ Azimuth is a **DIY head tracker** for flight sims, racing, and anything that wor
 | [**Quick start**](docs/quickstart.md) | Fast path from flash to tracking over Wi‑Fi |
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
-| [**Wiring**](docs/wiring.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Hardware |
+| [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) (XIAO vs module PCB) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Hardware |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |
 
 ## Goals

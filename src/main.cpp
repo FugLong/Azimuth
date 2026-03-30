@@ -6,7 +6,8 @@
  *   CS=D3 (GPIO5), H_INT=D4 (GPIO6), NRST=D7 (GPIO20)
  *   PS0/WAKE=D2 (GPIO4); PS1 + VDD + VDDIO → 3V3 on PCB
  *
- * PlatformIO: `azimuth_debug` (IMU_DEBUG_MODE=1) vs `azimuth_main` (IMU_DEBUG_MODE=0).
+ * PlatformIO: `*_diy` (XIAO) vs `*_pcb` (integrated module board). Pins: include/azimuth_hw.h
+ *   IMU_DEBUG_MODE=1 (debug) vs 0 (main).
  *   Debug — yaw/pitch/roll on USB serial only.
  *   Main — Hatire USB (115200) + optional Wi‑Fi OpenTrack UDP (6× double).
  */
@@ -14,6 +15,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#include "azimuth_hw.h"
 #include "SparkFun_BNO08x_Arduino_Library.h"
 
 #ifndef IMU_DEBUG_MODE
@@ -29,9 +31,9 @@
 namespace {
 
 /** Chip select — any free GPIO; SparkFun lib drives CS in software. */
-constexpr uint8_t kPinCs = 5;    // D3
-constexpr uint8_t kPinInt = 6;   // D4 (H_INT, active low)
-constexpr uint8_t kPinRst = 20;  // D7 (NRST)
+constexpr uint8_t kPinCs = azimuth_hw::kPinImuCs;
+constexpr uint8_t kPinInt = azimuth_hw::kPinImuInt;
+constexpr uint8_t kPinRst = azimuth_hw::kPinImuRst;
 
 #if IMU_DEBUG_MODE
 /** Rotation vector report period passed to enableRotationVector() — milliseconds (100 Hz). */

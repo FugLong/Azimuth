@@ -10,7 +10,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 |------------|----------|-------|
 | Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
-| Firmware | **60–70%** | SPI IMU; **`azimuth_debug`** bring-up; **`azimuth_main`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
+| Firmware | **60–70%** | SPI IMU; **`azimuth_debug_*`** bring-up; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
 | End-user docs & release | **~50%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal banner documented; OTA TBD |
 
@@ -57,7 +57,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 | Task | Status |
 |------|--------|
-| Pin map / config header (single source of truth vs [wiring.md](wiring.md)) | ⬜ |
+| Pin map / config header (single source of truth vs [wiring.md](wiring.md)) | In progress: **`include/azimuth_hw.h`** + [hardware-profiles.md](hardware-profiles.md); add alternate defines only if a PCB GPIO map diverges |
 | LED: patterns for status (boot, tracking, error, low battery) | ⬜ |
 | Buttons: recenter / func; interrupts or polled + debounce | ⬜ |
 | Buzzer: tones for feedback (optional minimal set for V1) | ⬜ |
@@ -102,7 +102,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 
 | Task | Status |
 |------|--------|
-| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ✅ (AP **:80** + STA **:8080**; same UI from `src/portal_html.cpp` in **`azimuth_main`**) |
+| Captive portal or small HTTP server on ESP (when in AP or dual mode) | ✅ (AP **:80** + STA **:8080**; same UI from `src/portal_html.cpp` in **`azimuth_main_*`**) |
 | **Or** BLE GATT for lightweight config (often nicer for phones; more firmware work) | ⬜ |
 | Same settings backend as Phase 3 (one model, multiple UIs) | 🟨 (HTTP uses same NVS namespace; BLE not started) |
 
@@ -136,5 +136,5 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
 | 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |
 | 2026-03-27 | Firmware ~40%: NVS + HTTP settings, provisioning portal; roadmap/tasks aligned; shared OpenTrack axis helper; portal HTML split to `portal_html.cpp`. |
-| 2026-03-28 | PlatformIO envs **`azimuth_main`** / **`azimuth_debug`**; GitLab CI + GitHub Pages flasher; NVS portal axis map; **`VERSION`** / manifest sync; update banner. Docs split: README for overview; **[using-azimuth.md](using-azimuth.md)**; **[development.md](development.md)**. |
+| 2026-03-28 | PlatformIO envs **`azimuth_main_diy`** / **`azimuth_debug_diy`** (+ **`_*_pcb`**); GitLab CI + GitHub Pages flasher; NVS portal axis map; **`VERSION`** / manifest sync; update banner. Docs split: README for overview; **[using-azimuth.md](using-azimuth.md)**; **[development.md](development.md)**. |
 | 2026-03-28 | Firmware snapshot toward V1 revised to **60–70%** (core tracking + wireless + settings + release path in place; I/O, battery, OTA, refactor still open). |
