@@ -11,8 +11,8 @@ Build flags, **PlatformIO** environments, **CI**, and how the firmware repo is l
 
 | Environment | Hardware |
 |-------------|----------|
-| **`azimuth_main_diy`**, **`azimuth_debug_diy`** | **DIY** — Seeed **XIAO ESP32-C3** (breadboard or KiCad **`ESP32_BNO086`**) |
-| **`azimuth_main_pcb`**, **`azimuth_debug_pcb`** | **Azimuth PCB** — integrated board with **ESP32-C3** module (e.g. **WROOM-02**), **`esp32-c3-devkitc-02`** target |
+| **`azimuth_main_diy`**, **`azimuth_debug_diy`** | **DIY** — Seeed **XIAO ESP32-C3** + **BNO08x** breakout (SPI). Optional **buzzer** / **button** if wired; **no** Azimuth RGB LED. |
+| **`azimuth_main_pcb`**, **`azimuth_debug_pcb`** | **Azimuth custom PCB** ([**`Azimuth_Design`**](../kicad/Azimuth_Design/)) — **ESP32-C3** module (e.g. **WROOM-02**), on-board **RGB LED**, **buzzer**, **FUNC** button — **`esp32-c3-devkitc-02`** target |
 
 **Default release build:** **`azimuth_main_diy`** (XIAO). Use **`azimuth_debug_diy`** for **USB serial only** (yaw / pitch / roll), no Wi‑Fi or portal.
 
@@ -64,11 +64,11 @@ Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.g
 
 ## Hardware pins (this revision)
 
-**MCU:** Seeed **XIAO ESP32-C3** (DIY / `ESP32_BNO086`) **or** an **ESP32-C3** module on the integrated PCB — **same GPIO map**; constants in **`include/azimuth_hw.h`**. Details: [**hardware-profiles.md**](hardware-profiles.md).
+**MCU:** Seeed **XIAO ESP32-C3** (DIY) **or** **ESP32-C3** module on the **Azimuth custom PCB** — **same GPIO map**; constants in **`include/azimuth_hw.h`**. Details: [**hardware-profiles.md**](hardware-profiles.md).
 
-**IMU:** **BNO086** on the custom PCB (or **BNO08x** breakout in **SPI** mode with **PS0** / **PS1** → **3.3 V**).
+**IMU:** **BNO08x** breakout (DIY) or **BNO086** on the Azimuth PCB — **SPI**; strap **PS0** / **PS1** per breakout / [wiring.md](wiring.md).
 
-Summary SPI map (full table, power, buttons, LED, buzzer in [**wiring.md**](wiring.md)):
+Summary SPI map (full table, power, RGB / button / buzzer differences in [**wiring.md**](wiring.md)):
 
 | Signal | XIAO pin | GPIO |
 |--------|----------|------|

@@ -1,8 +1,10 @@
-# Parts list — Azimuth PCB (`ESP32_BNO086`)
+# Parts list — BOM reference (Azimuth custom PCB)
 
-Values, references, and footprints match the KiCad project **`kicad/ESP32_BNO086/`** (schematic **`ESP32_BNO086.kicad_sch`**, layout **`ESP32_BNO086.kicad_pcb`**). Save KiCad before treating this as the single source of truth.
+**Authoritative BOM:** export from KiCad **`kicad/Azimuth_Design/Azimuth.kicad_pro`** (or your fab’s tool) after **ERC** / **DRC**. Line items, references, and footprints must match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`**.
 
-The tables below are the **PCB BOM**. A **battery pack** is **not** a line item on that BOM: the board only has the **JST PH2.0** receptacle (**`PH2.0`** in the schematic). If you want **wireless** operation, you still need a suitable **1S Li-ion / LiPo** with a matching **JST-PH** plug (check polarity against [wiring.md](wiring.md) **`/Bat+`** on pin 1). USB-powered builds can skip the pack.
+The tables below are a **human-readable summary** for the **BNO086** and typical support passives—useful for understanding, not a substitute for the schematic. **DIY** (XIAO + breakout) has **no** fixed BOM.
+
+A **battery pack** is usually **not** a PCB line item: the board may expose a **JST PH2.0** (**`PH2.0`**). For **wireless** use you still need a suitable **1S Li-ion / LiPo** and plug (check polarity in the schematic). USB-only builds skip the pack.
 
 ---
 
@@ -18,17 +20,20 @@ Other **JST-PH** 1S packs with the **same polarity** and connector series are fi
 
 ---
 
-## Active & modules
+## Active & modules (see schematic)
 
-| Qty | Ref | Part / value | Footprint (KiCad) | Notes |
-|-----|-----|----------------|-------------------|--------|
-| 1 | **U1** | Seeed **XIAO ESP32-C3** | `1_MyFootPrints:XIAO-ESP32-C3-DIP-SMD` | MCU + USB; MPN e.g. **113991054** (Seeed) |
-| 1 | **IC1** | **BNO086** | `Package_LGA:LGA-28_5.2x3.8mm_P0.5mm` | IMU; bottom side in layout |
-| 1 | **PH2.0** | JST **PH** 2-pin | `Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal` | **`/Bat+`** (pin 1) / **GND** |
-| 1 | **PWR1** | **K3-1280S-K1** slide switch | `1_MyFootPrints:SW-SMD_K3-1280S-K1` | Power path: **`/Bat+`** ↔ **`vcc`** (see [wiring.md](wiring.md)); LCSC **C128953** |
-| 1 | **LED1** | **YLED0402R** (red, generic **LED** in sch.) | `LED_SMD:LED_0402_1005Metric` | Status; LCSC **C21260817** |
-| 1 | **BUZZER1** | **MLT-5020** | `1_MyFootPrints:BUZ-SMD_L5.0-W5.5-P4.60` | Magnetic buzzer; LCSC **C94598** |
-| 1 | **FUNC1** | **HX 3×4×2** tactile (2P) | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | User button; LCSC **C49234124** |
+| Qty | Ref | Part / value | Notes |
+|-----|-----|----------------|--------|
+| 1 | **U1** | **ESP32-C3-WROOM-02** (e.g. **-N4** flash option) | MCU module; USB via module pads — see **`Azimuth.kicad_sch`** |
+| 1 | **IC1** | **BNO086** | IMU (**LGA**); often bottom side in layout |
+| 1 | **PH2.0** | JST **PH** 2-pin | Battery receptacle if populated — pin 1 **`/Bat+`** per schematic |
+| 1 | **PWR1** | **K3-1280S-K1** | Slide switch on battery path |
+| 1 | **LED1** | **TZ-P4-1615RGBTCA1** (or sch. value) | **RGB** — [wiring.md](wiring.md), [hardware-profiles.md](hardware-profiles.md) |
+| 1 | **BUZZER1** | **MLT-5020** | Magnetic buzzer |
+| 1 | **FUNC1** | Tact switch (e.g. **HX** 3×4×2) | User button |
+| 1 | **J1** | USB-C (per schematic) | Data + power in — see **`Azimuth.kicad_sch`** |
+
+Exact **MPNs**, **LCSC** codes, and **footprint** strings live in the KiCad project.
 
 ---
 
@@ -41,8 +46,8 @@ Other **JST-PH** 1S packs with the **same polarity** and connector series are fi
 | 3 | **R4**, **R5**, **R6** | **10 kΩ** | `Resistor_SMD:R_0402_1005Metric` |
 | 2 | **R7**, **R8** | **4.7 kΩ** | `Resistor_SMD:R_0402_1005Metric` |
 
-**R1 / R2** — divider from **`vcc`** (switched battery rail) to **GND**, tap to **GPIO2 (D0)** for ADC.  
-**R3** — current limit for **LED1** from **GPIO3 (D1)**.  
+**R1 / R2** — divider from the switched battery rail to **GND**, tap to **GPIO2** for ADC (see schematic net names).  
+**R3** / **R14** / **R15** — **RGB LED** current limit (Azimuth PCB); values in **`Azimuth.kicad_sch`**.  
 **R4** — pull-up **BNO086 `BOOTN`** → **3.3 V** (normal boot, not IMU DFU).  
 **R5** — pull-up **BNO086 `PS0/WAKE`** → **3.3 V** (SPI strap high at reset; MCU can drive **D2**).  
 **R6** — pull-up **BNO086 `CLKSEL0`** → **3.3 V** (internal oscillator; `CLKSEL1` NC).  
@@ -54,8 +59,8 @@ Other **JST-PH** 1S packs with the **same polarity** and connector series are fi
 
 | Qty | Ref | Value | Footprint | Role (nets) |
 |-----|-----|--------|-----------|----------------|
-| 1 | **C1** | **10 µF** | `Capacitor_SMD:C_0603_1608Metric` | Bulk **`vcc`** → **GND** |
-| 1 | **C2** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF bypass **`vcc`** → **GND** (near divider) |
+| 1 | **C1** | **10 µF** | `Capacitor_SMD:C_0603_1608Metric` | Bulk on switched rail → **GND** |
+| 1 | **C2** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF bypass near divider / rail |
 | 1 | **C3** | **10 µF** | `Capacitor_SMD:C_0603_1608Metric` | Bulk **3.3 V** at **IC1** (`Net-(IC1-PS1)` / VDD / VDDIO) |
 | 1 | **C4** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF **3.3 V** → **GND** |
 | 1 | **C5** | **100 nF** | `Capacitor_SMD:C_0402_1005Metric` | **BNO086 `CAP`** → **GND** |
@@ -67,10 +72,10 @@ Other **JST-PH** 1S packs with the **same polarity** and connector series are fi
 | Block | What’s on the PCB | Typical practice |
 |-------|-------------------|------------------|
 | **BNO086** | **C3**, **C4** on **3.3 V**; **C5** on **`CAP`**; **R4/R5/R6** on **`BOOTN`/`PS0`/`CLKSEL0`**; **R7/R8** on **`ENV_SCL`/`ENV_SDA`** | No series RC on **SPI** for short traces / 3 MHz. |
-| **Battery path** | **`/Bat+`** from **PH2.0** through **PWR1** to **`vcc`**; **C1/C2** and **R2** high side on **`vcc`** | Divider reads switched rail; see [wiring.md](wiring.md). |
+| **Battery path** | **`/Bat+`** from **PH2.0** through **PWR1**; **C1/C2** and divider on switched rail | See [wiring.md](wiring.md) and schematic nets. |
 | **FUNC1** | Switch to **GND** | **Internal pull-up** on GPIO in firmware (`INPUT_PULLUP`). |
 | **BUZZER1** | **LOAD+** to GPIO, **LOAD−** to GND | Check **MLT-5020** current vs GPIO; transistor + base resistor if needed. |
-| **LED1** | **R3** only | Standard. |
+| **LED1** | **R3** / **R14** / **R15** (RGB) | Per **`Azimuth.kicad_sch`**. |
 
 If you add long wires later, consider **series resistors** on **SCK/MOSI/MISO** and a **stronger pull-up** on **H_INTN** (the SparkFun library can configure a pull-up on the MCU side).
 

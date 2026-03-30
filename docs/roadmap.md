@@ -8,7 +8,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 
 | Workstream | Progress | Notes |
 |------------|----------|-------|
-| Hardware selection | **100%** | ESP32-C3 XIAO + BNO086-class IMU, etc. |
+| Hardware selection | **100%** | DIY: **XIAO ESP32-C3** + **BNO08x**; product: **Azimuth** PCB ([**Azimuth_Design**](../kicad/Azimuth_Design/)) |
 | Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
 | Firmware | **60–70%** | SPI IMU; **`azimuth_debug_*`** bring-up; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |

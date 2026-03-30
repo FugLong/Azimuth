@@ -2,8 +2,10 @@
  * Pin map for BNO08x (SPI) and board I/O.
  *
  * Two hardware paths share the same GPIO numbers so one firmware build profile
- * matches both: Seeed XIAO ESP32-C3 (DIY + ESP32_BNO086-style PCB) and a
- * discrete ESP32-C3 module (e.g. WROOM-02 on the Azimuth integrated PCB).
+ * matches both:
+ *   - DIY: Seeed XIAO ESP32-C3 + BNO08x breakout (hand-wired).
+ *     Optional buzzer/button wiring; no Azimuth RGB LED.
+ *   - Azimuth custom PCB: ESP32-C3 module (e.g. WROOM-02) on kicad/Azimuth_Design — RGB LED, buzzer, FUNC button.
  * Route these GPIOs on the PCB; names like D3/D8 are XIAO silk only.
  *
  * See docs/hardware-profiles.md and docs/wiring.md.
@@ -27,6 +29,7 @@ constexpr uint8_t kPinImuRst = 20;  // NRST (same GPIO as UART RX on XIAO)
 constexpr uint8_t kPinImuPs0Wake = 4;
 
 // Planned board I/O (wiring.md — not all used in firmware yet)
+// Azimuth_Design RGB LED uses GPIO 0, 1, 3 — see docs/wiring.md. kPinStatusLed is one channel / future use.
 constexpr uint8_t kPinStatusLed = 3;
 constexpr uint8_t kPinButtonFunc = 7;
 constexpr uint8_t kPinBuzzer = 21;

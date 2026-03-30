@@ -2,6 +2,8 @@
 
 Short path from a fresh flash to head tracking in **OpenTrack** over Wi‑Fi.
 
+This assumes you already have firmware on a board (typically the **DIY** build: **XIAO ESP32-C3** + **BNO08x** — see the [**README**](../README.md) “Two hardware paths” and [**hardware-profiles.md**](hardware-profiles.md)). Extended on-device features beyond core tracking are documented in [**using-azimuth.md**](using-azimuth.md) as they land.
+
 ## 1. Join your home Wi‑Fi (first setup)
 
 1. Power the board on. On your phone or computer, connect to the **Azimuth-Setup** Wi‑Fi network.

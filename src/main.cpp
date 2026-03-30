@@ -1,12 +1,14 @@
 /**
  * Seeed XIAO ESP32-C3 + BNO08x (SPI) — fused orientation.
  *
- * Azimuth PCB (ESP32_BNO086): SPI + BNO086 straps
+ * DIY — XIAO + BNO08x breakout: SPI + BNO08x straps (see docs/wiring.md)
  *   FSPI: SCK=D8 (GPIO8), MISO=D9 (GPIO9), MOSI=D10 (GPIO10)
  *   CS=D3 (GPIO5), H_INT=D4 (GPIO6), NRST=D7 (GPIO20)
  *   PS0/WAKE=D2 (GPIO4); PS1 + VDD + VDDIO → 3V3 on PCB
  *
- * PlatformIO: `*_diy` (XIAO) vs `*_pcb` (integrated module board). Pins: include/azimuth_hw.h
+ * Azimuth custom PCB (kicad/Azimuth_Design): same SPI GPIO map; on-board RGB / buzzer / button — see docs/wiring.md
+ *
+ * PlatformIO: `*_diy` (XIAO) vs `*_pcb` (Azimuth_Design module board). Pins: include/azimuth_hw.h
  *   IMU_DEBUG_MODE=1 (debug) vs 0 (main).
  *   Debug — yaw/pitch/roll on USB serial only.
  *   Main — Hatire USB (115200) + optional Wi‑Fi OpenTrack UDP (6× double).
