@@ -1,150 +1,111 @@
-# Wiring — DIY (XIAO + BNO08x) and Azimuth custom PCB
+# Wiring and pinout
 
-This document matches the **GPIO netlist** in **`include/azimuth_hw.h`**.
+Assignments match **`include/azimuth_hw.h`**. PlatformIO environments: [**hardware-profiles.md**](hardware-profiles.md).
 
-| Setup | What it is | Firmware |
-|-------|------------|----------|
-| **DIY** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout (**SPI**) — breadboard, perfboard, or any hand-wired layout | **`azimuth_*_diy`** |
-| **Azimuth custom PCB** | [**`kicad/Azimuth_Design`**](../kicad/Azimuth_Design/) — **ESP32-C3-WROOM-02**, **BNO086**, RGB LED, buzzer, button | **`azimuth_*_pcb`** |
-
-SPI and IMU use the **same GPIO map** in firmware. The **Azimuth PCB** adds on-board **RGB LED**, **buzzer**, and **FUNC** button; **default DIY** is usually **IMU only** (no Azimuth-style RGB). Optional DIY **buzzer** / **button** use the same GPIOs as the custom PCB (see below). [**hardware-profiles.md**](hardware-profiles.md) has the feature overview.
+Pinout is split into **two paths** below—follow **either** the DIY (XIAO) section **or** the PCB (U1) section; they describe the same GPIO map in the form you need for that build.
 
 ---
 
-## MCU
+## DIY path: Seeed XIAO + BNO08x breakout
 
-| Item | Detail |
-|------|--------|
-| DIY | Seeed **XIAO ESP32-C3** (USB CDC) — the board Arduino calls **`seeed_xiao_esp32c3`** |
-| Azimuth custom PCB | **ESP32-C3-WROOM-02** (or compatible) — schematic **U1** in **`Azimuth.kicad_pro`**; flash with **`azimuth_main_pcb`** |
+For a **breadboard or hand-wired** setup: **Seeed XIAO ESP32-C3** + **BNO08x** breakout in **SPI** mode. Flash **`azimuth_*_diy`**. USB to the PC is the XIAO’s USB-C.
 
-### XIAO pin map (authoritative — matches Azimuth firmware)
+### XIAO pins (D → GPIO)
 
-All **D→GPIO** assignments below match Seeed’s published table for **XIAO ESP32-C3** ([Getting Started — Pin Map](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)). **`include/azimuth_hw.h`** uses these GPIO numbers.
+Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/).
 
-| XIAO pin | GPIO | Seeed notes (short) |
-|----------|------|---------------------|
-| D0 | **2** | ADC1_CH2 |
-| D1 | **3** | ADC1_CH3 |
-| D2 | **4** | ADC1_CH4, FSPIHD, MTMS |
-| D3 | **5** | ADC2_CH0, FSPIWP, MTDI |
-| D4 | **6** | FSPICLK, MTCK |
-| D5 | **7** | FSPID, MTDO |
-| D6 | **21** | U0TXD |
-| D7 | **20** | U0RXD |
+| XIAO | GPIO | Typical use in Azimuth |
+|------|------|-------------------------|
+| D0 | **2** | Battery divider when that circuit exists (Azimuth PCB) |
+| D1 | **3** | — |
+| D2 | **4** | IMU PS0 / WAKE |
+| D3 | **5** | IMU CS |
+| D4 | **6** | IMU INT |
+| D5 | **7** | FUNC (optional tact switch) |
+| D6 | **21** | Buzzer + (optional); also UART TX |
+| D7 | **20** | IMU NRST; same pin as UART RX—do not use both |
 | D8 | **8** | SPI SCK |
 | D9 | **9** | SPI MISO |
-| D10 | **10** | MOSI, FSPICS0 |
+| D10 | **10** | SPI MOSI |
 
-**Strapping (Seeed + ESP32-C3 datasheet):** **GPIO2**, **GPIO8**, and **GPIO9** can affect boot / download behavior at reset. Firmware uses **D0/GPIO2** (battery sense when that circuit exists), **D8–D10/GPIO8–10** (SPI). Keep IMU and straps valid at reset (see IMU passives below).
+**Strapping:** On ESP32-C3, **GPIO2**, **GPIO8**, and **GPIO9** can affect boot. This design uses **D0** (GPIO2) when battery sense exists, and **D8–D10** for SPI—keep IMU power/strap pins valid at reset.
 
----
+### IMU breakout → XIAO
 
-## BNO086 / BNO08x — SPI
+Map breakout pins by **function** (your silk may differ from **BNO086** names):
 
-**Signal names** below match the **BNO086** land pattern used on the **Azimuth custom PCB**; a **BNO08x** breakout may label pins differently—map by function (CS, INT, RST, SCK, MISO, MOSI, PS0, power).
+| IMU function | GPIO | XIAO | `azimuth_hw.h` |
+|--------------|------|------|----------------|
+| CS | 5 | D3 | `kPinImuCs` |
+| INT | 6 | D4 | `kPinImuInt` |
+| NRST | 20 | D7 | `kPinImuRst` |
+| PS0 / WAKE | 4 | D2 | `kPinImuPs0Wake` |
+| SCK / MISO / MOSI | 8 / 9 / 10 | D8 / D9 / D10 | FSPI |
+| VDD, VDDIO, PS1 | — | 3V3 | SPI straps (see breakout doc) |
+| GND | — | GND | |
 
-On the **Azimuth** PCB, **IC1** is the bare **BNO086** (often on the bottom layer). There **`PS1`**, **`VDD`**, and **`VDDIO`** are on **3.3 V** (SPI strap), and **`PS0/WAKE`** goes to **D2** with a **10 kΩ** pull-up to **3.3 V** so the strap is valid at reset while the MCU can drive the pin later.
+Arduino **FSPI** defaults match **D8 / D9 / D10** on this XIAO. Tie **PS0** / **PS1** per your breakout’s datasheet (often **3.3 V** for SPI).
 
-For **DIY** with a **breakout**, follow the breakout’s SPI wiring; tie **PS0** / **PS1** per the breakout docs (often **3.3 V** for SPI mode).
+If you use different pins for SPI, call **`SPI.begin(sck, miso, mosi, -1)`** before **`imu.beginSPI(...)`**.
 
-| BNO086 function | XIAO pin | GPIO | Firmware (`azimuth_hw.h`) |
-|-----------------|----------|------|---------------------------|
-| **H_CSN** (CS) | **D3** | 5 | `kPinImuCs` |
-| **H_INTN** | **D4** | 6 | `kPinImuInt` |
-| **NRST** | **D7** | 20 | `kPinImuRst` |
-| **PS0 / WAKE** | **D2** | 4 | `kPinImuPs0Wake` (strap / WAKE; not asserted in current firmware) |
-| **H_SCL / SCK** | **D8** | 8 | FSPI `SCK` |
-| **H_SDA / MISO** | **D9** | 9 | FSPI `MISO` |
-| **SA0 / H_MOSI** | **D10** | 10 | FSPI `MOSI` |
-| **VDD**, **VDDIO**, **PS1** | 3V3 | — | Same 3.3 V rail on PCB |
-| **GND** | GND | — | Common ground |
-
-Arduino core pins: `SCK`/`MISO`/`MOSI` match **D8/D9/D10** on this XIAO variant.
-
-### D7 / GPIO20
-
-**D7** is **GPIO20**, which overlaps the **UART RX** function on this board. Using it for **NRST** is fine if you are not using hardware UART RX on that pin.
+**Optional on breadboard:** tact switch **D5** (GPIO7), buzzer **+** on **D6** (GPIO21), **−** to GND—same GPIOs as the integrated PCB if you add them. There is no Azimuth-style RGB on the default DIY path.
 
 ---
 
-## Power — battery (optional, on Azimuth PCB)
+## PCB path: Azimuth_Design (U1 ESP32-C3-WROOM-02)
 
-**DIY** builds are often **USB-powered** only; no battery section required.
+For the integrated PCB: schematic **U1** is **`ESP32-C3-WROOM-02`** (e.g. **-N4**). Flash **`azimuth_*_pcb`**. Route **BNO086** and peripherals by **GPIO number** and **U1 symbol pin names** in **`Azimuth.kicad_sch`**—**not** by XIAO **D** labels (the module does not have those).
 
-The **Azimuth custom PCB** can include a **JST PH2.0** (**`PH2.0`**) and slide switch **PWR1** so a cell can be disconnected. Net names on **`Azimuth.kicad_sch`** include **`/Bat+`**, **`VBAT`**, **`VBAT_SW`**, etc.—see the schematic.
+### BNO086 (IC1) ↔ U1
 
-| Net (typical) | Role |
-|---------------|------|
-| **`/Bat+`** | Raw pack positive: **JST PH2.0** pin 1 and **PWR1** input |
-| Switched rail | After **PWR1** — to MCU / divider / bulk (exact label on schematic) |
+| BNO086 signal | U1 symbol pin | GPIO |
+|---------------|---------------|------|
+| **H_CSN** (CS) | **IO5** | 5 |
+| **H_INTN** | **IO6** | 6 |
+| **NRST** | **RXD** (UART0 RX) | 20 |
+| **PS0/WAKE** | **IO4** | 4 |
+| **H_SCL / SCK** | **IO8** | 8 |
+| **H_SDA / MISO** | **IO9** | 9 |
+| **SA0 / H_MOSI** | **IO10** | 10 |
+| **VDD**, **VDDIO**, **PS1** | **3V3** | — |
+| **GND** | **GND** | — |
 
-| Item | Detail |
-|------|--------|
-| Connector | **JST PH** 2-pin (example: **`S2B-PH-SM4-TB`** SMD) |
-| Path | **`Bat+`** → **PWR1** → switched rail → MCU battery input — **see `Azimuth.kicad_sch`** |
+On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows straps and passives (**R11**–**R15**, **C3**–**C6**, etc.).
 
-**Battery voltage sense** (for ADC on the ESP32):
+### Other nets ↔ U1
 
-- **R1**, **R2** — **220 kΩ** (0603), divider from the switched rail to **GND**, tap to **D0** (GPIO2). When **PWR1** is off, the switched rail is not driven by the cell through this path, so the ADC does not read a meaningful pack voltage until the switch is on (or USB powers the board separately).
-- **C2** — **0.1 µF** (0603) from the switched rail to **GND** — HF bypass at the divider / input node.
+| Function | U1 symbol | GPIO | Notes |
+|----------|-----------|------|--------|
+| RGB **LED1** (via **R3** / **R4** / **R5**) | **IO0**, **IO1**, **IO3** | 0, 1, 3 | **TZ-P4-1615RGB**; silk channel map on PCB |
+| **FUNC1** | **IO7** | 7 | Tact to GND; firmware pull-up |
+| **BUZZER1** + | **TXD** | 21 | **MLT-5020** − to GND |
+| Battery divider tap | **IO2** | 2 | **R1**/**R2** to **D0** net |
 
-**Bulk on the switched rail:**
+**USB:** Data on **GPIO18** / **GPIO19** inside the module to the USB pads—no separate USB-UART IC. Firmware uses **USB CDC** for **`Serial`**.
 
-- **C1** — **10 µF** (0603) from the switched rail to **GND** (local bulk after the switch; raw **`Bat+`** is only at the connector and switch input pad).
+**Power / reset:** **EN** RC per Espressif; **3V3** / **GND** decoupling per **`Azimuth.kicad_sch`** and [ESP32-C3 hardware design guidelines](https://www.espressif.com/sites/default/files/documentation/esp32-c3_hardware_design_guidelines_en.pdf). Follow the WROOM-02 datasheet for **BOOT** / strap pins. **Antenna:** keep the module RF keepout clear.
 
-**Power / charging:** Final **3.3 V regulation** and **Li-ion charging** are board-specific; **Azimuth_Design** may still be in progress on that block — follow the schematic and [**hardware-profiles.md**](hardware-profiles.md).
+### Battery (PCB)
 
----
+**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO2**, bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic.
 
-## User I/O — DIY vs Azimuth custom PCB
+### Schematic passives (`Azimuth.kicad_sch`)
 
-| | **DIY** (XIAO + breakout) | **Azimuth custom PCB** (`Azimuth_Design`) |
-|---|---------------------------|-------------------------------------------|
-| **RGB LED** | **Not in scope** for default DIY — no on-board Azimuth RGB; do not assume GPIO **0 / 1 / 3** are wired | **LED1** — **TZ-P4-1615RGBTCA1-0.55T**; **R3** / **R14** / **R15** to **IO0**, **IO1**, **IO3**; **COM+** to **3V3**; silk “2-R, 3-G, 4-B” |
-| **FUNC1** | Optional — tact switch **D5** (**GPIO7**) | **FUNC1** on PCB |
-| **BUZZER1** | Optional — e.g. **MLT-5020** **+** to **D6** (**GPIO21**), **−** to **GND** | **BUZZER1** on PCB |
+Summary for bring-up and BOM cross-check; authoritative values on the schematic and [**parts-list.md**](parts-list.md).
 
-**GPIO21** is **UART TX** on the XIAO; using it for a buzzer is fine if you do not need that UART for debug.
-
----
-
-## IMU passives (3.3 V rail)
-
-| Ref | Value | Role |
-|-----|-------|------|
-| **C3** | **10 µF** (0603) | Bulk on **3.3 V** near **IC1** (`VDD` / `PS1` / `VDDIO` net) |
-| **C4** | **0.1 µF** (0603) | HF decoupling on the same **3.3 V** net to **GND** |
-| **C5** | **100 nF** (0402) | **CAP** (pin 9) → **GND** |
-| **R4** | **10 kΩ** (0402) | **BOOTN** → **3.3 V** (normal run; not IMU DFU) |
-| **R5** | **10 kΩ** (0402) | **PS0/WAKE** → **3.3 V** (SPI strap high at reset, then WAKE use) |
-| **R6** | **10 kΩ** (0402) | **CLKSEL0** → **3.3 V** (internal oscillator selection with `CLKSEL1` NC) |
-| **R7** | **4.7 kΩ** (0402) | **ENV_SCL** → **3.3 V** pull-up |
-| **R8** | **4.7 kΩ** (0402) | **ENV_SDA** → **3.3 V** pull-up |
+| Block | Refs | Role |
+|-------|------|------|
+| **USB-C J1** | **R6**, **R7** 5.1 kΩ (CC); **R8**, **R9** 22 Ω (D+/D−) | |
+| **U1** | **C5** 0.1 µF | Module decoupling |
+| **IC1** BNO086 | **C3** 100 nF, **C4** 10 µF, **C6** 100 nF on CAP; **R11**–**R13** 10 kΩ straps; **R14**/**R15** 4.7 kΩ ENV pull-ups | |
+| **LED1** | **R3** 680 Ω, **R4**/**R5** 150 Ω | RGB current limit |
+| **Battery path** | **C1** 10 µF, **R1**/**R2** 220 kΩ divider | |
 
 ---
 
-## Bring-up checklist
+## Bring-up
 
-1. **SPI strap/checks:** **PS1** (and **VDD** / **VDDIO**) at **3.3 V**, **PS0** held high at reset (via pull-up + D2 routing), and **BOOTN** high for application boot.
-2. **Clock/checks:** **CLKSEL0** pulled high (internal clock selection with `CLKSEL1` left unconnected), and **CAP** has dedicated **100 nF** to GND.
-3. **ENV bus/checks:** **ENV_SCL** / **ENV_SDA** have pull-ups (R7/R8) even if no external environmental sensor is populated.
-4. **SCK**, **INT**, and **CS** traces short; solid **GND** return.
-5. After assembly, run **`azimuth_debug_diy`** or **`azimuth_debug_pcb`** (match your hardware) and confirm serial prints before switching to **`azimuth_main_diy`** / **`azimuth_main_pcb`** for OpenTrack / Wi‑Fi.
-6. If init fails: check **3.3 V**, **NRST**, **H_INTN**, **SPI** order; on a custom PCB, re-run **ERC** / **DRC** in KiCad.
-
----
-
-## Logical diagram (SPI + control)
-
-```
-BNO086                XIAO ESP32-C3
-────────              ───────────────
-SCK, MISO, MOSI  ───  D8, D9, D10
-CS, H_INT, NRST  ───  D3, D4, D7
-PS0/WAKE         ───  D2
-VDD, VDDIO, PS1  ───  3V3 (on PCB)
-GND              ───  GND
-```
-
-For breadboard bring-up with a **breakout**, follow the breakout silkscreen; tie **PS0/PS1** to **3.3 V** for SPI if that is how the breakout is strapped.
+1. IMU: **PS1** and rails at **3.3 V**, **PS0** high at reset, **BOOTN** high, **CLKSEL0** high, **CAP** bypassed (**C6** on PCB).
+2. Short SPI traces; solid GND return.
+3. Run **`azimuth_debug_diy`** or **`azimuth_debug_pcb`** to match your hardware; then **`azimuth_main_*`** for Wi‑Fi / OpenTrack.
+4. If init fails: **3.3 V**, **NRST**, **INT**, SPI wiring; on PCB, **ERC** / **DRC** in KiCad.

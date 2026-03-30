@@ -1,98 +1,104 @@
-# Parts list — BOM reference (Azimuth custom PCB)
+# Parts list
 
-**Authoritative BOM:** export from KiCad **`kicad/Azimuth_Design/Azimuth.kicad_pro`** (or your fab’s tool) after **ERC** / **DRC**. Line items, references, and footprints must match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`**.
-
-The tables below are a **human-readable summary** for the **BNO086** and typical support passives—useful for understanding, not a substitute for the schematic. **DIY** (XIAO + breakout) has **no** fixed BOM.
-
-A **battery pack** is usually **not** a PCB line item: the board may expose a **JST PH2.0** (**`PH2.0`**). For **wireless** use you still need a suitable **1S Li-ion / LiPo** and plug (check polarity in the schematic). USB-only builds skip the pack.
+Two sections: **DIY** (Seeed XIAO + BNO08x breakout) and the **Azimuth integrated PCB**. How to wire: [wiring.md](wiring.md). Which firmware: [hardware-profiles.md](hardware-profiles.md).
 
 ---
 
-## Wireless battery (off-board — not PCB BOM)
+## DIY: Seeed XIAO + BNO08x (wired)
 
-| Field | Example |
-|--------|---------|
-| **Role** | Powers the board through **`PH2.0`** when not on USB; use a **protected** 1S cell and a **proper Li-ion/LiPo charger** (not on this PCB). |
-| **Adafruit** | [**3898**](https://www.adafruit.com/product/3898) — lithium-ion polymer **3.7 V nominal**, **400 mAh**, **JST-PH** lead (~25 mm). Size about **36 × 17 × 7.8 mm** (per vendor). |
-| **DigiKey** | [**1528-2731-ND**](https://www.digikey.com/en/products/detail/adafruit-industries-llc/3898/9685336) — same MPN **3898** / “BATTERY LITH-ION 3.7V 400MAH”. |
+The **wired-only** build (breadboard or hand-wired, power from USB) is fine for **anyone comfortable with a soldering iron** or solderless breadboard.
 
-Other **JST-PH** 1S packs with the **same polarity** and connector series are fine; pick capacity and dimensions for your enclosure plans ([roadmap](roadmap.md)).
+| Item | Where to buy · notes |
+|------|----------------------|
+| **Seeed XIAO ESP32-C3** | [Seeed Studio](https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html) · [Mouser **113991054**](https://www.mouser.com/ProductDetail/Seeed-Studio/113991054?qs=3Rah4i%252BhyCHVBerMrpzCkw%3D%3D) — MCU + USB-C. Pinout and docs: [Seeed Wiki — XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/). |
+| **BNO08x breakout (SPI)** | Example modules: [Amazon (GY-BNO085)](https://a.co/d/0f5FjqAz) · [AliExpress listing](https://www.aliexpress.us/item/3256806188033662.html) — strapped for **SPI**; follow the board’s **PS0 / PS1** and wire to the XIAO per [wiring.md](wiring.md) (DIY path). Other **BNO080 / BNO085 / BNO086** breakouts work if you set SPI straps per the vendor. |
+
+Also: breadboard or perfboard, jumper wire, **USB data** cable to the PC.
+
+**Firmware:** **`azimuth_main_diy`** — default on the [web flasher](https://fuglong.github.io/Azimuth/).
+
+### Optional: battery on the XIAO (wireless)
+
+Soldering a **1S LiPo** to the **battery pads on the back of the XIAO** is the only DIY add-on that enables **unplugged / wireless** use (same Wi‑Fi + UDP firmware path; see [using-azimuth.md](using-azimuth.md#power-heat-and-battery) for rough runtime). **Recommended for intermediate makers** — the USB-only build above is the approachable path for beginners.
+
+The XIAO includes **charge management**; after you connect the pack correctly, routine charge/discharge is handled on-board. **Be careful soldering** the battery leads to the pads (**polarity** per Seeed’s silk/wiki). **Never short the battery leads** together (even briefly).
+
+Example **JST-PH** 1S packs (check **polarity** against your connector before powering):
+
+| | |
+|:---|:---|
+| **Adafruit** [**3898**](https://www.adafruit.com/product/3898) | 3.7 V nominal **400 mAh**, JST-PH; ~**36 × 17 × 7.8 mm** (vendor) |
+| **DigiKey** [**1528-2731-ND**](https://www.digikey.com/en/products/detail/adafruit-industries-llc/3898/9685336) | Same MPN **3898** |
 
 ---
 
-## Active & modules (see schematic)
+## Azimuth PCB (`Azimuth_Design`)
+
+Integrated board: **`kicad/Azimuth_Design/`**. **Authoritative BOM** = export from **`Azimuth.kicad_pro`** (or your fab tool) after **ERC** / **DRC**. Line items, refs, and footprints must match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`**. Board layout and workflow: [kicad.md](kicad.md).
+
+### What’s on the board
 
 | Qty | Ref | Part / value | Notes |
 |-----|-----|----------------|--------|
-| 1 | **U1** | **ESP32-C3-WROOM-02** (e.g. **-N4** flash option) | MCU module; USB via module pads — see **`Azimuth.kicad_sch`** |
+| 1 | **U1** | **ESP32-C3-WROOM-02** (e.g. **-N4** flash) | MCU module; USB via module pads |
 | 1 | **IC1** | **BNO086** | IMU (**LGA**); often bottom side in layout |
-| 1 | **PH2.0** | JST **PH** 2-pin | Battery receptacle if populated — pin 1 **`/Bat+`** per schematic |
+| 1 | **PH2.0** | JST **PH** 2-pin | Battery connector if populated — pin 1 **`/Bat+`** per schematic |
 | 1 | **PWR1** | **K3-1280S-K1** | Slide switch on battery path |
-| 1 | **LED1** | **TZ-P4-1615RGBTCA1** (or sch. value) | **RGB** — [wiring.md](wiring.md), [hardware-profiles.md](hardware-profiles.md) |
+| 1 | **LED1** | **TZ-P4-1615RGBTCA1** (or sch. value) | RGB — [wiring.md](wiring.md) |
 | 1 | **BUZZER1** | **MLT-5020** | Magnetic buzzer |
 | 1 | **FUNC1** | Tact switch (e.g. **HX** 3×4×2) | User button |
-| 1 | **J1** | USB-C (per schematic) | Data + power in — see **`Azimuth.kicad_sch`** |
+| 1 | **J1** | USB-C (per schematic) | Data + power |
 
 Exact **MPNs**, **LCSC** codes, and **footprint** strings live in the KiCad project.
 
+### Off-board pack (PCB wireless use)
+
+The PCB may expose **JST PH2.0** for a **1S** pack when you are not on USB. Use a **protected** cell and correct **polarity** for **`PH2.0`** in **`Azimuth.kicad_sch`**. The same **class** of off-the-shelf **JST-PH** 1S packs as in [Optional: battery on the XIAO (wireless)](#optional-battery-on-the-xiao-wireless) usually applies—always confirm against **this** footprint.
+
+Regulation, charging, and the full power path are **board-specific**; follow the schematic and [wiring.md](wiring.md) (PCB path).
+
 ---
 
-## Resistors
+### Appendix: resistors (reference)
+
+Values and footprints match **`Azimuth.kicad_sch`** (KiCad strings e.g. **220K**, **680R**, **0.1uf**).
 
 | Qty | Ref | Value | Footprint |
 |-----|-----|--------|-----------|
-| 2 | **R1**, **R2** | **220 kΩ** | `Resistor_SMD:R_0603_1608Metric` |
-| 1 | **R3** | **470 Ω** | `Resistor_SMD:R_0402_1005Metric` |
-| 3 | **R4**, **R5**, **R6** | **10 kΩ** | `Resistor_SMD:R_0402_1005Metric` |
-| 2 | **R7**, **R8** | **4.7 kΩ** | `Resistor_SMD:R_0402_1005Metric` |
+| 2 | **R1**, **R2** | **220 kΩ** (`220K`) | `Resistor_SMD:R_0603_1608Metric` |
+| 1 | **R3** | **680 Ω** (`680R`) | `Resistor_SMD:R_0402_1005Metric` |
+| 2 | **R4**, **R5** | **150 Ω** (`150R`) | `Resistor_SMD:R_0402_1005Metric` |
+| 2 | **R6**, **R7** | **5.1 kΩ** (`5.1K`) | `Resistor_SMD:R_0402_1005Metric` |
+| 2 | **R8**, **R9** | **22 Ω** (`22R`) | `Resistor_SMD:R_0402_1005Metric` |
+| 4 | **R10**, **R11**, **R12**, **R13** | **10 kΩ** (`10k`) | `Resistor_SMD:R_0402_1005Metric` |
+| 2 | **R14**, **R15** | **4.7 kΩ** (`4.7k`) | `Resistor_SMD:R_0402_1005Metric` |
 
-**R1 / R2** — divider from the switched battery rail to **GND**, tap to **GPIO2** for ADC (see schematic net names).  
-**R3** / **R14** / **R15** — **RGB LED** current limit (Azimuth PCB); values in **`Azimuth.kicad_sch`**.  
-**R4** — pull-up **BNO086 `BOOTN`** → **3.3 V** (normal boot, not IMU DFU).  
-**R5** — pull-up **BNO086 `PS0/WAKE`** → **3.3 V** (SPI strap high at reset; MCU can drive **D2**).  
-**R6** — pull-up **BNO086 `CLKSEL0`** → **3.3 V** (internal oscillator; `CLKSEL1` NC).  
-**R7 / R8** — pull-ups **BNO086 `ENV_SCL` / `ENV_SDA`** → **3.3 V**.
+**R1 / R2** — divider from switched battery rail to **GND**, tap **GPIO2** (ADC). **R3**–**R5** — **LED1** RGB. **R6** / **R7** — USB-C **CC**. **R8** / **R9** — USB data series. **R10** — per schematic net. **R11** — **BOOTN** strap. **R12** — **PS0/WAKE**. **R13** — **CLKSEL0**. **R14** / **R15** — **ENV_SCL** / **ENV_SDA**.
 
 ---
 
-## Capacitors
+### Appendix: capacitors (reference)
 
-| Qty | Ref | Value | Footprint | Role (nets) |
-|-----|-----|--------|-----------|----------------|
-| 1 | **C1** | **10 µF** | `Capacitor_SMD:C_0603_1608Metric` | Bulk on switched rail → **GND** |
-| 1 | **C2** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF bypass near divider / rail |
-| 1 | **C3** | **10 µF** | `Capacitor_SMD:C_0603_1608Metric` | Bulk **3.3 V** at **IC1** (`Net-(IC1-PS1)` / VDD / VDDIO) |
-| 1 | **C4** | **0.1 µF** | `Capacitor_SMD:C_0603_1608Metric` | HF **3.3 V** → **GND** |
-| 1 | **C5** | **100 nF** | `Capacitor_SMD:C_0402_1005Metric` | **BNO086 `CAP`** → **GND** |
-
----
-
-## Passives vs “no passives” blocks
-
-| Block | What’s on the PCB | Typical practice |
-|-------|-------------------|------------------|
-| **BNO086** | **C3**, **C4** on **3.3 V**; **C5** on **`CAP`**; **R4/R5/R6** on **`BOOTN`/`PS0`/`CLKSEL0`**; **R7/R8** on **`ENV_SCL`/`ENV_SDA`** | No series RC on **SPI** for short traces / 3 MHz. |
-| **Battery path** | **`/Bat+`** from **PH2.0** through **PWR1**; **C1/C2** and divider on switched rail | See [wiring.md](wiring.md) and schematic nets. |
-| **FUNC1** | Switch to **GND** | **Internal pull-up** on GPIO in firmware (`INPUT_PULLUP`). |
-| **BUZZER1** | **LOAD+** to GPIO, **LOAD−** to GND | Check **MLT-5020** current vs GPIO; transistor + base resistor if needed. |
-| **LED1** | **R3** / **R14** / **R15** (RGB) | Per **`Azimuth.kicad_sch`**. |
-
-If you add long wires later, consider **series resistors** on **SCK/MOSI/MISO** and a **stronger pull-up** on **H_INTN** (the SparkFun library can configure a pull-up on the MCU side).
+| Qty | Ref | Value | Footprint | Role (nets in schematic) |
+|-----|-----|--------|-----------|---------------------------|
+| 1 | **C1** | **10 µF** (`10uf`) | `Capacitor_SMD:C_0603_1608Metric` | Bulk on switched rail → **GND** |
+| 1 | **C2** | **0.1 µF** (`0.1uf`) | `Capacitor_SMD:C_0603_1608Metric` | HF bypass near divider / rail |
+| 1 | **C3** | **100 nF** (`100nf`) | `Capacitor_SMD:C_0603_1608Metric` | **3.3 V** / **IC1** |
+| 1 | **C4** | **10 µF** (`10uf`) | `Capacitor_SMD:C_0603_1608Metric` | Bulk on **3.3 V** |
+| 1 | **C5** | **0.1 µF** (`0.1uf`) | `Capacitor_SMD:C_0603_1608Metric` | **U1** decoupling |
+| 1 | **C6** | **100 nF** (`100nf`) | `Capacitor_SMD:C_0402_1005Metric` | **BNO086 `CAP`** → **GND** |
 
 ---
 
-## Firmware GPIO map (PCB)
+### Appendix: passives by block
 
-| GPIO | XIAO | Connected to |
-|------|------|----------------|
-| 2 | D0 | Battery divider tap (**R1**/**R2** → ADC) |
-| 3 | D1 | **LED1** (via **R3**) |
-| 4 | D2 | BNO086 **PS0 / WAKE** |
-| 5 | D3 | BNO086 **CS** |
-| 6 | D4 | BNO086 **H_INTN** |
-| 7 | D5 | **FUNC1** |
-| 8–10 | D8–D10 | **SPI** SCK / MISO / MOSI |
-| 20 | D7 | BNO086 **NRST** |
-| 21 | D6 | **BUZZER1** **LOAD+** |
+| Block | On PCB | Notes |
+|-------|--------|--------|
+| **BNO086** | **C3**, **C4**; **C6** on **`CAP`**; **R11**–**R13**; **R14**/**R15** on **ENV** | No series RC on SPI for short traces. |
+| **USB-C J1** | **R6**/**R7** (CC), **R8**/**R9** (D+/D−) | Per schematic. |
+| **Battery path** | **`/Bat+`** → **PH2.0** → **PWR1**; **C1**/**C2**; **R1**/**R2** | Nets in **`Azimuth.kicad_sch`**. |
+| **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`**. |
+| **BUZZER1** | **LOAD+** to GPIO, **LOAD−** to GND | **MLT-5020** current vs GPIO—transistor if needed. |
+| **LED1** | **R3** / **R4** / **R5** | Per schematic. |
 
-Align `src/main.cpp` `kPinCs` / `kPinInt` / `kPinRst` with any future re-route.
+Long jumper wires later: consider series resistors on **SPI** and a stronger **H_INTN** pull-up if needed (SparkFun driver can enable MCU-side pull-up).

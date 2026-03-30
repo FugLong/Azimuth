@@ -9,14 +9,16 @@
 
 Azimuth is a **DIY head tracker** for flight sims, racing, and anything that works with [OpenTrack](https://github.com/opentrack/opentrack). It pairs a small **ESP32** board with a **BNO08x-class** IMU so you get stable orientation without a closed commercial device. This repo has **firmware**, **PCB** designs, **3D** plans, and **documentation**—build it, change it, or fix it yourself.
 
-### Two hardware paths
+### Hardware paths
+
+Two supported builds—same core tracker firmware where both apply; use the row that matches what you assembled.
 
 | Path | What it is | Status |
 |------|------------|--------|
-| **DIY** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout (**SPI**) — breadboard or hand-wired. Firmware profile **`azimuth_main_diy`** (also what the [**web flasher**](https://fuglong.github.io/Azimuth/) builds by default). | **Ready to use** — tracking, Wi‑Fi, settings portal, USB Hatire, and OpenTrack UDP are **fully implemented** and what most people should run today. |
-| **Azimuth custom PCB** | Integrated board ([**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/)) with **ESP32-C3** module, **BNO086**, RGB LED, buzzer, button. Firmware **`azimuth_main_pcb`**. | **In development** — same core firmware; on-board **RGB / buzzer / battery / charging**, **DRC/ERC**, and production **panelization** are still being finalized ([roadmap](docs/roadmap.md)). |
+| **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; the [**web flasher**](https://fuglong.github.io/Azimuth/) ships this build. | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
+| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**. | **In development** — same app; board polish, DRC/ERC, panelization ([roadmap](docs/roadmap.md)). |
 
-Wiring and GPIO: [**docs/wiring.md**](docs/wiring.md) · [**docs/hardware-profiles.md**](docs/hardware-profiles.md)
+Pinouts (DIY vs PCB, separated): [**docs/wiring.md**](docs/wiring.md) · PlatformIO / GPIO summary: [**docs/hardware-profiles.md**](docs/hardware-profiles.md)
 
 ---
 
@@ -60,7 +62,7 @@ Wiring and GPIO: [**docs/wiring.md**](docs/wiring.md) · [**docs/hardware-profil
 | [**Quick start**](docs/quickstart.md) | Fast path from flash to tracking over Wi‑Fi |
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
-| [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) (DIY XIAO + breakout vs **Azimuth custom PCB**) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Hardware |
+| [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |
 
 ## Goals

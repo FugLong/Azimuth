@@ -4,7 +4,7 @@ How to reach the **settings portal**, connect **OpenTrack**, and interpret a few
 
 ## Settings portal URLs
 
-With normal firmware (**`azimuth_main_diy`** or **`azimuth_main_pcb`** — same **portal / Hatire / UDP** features; on-board **RGB LED**, **buzzer**, and **button** exist only on the **Azimuth custom PCB**, not on a bare XIAO + breakout):
+All **`azimuth_main_*`** builds share the same **portal**, **Hatire**, and **UDP** behavior. On-board **RGB**, **buzzer**, and **button** apply only where the hardware has them ([**hardware-profiles.md**](hardware-profiles.md)):
 
 | Situation | Open in your browser |
 |-----------|----------------------|

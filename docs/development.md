@@ -9,12 +9,12 @@ Build flags, **PlatformIO** environments, **CI**, and how the firmware repo is l
 
 **Hardware profiles:** Same source, different **`board`** in PlatformIO — see **[hardware-profiles.md](hardware-profiles.md)**.
 
-| Environment | Hardware |
-|-------------|----------|
-| **`azimuth_main_diy`**, **`azimuth_debug_diy`** | **DIY** — Seeed **XIAO ESP32-C3** + **BNO08x** breakout (SPI). Optional **buzzer** / **button** if wired; **no** Azimuth RGB LED. |
-| **`azimuth_main_pcb`**, **`azimuth_debug_pcb`** | **Azimuth custom PCB** ([**`Azimuth_Design`**](../kicad/Azimuth_Design/)) — **ESP32-C3** module (e.g. **WROOM-02**), on-board **RGB LED**, **buzzer**, **FUNC** button — **`esp32-c3-devkitc-02`** target |
+| Environment | Target |
+|-------------|--------|
+| **`azimuth_main_diy`**, **`azimuth_debug_diy`** | XIAO + BNO08x breakout |
+| **`azimuth_main_pcb`**, **`azimuth_debug_pcb`** | Azimuth_Design PCB ([**`Azimuth_Design`**](../kicad/Azimuth_Design/)), **`esp32-c3-devkitc-02`** |
 
-**Default release build:** **`azimuth_main_diy`** (XIAO). Use **`azimuth_debug_diy`** for **USB serial only** (yaw / pitch / roll), no Wi‑Fi or portal.
+**Default release:** **`azimuth_main_diy`**. **`azimuth_debug_*`**: USB serial IMU angles only, no Wi‑Fi or portal. Full matrix: [**hardware-profiles.md**](hardware-profiles.md).
 
 ## Build and upload
 
@@ -31,7 +31,7 @@ python3 -m platformio device monitor
 python3 -m platformio run -e azimuth_main_diy -t upload
 ```
 
-**Same firmware, module PCB** (Azimuth integrated board — see [hardware-profiles.md](hardware-profiles.md)):
+**Azimuth_Design PCB:**
 
 ```bash
 python3 -m platformio run -e azimuth_main_pcb -t upload
@@ -64,23 +64,9 @@ Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.g
 
 ## Hardware pins (this revision)
 
-**MCU:** Seeed **XIAO ESP32-C3** (DIY) **or** **ESP32-C3** module on the **Azimuth custom PCB** — **same GPIO map**; constants in **`include/azimuth_hw.h`**. Details: [**hardware-profiles.md**](hardware-profiles.md).
+Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and optional I/O: [**wiring.md**](wiring.md). GPIO contract and PlatformIO targets: [**hardware-profiles.md**](hardware-profiles.md).
 
-**IMU:** **BNO08x** breakout (DIY) or **BNO086** on the Azimuth PCB — **SPI**; strap **PS0** / **PS1** per breakout / [wiring.md](wiring.md).
-
-Summary SPI map (full table, power, RGB / button / buzzer differences in [**wiring.md**](wiring.md)):
-
-| Signal | XIAO pin | GPIO |
-|--------|----------|------|
-| SCK | D8 | 8 |
-| MISO | D9 | 9 |
-| MOSI | D10 | 10 |
-| CS | D3 | 5 |
-| H_INT | D4 | 6 |
-| PS0 / WAKE | D2 | 4 |
-| NRST | D7 | 20 |
-
-If you move SPI off **D8–D10**, call **`SPI.begin(sck, miso, mosi, -1)`** before **`imu.beginSPI(...)`** so the bus matches your wiring (the SparkFun driver uses the already-started **`SPI`** bus on ESP32).
+If you move SPI off **D8–D10**, call **`SPI.begin(sck, miso, mosi, -1)`** before **`imu.beginSPI(...)`** (SparkFun driver uses the already-started **`SPI`** bus on ESP32).
 
 ## Repository layout (firmware)
 

@@ -2,7 +2,7 @@
 
 Short path from a fresh flash to head tracking in **OpenTrack** over Wi‑Fi.
 
-This assumes you already have firmware on a board (typically the **DIY** build: **XIAO ESP32-C3** + **BNO08x** — see the [**README**](../README.md) “Two hardware paths” and [**hardware-profiles.md**](hardware-profiles.md)). Extended on-device features beyond core tracking are documented in [**using-azimuth.md**](using-azimuth.md) as they land.
+Assumes firmware is already installed (the published web flasher build is the default XIAO image). **Hardware paths** and which build to flash: [**README**](../README.md), [**hardware-profiles.md**](hardware-profiles.md). Deeper portal and OpenTrack detail: [**using-azimuth.md**](using-azimuth.md).
 
 ## 1. Join your home Wi‑Fi (first setup)
 
