@@ -7225,7 +7225,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "10uf"
+		(property "Value" "1uf"
 			(at 125.984 120.65 0)
 			(effects
 				(font
@@ -7261,7 +7261,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "CL10A106KP8NNNC"
+		(property "Manufacturer_Part_Number" ""
 			(at 133.35 119.38 0)
 			(effects
 				(font
@@ -7270,7 +7270,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC Part" "C19702"
+		(property "LCSC Part" ""
 			(at 133.35 119.38 0)
 			(effects
 				(font
