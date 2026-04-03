@@ -34,71 +34,113 @@ Example **JST-PH** 1S packs (check **polarity** against your connector before po
 
 ## Azimuth PCB (`Azimuth_Design`)
 
-Integrated board: **`kicad/Azimuth_Design/`**. **Authoritative BOM** = export from **`Azimuth.kicad_pro`** (or your fab tool) after **ERC** / **DRC**. Line items, refs, and footprints must match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`**. Board layout and workflow: [kicad.md](kicad.md).
+Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below are copied from **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** as in the repo. For ordering, still **export the BOM from KiCad** after **ERC** / **DRC** so pick-and-place and stock codes stay in sync. Board workflow: [kicad.md](kicad.md).
 
-### What’s on the board
+### What’s on the board (by reference)
 
-| Qty | Ref | Part / value | Notes |
-|-----|-----|----------------|--------|
-| 1 | **U1** | **ESP32-C3-WROOM-02** (e.g. **-N4** flash) | MCU module; USB via module pads |
-| 1 | **IC1** | **BNO086** | IMU (**LGA**); often bottom side in layout |
-| 1 | **PH2.0** | JST **PH** 2-pin | Battery connector if populated — pin 1 **`/Bat+`** per schematic |
-| 1 | **PWR1** | **K3-1280S-K1** | Slide switch on battery path |
-| 1 | **LED1** | **TZ-P4-1615RGBTCA1** (or sch. value) | RGB — [wiring.md](wiring.md) |
-| 1 | **BUZZER1** | **MLT-5020** | Magnetic buzzer |
-| 1 | **FUNC1** | Tact switch (e.g. **HX** 3×4×2) | User button |
-| 1 | **J1** | USB-C (per schematic) | Data + power |
+| Qty | Ref | Value / MPN (schematic) | Footprint (project) | Notes |
+|-----|-----|-------------------------|---------------------|--------|
+| 1 | **U1** | ESP32-C3-WROOM-02-N4(4MB) | `1_MyFootPrints:BULETM-SMD_ESPRESSIF_ESP32-C3-WROOM-02-N4-4MB` | MCU; USB on module |
+| 1 | **IC1** | BNO086 | `Package_LGA:LGA-28_5.2x3.8mm_P0.5mm` | IMU |
+| 1 | **U2** | TLV75733PDBVR | `1_MyFootPrints:SOT-23-5_L2.9-W1.6-P0.95-LS2.8-BL` | 3.3 V LDO |
+| 1 | **U3** | TP4054_C5381776 | `1_MyFootPrints:SOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR` | Li-ion charger |
+| 1 | **J1** | TYPE-C 16PIN 2MD(073) | `1_MyFootPrints:USB-C-SMD_TYPE-C-6PIN-2MD-073` | USB-C |
+| 1 | **PH2.0** | S2B-PH-SM4-TB(LF)(SN) | `Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal` | Battery |
+| 1 | **PWR1** | K3-1280S-K1 | `1_MyFootPrints:SW-SMD_K3-1280S-K1` | Slide switch |
+| 1 | **Q1** | LP0404N3T5G | `1_MyFootPrints:SOT-883-3_L1.0-W0.6-BR` | Power path FET |
+| 1 | **D1** | MBR0530_C5204746 | `1_MyFootPrints:SOD-123_L2.7-W1.6-LS3.7-RD-1` | Schottky |
+| 1 | **F1** | 0805L050WR | `1_MyFootPrints:R0805` | Fuse |
+| 1 | **LED1** | TZ-P4-1615RGBTCA1-0.55T | `rgb_led_C779813:LED-SMD_4P-L1.6-W1.5-BR_TZ-P4-1615` | RGB; **COM+** to **3V3** (common anode) |
+| 1 | **CHG1** | XL-0201SURC | `1_MyFootPrints:LED-SMD_L0.65-W0.35-P0.41_XL-0201SURC` | Charge indicator LED |
+| 1 | **BUZZER1** | MLT-5020 | `1_MyFootPrints:BUZ-SMD_L5.0-W5.5-P4.60` | Magnetic (externally driven) — see [Buzzer (BUZZER1)](#buzzer-buzzer1) |
+| 1 | **FUNC1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | User button |
+| 1 | **RST1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | Reset / strap (per schematic) |
+| 2 | **BAT_0**, **GND_0** | DNP | `TestPoint:TestPoint_Pad_D1.0mm` | Optional test points (not populated by default) |
 
-Exact **MPNs**, **LCSC** codes, and **footprint** strings live in the KiCad project.
+Exact **LCSC** / **Manufacturer** fields live in the KiCad symbol properties.
 
 ### Off-board pack (PCB wireless use)
 
-The PCB may expose **JST PH2.0** for a **1S** pack when you are not on USB. Use a **protected** cell and correct **polarity** for **`PH2.0`** in **`Azimuth.kicad_sch`**. The same **class** of off-the-shelf **JST-PH** 1S packs as in [Optional: battery on the XIAO (wireless)](#optional-battery-on-the-xiao-wireless) usually applies—always confirm against **this** footprint.
+The PCB exposes **JST PH** for a **1S** pack when you are not on USB. Use a **protected** cell and correct **polarity** for **`PH2.0`** in **`Azimuth.kicad_sch`**. The same **class** of off-the-shelf **JST-PH** 1S packs as in [Optional: battery on the XIAO (wireless)](#optional-battery-on-the-xiao-wireless) usually applies—always confirm against **this** footprint.
 
-Regulation, charging, and the full power path are **board-specific**; follow the schematic and [wiring.md](wiring.md) (PCB path).
-
----
-
-### Appendix: resistors (reference)
-
-Values and footprints match **`Azimuth.kicad_sch`** (KiCad strings e.g. **220K**, **680R**, **0.1uf**).
-
-| Qty | Ref | Value | Footprint |
-|-----|-----|--------|-----------|
-| 2 | **R1**, **R2** | **220 kΩ** (`220K`) | `Resistor_SMD:R_0603_1608Metric` |
-| 1 | **R3** | **680 Ω** (`680R`) | `Resistor_SMD:R_0402_1005Metric` |
-| 2 | **R4**, **R5** | **150 Ω** (`150R`) | `Resistor_SMD:R_0402_1005Metric` |
-| 2 | **R6**, **R7** | **5.1 kΩ** (`5.1K`) | `Resistor_SMD:R_0402_1005Metric` |
-| 2 | **R8**, **R9** | **22 Ω** (`22R`) | `Resistor_SMD:R_0402_1005Metric` |
-| 4 | **R10**, **R11**, **R12**, **R13** | **10 kΩ** (`10k`) | `Resistor_SMD:R_0402_1005Metric` |
-| 2 | **R14**, **R15** | **4.7 kΩ** (`4.7k`) | `Resistor_SMD:R_0402_1005Metric` |
-
-**R1 / R2** — divider from switched battery rail to **GND**, tap **GPIO2** (ADC). **R3**–**R5** — **LED1** RGB. **R6** / **R7** — USB-C **CC**. **R8** / **R9** — USB data series. **R10** — per schematic net. **R11** — **BOOTN** strap. **R12** — **PS0/WAKE**. **R13** — **CLKSEL0**. **R14** / **R15** — **ENV_SCL** / **ENV_SDA**.
+Regulation, charging, and the full power path follow **`Azimuth.kicad_sch`** and [wiring.md](wiring.md) (PCB path).
 
 ---
 
-### Appendix: capacitors (reference)
+### Appendix: resistors (matches `Azimuth.kicad_sch`)
 
-| Qty | Ref | Value | Footprint | Role (nets in schematic) |
-|-----|-----|--------|-----------|---------------------------|
-| 1 | **C1** | **10 µF** (`10uf`) | `Capacitor_SMD:C_0603_1608Metric` | Bulk on switched rail → **GND** |
-| 1 | **C2** | **0.1 µF** (`0.1uf`) | `Capacitor_SMD:C_0603_1608Metric` | HF bypass near divider / rail |
-| 1 | **C3** | **100 nF** (`100nf`) | `Capacitor_SMD:C_0603_1608Metric` | **3.3 V** / **IC1** |
-| 1 | **C4** | **10 µF** (`10uf`) | `Capacitor_SMD:C_0603_1608Metric` | Bulk on **3.3 V** |
-| 1 | **C5** | **0.1 µF** (`0.1uf`) | `Capacitor_SMD:C_0603_1608Metric` | **U1** decoupling |
-| 1 | **C6** | **100 nF** (`100nf`) | `Capacitor_SMD:C_0402_1005Metric` | **BNO086 `CAP`** → **GND** |
+Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. Exception: **F1** uses **`1_MyFootPrints:R0805`** (fuse body).
+
+| Ref | Value (KiCad) | Notes |
+|-----|---------------|--------|
+| **R1** | 220K | Battery divider to **GPIO2** |
+| **R2** | 220K | Battery divider |
+| **R3** | 100k | Power / **U2** support (per schematic nets) |
+| **R4** | 2.5k | **U3** **PROG** (charge current set) |
+| **R5** | 150R | **CHG1** LED current limit (**3V3** side) |
+| **R6** | 680R | **LED1** cathode ↔ **IO3** |
+| **R7** | 150R | **LED1** cathode ↔ **IO0** |
+| **R8** | 150R | **LED1** cathode ↔ **IO1** |
+| **R9** | 5.1K | **J1** **CC** (e.g. CC2 branch) |
+| **R10** | 5.1K | **J1** **CC** (e.g. CC1 branch) |
+| **R11** | 22R | USB data series (**U1** ↔ **J1** **D+** path) |
+| **R12** | 22R | USB data series (**U1** ↔ **J1** **D−** path) |
+| **R13** | 10k | **IC1** strap (per schematic) |
+| **R14** | 10k | **IC1** **ENV_SCL** pull-up |
+| **R15** | 10k | **IC1** **ENV_SDA** pull-up |
+| **R16** | 4.7k | **IC1** support (per schematic) |
+| **R17** | 4.7k | **IC1** support (per schematic) |
+| **R18** | 10k | **U2** / power (per schematic) |
+| **R19** | 10k | **U2** / power (per schematic) |
+
+---
+
+### Appendix: capacitors (matches `Azimuth.kicad_sch`)
+
+Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
+
+| Ref | Value (KiCad) | Role (verify nets in schematic) |
+|-----|---------------|----------------------------------|
+| **C1** | 10uf | Battery / switched rail |
+| **C2** | 0.1uf | HF bypass |
+| **C3** | 100nF | **IC1** / **3V3** decoupling |
+| **C4** | 2.2uF | Power / **U2** / **U3** branch |
+| **C5** | 2.2uF | Power / **U2** branch |
+| **C6** | 2.2uF | **U3** / charger branch |
+| **C7** | 2.2uF | **U3** / charger branch |
+| **C8** | 10uF | Bulk (output / rail per nets) |
+| **C9** | 10uf | Bulk (per nets) |
+| **C10** | 0.1uf | HF bypass (per nets) |
+| **C11** | 100nf | **IC1** **CAP** pin to **GND** |
+| **C12** | 100nf | **U2** / rail (per nets) |
 
 ---
 
 ### Appendix: passives by block
 
-| Block | On PCB | Notes |
-|-------|--------|--------|
-| **BNO086** | **C3**, **C4**; **C6** on **`CAP`**; **R11**–**R13**; **R14**/**R15** on **ENV** | No series RC on SPI for short traces. |
-| **USB-C J1** | **R6**/**R7** (CC), **R8**/**R9** (D+/D−) | Per schematic. |
-| **Battery path** | **`/Bat+`** → **PH2.0** → **PWR1**; **C1**/**C2**; **R1**/**R2** | Nets in **`Azimuth.kicad_sch`**. |
-| **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`**. |
-| **BUZZER1** | **LOAD+** to GPIO, **LOAD−** to GND | **MLT-5020** current vs GPIO—transistor if needed. |
-| **LED1** | **R3** / **R4** / **R5** | Per schematic. |
+| Block | Refs | Notes |
+|-------|------|--------|
+| **BNO086 (IC1)** | **C3**, **C11** on **CAP**; **R13**–**R17** straps / **ENV** | **R14**/**R15** 10 kΩ on **ENV_SCL** / **ENV_SDA**; **R16**/**R17** 4.7 kΩ per schematic |
+| **USB-C (J1)** | **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (data series) | **6-pin** footprint vs 16-pin symbol may produce **DRC** “no pad for pin” on extra **GND** pins — electrically rely on shell / pour if intentional |
+| **RGB (LED1)** | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**) | **COM+** on **3V3** — firmware should treat cathode pins as **active low** (sink) |
+| **Charge LED (CHG1)** | **R5** 150 Ω | From **3V3** to **CHG1** anode net |
+| **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO2** |
+| **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |
+| **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** sets **TP4054** charge current |
+| **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`** on **IO7** |
+| **BUZZER1** | **LOAD+** to **GPIO21** (**U1** **TXD**), **LOAD−** to **GND** | See [Buzzer (BUZZER1)](#buzzer-buzzer1) |
 
-Long jumper wires later: consider series resistors on **SPI** and a stronger **H_INTN** pull-up if needed (SparkFun driver can enable MCU-side pull-up).
+Long jumper wires on DIY builds: consider series resistors on **SPI** and a stronger **H_INTN** pull-up if needed (SparkFun driver can enable MCU-side pull-up).
+
+---
+
+### Buzzer (BUZZER1)
+
+**MLT-5020** is a **magnetic, externally driven** (passive) buzzer: you feed it a **square wave** (e.g. ~4 kHz) and it draws current set by the coil. Vendor data for this family is often on the order of **~100 mA** at **3 V** rated operation—far above what an **ESP32-C3 GPIO** is meant to **source** continuously (~12 mA class).
+
+**Implications for Azimuth_Design as drawn**
+
+- Driving **BUZZER1** directly from **GPIO21** is **not** a safe long-term assumption if you expect full volume or datasheet current.
+- **Practical options:** (1) Add a **low-side NMOS** (or NPN) + **flyback diode** across the buzzer, drive the gate/base from **GPIO21**; (2) Switch to a **piezo** or **active** buzzer with **≤~10 mA** at 3V3 if you must stay GPIO-direct; (3) Keep the part but accept **very weak** sound or **risk** to the pin if you PWM it without a transistor.
+
+Firmware can use **`ledcWriteTone()`** / PWM on **GPIO21** for a tone once the **hardware** can handle the current.

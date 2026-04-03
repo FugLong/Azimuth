@@ -70,16 +70,16 @@ For the integrated PCB: schematic **U1** is **`ESP32-C3-WROOM-02`** (e.g. **-N4*
 | **VDD**, **VDDIO**, **PS1** | **3V3** | — |
 | **GND** | **GND** | — |
 
-On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows straps and passives (**R11**–**R15**, **C3**–**C6**, etc.).
+On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows straps and passives (**R13**–**R17**, **C3**, **C11** on **CAP**, etc.).
 
 ### Other nets ↔ U1
 
 | Function | U1 symbol | GPIO | Notes |
 |----------|-----------|------|--------|
-| RGB **LED1** (via **R3** / **R4** / **R5**) | **IO0**, **IO1**, **IO3** | 0, 1, 3 | **TZ-P4-1615RGB**; silk channel map on PCB |
+| RGB **LED1** cathodes (via **R6** / **R7** / **R8**); **COM+** → **3V3** | **IO0**, **IO1**, **IO3** | 0, 1, 3 | **TZ-P4-1615RGB** — **common anode**; drive cathode nets **active low** in firmware; silk channel map on PCB |
 | **FUNC1** | **IO7** | 7 | Tact to GND; firmware pull-up |
-| **BUZZER1** + | **TXD** | 21 | **MLT-5020** − to GND |
-| Battery divider tap | **IO2** | 2 | **R1**/**R2** to **D0** net |
+| **BUZZER1** + | **TXD** | 21 | **MLT-5020** − to GND — current vs GPIO: [parts-list.md — Buzzer](parts-list.md#buzzer-buzzer1) |
+| Battery divider tap | **IO2** | 2 | **R1**/**R2** (220 kΩ each) per **`Azimuth.kicad_sch`** |
 
 **USB:** Data on **GPIO18** / **GPIO19** inside the module to the USB pads—no separate USB-UART IC. Firmware uses **USB CDC** for **`Serial`**.
 
@@ -91,21 +91,22 @@ On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows stra
 
 ### Schematic passives (`Azimuth.kicad_sch`)
 
-Summary for bring-up and BOM cross-check; authoritative values on the schematic and [**parts-list.md**](parts-list.md).
+Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list.md**](parts-list.md).
 
 | Block | Refs | Role |
 |-------|------|------|
-| **USB-C J1** | **R6**, **R7** 5.1 kΩ (CC); **R8**, **R9** 22 Ω (D+/D−) | |
-| **U1** | **C5** 0.1 µF | Module decoupling |
-| **IC1** BNO086 | **C3** 100 nF, **C4** 10 µF, **C6** 100 nF on CAP; **R11**–**R13** 10 kΩ straps; **R14**/**R15** 4.7 kΩ ENV pull-ups | |
-| **LED1** | **R3** 680 Ω, **R4**/**R5** 150 Ω | RGB current limit |
-| **Battery path** | **C1** 10 µF, **R1**/**R2** 220 kΩ divider | |
+| **USB-C J1** | **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (USB data series **U1** ↔ **J1**) | |
+| **U1** | Decoupling per schematic (e.g. **C5** and related nets) | See KiCad |
+| **IC1** BNO086 | **C3** 100 nF; **C11** 100 nF on **CAP**; **R13** 10 kΩ; **R14**/**R15** 10 kΩ (**ENV_SCL** / **ENV_SDA**); **R16**/**R17** 4.7 kΩ | |
+| **LED1** RGB | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**); **R5** 150 Ω is **CHG1**, not RGB | |
+| **Charger / charge LED** | **U3** **TP4054**, **R4** 2.5 kΩ (**PROG**), **CHG1**, **R5**, **C6**, **C7** | |
+| **Battery path** | **C1** 10 µF, **C2** 0.1 µF, **R1**/**R2** 220 kΩ divider | |
 
 ---
 
 ## Bring-up
 
-1. IMU: **PS1** and rails at **3.3 V**, **PS0** high at reset, **BOOTN** high, **CLKSEL0** high, **CAP** bypassed (**C6** on PCB).
+1. IMU: **PS1** and rails at **3.3 V**, **PS0** high at reset, **BOOTN** high, **CLKSEL0** high, **CAP** bypassed (**C11** on PCB per **`Azimuth.kicad_sch`**).
 2. Short SPI traces; solid GND return.
 3. Run **`azimuth_debug_diy`** or **`azimuth_debug_pcb`** to match your hardware; then **`azimuth_main_*`** for Wi‑Fi / OpenTrack.
 4. If init fails: **3.3 V**, **NRST**, **INT**, SPI wiring; on PCB, **ERC** / **DRC** in KiCad.

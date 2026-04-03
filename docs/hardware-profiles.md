@@ -67,7 +67,7 @@ A future PCB that moves a function needs new defines in **`azimuth_hw.h`** and a
 
 - [x] Shared pin header **`include/azimuth_hw.h`**
 - [x] PlatformIO **`azimuth_main_diy`** / **`azimuth_main_pcb`** (+ debug variants)
-- [ ] **Azimuth_Design**: ERC/DRC, BOM lock, fab after net review
+- [x] **Azimuth_Design**: Docs [**parts-list.md**](parts-list.md) / [**wiring.md**](wiring.md) match **`Azimuth.kicad_sch`** (re-verify after sch edits); ERC/DRC before fab; export BOM from KiCad for pick-and-place
 - [ ] Optional: CI build **`azimuth_main_pcb`** artifacts
 - [ ] Optional: second **`manifest.json`** entry for retail PCB
 

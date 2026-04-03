@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 2,
     "active_layer_preset": "All Layers",
     "auto_track_width": false,
     "hidden_netclasses": [],
@@ -60,11 +60,13 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "ESP32_BNO086.kicad_prl",
+    "filename": "Azimuth.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
     "col_hidden": [
+      false,
+      false,
       false,
       false,
       false,
@@ -86,7 +88,9 @@
       6,
       7,
       8,
-      9
+      9,
+      10,
+      11
     ],
     "col_widths": [
       156,
@@ -98,7 +102,9 @@
       103,
       74,
       103,
-      10
+      103,
+      103,
+      103
     ],
     "custom_group_rules": [],
     "expanded_rows": [],
