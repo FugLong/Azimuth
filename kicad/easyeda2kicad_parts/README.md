@@ -11,6 +11,8 @@ Under **`easyeda2kicad/`**, each part is self-contained (same idea as **`button_
 | **WROOM-02** (C2934560) | **`../easyeda2kicad.kicad_sym`**, **`../easyeda2kicad.pretty/`**, **`../easyeda2kicad.3dshapes/`** (legacy single-module import) |
 | **USB Type-C** C2765186 | **`easyeda2kicad/usb_type_c_C2765186.kicad_sym`**, **`usb_type_c_C2765186.pretty/`**, **`usb_type_c_C2765186.3dshapes/`** |
 | **RGB LED** C779813 (TUOZHAN 1615 common anode) | **`easyeda2kicad/rgb_led_C779813.kicad_sym`**, **`rgb_led_C779813.pretty/`**, **`rgb_led_C779813.3dshapes/`** |
+| **AO3400A** C20917 (buzzer low-side NMOS) | **`easyeda2kicad/ao3400_C20917.kicad_sym`**, **`ao3400_C20917.pretty/`**, **`ao3400_C20917.3dshapes/`** |
+| **B5819WS** C64886 (buzzer flyback Schottky) | **`easyeda2kicad/b5819ws_C64886.kicad_sym`**, **`b5819ws_C64886.pretty/`**, **`b5819ws_C64886.3dshapes/`** |
 
 Symbol **`usb_type_c_C2765186:TYPE-C16PIN2MD(073)`**; footprint **`usb_type_c_C2765186:USB-C-SMD_TYPE-C-6PIN-2MD-073`**.
 

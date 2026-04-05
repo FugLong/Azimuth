@@ -16,7 +16,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | Path | What it is | Status |
 |------|------------|--------|
 | **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; the [**web flasher**](https://fuglong.github.io/Azimuth/) ships this build. | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
-| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**. | **In development** — same app; board polish, DRC/ERC, panelization ([roadmap](docs/roadmap.md)). |
+| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**. | **Ready (design)** — KiCad **ERC/DRC clean**; same app as DIY. Optional production **panel**; first-article **bring-up** on [roadmap](docs/roadmap.md). |
 
 [**docs/wiring.md**](docs/wiring.md) (pinouts) · [**docs/hardware-profiles.md**](docs/hardware-profiles.md) (PlatformIO / GPIO) · [**docs/parts-list.md**](docs/parts-list.md) (sourcing — DIY store links + PCB BOM)
 
@@ -77,13 +77,13 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | Area | Progress | Notes |
 |------|:--------:|--------|
 | Hardware / BOM | 100% | [Parts list](docs/parts-list.md) |
-| Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) | ~95% | RGB LED, buzzer, button — see [wiring](docs/wiring.md); production **panel** still to finalize |
+| Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) | **100%** (layout) | RGB LED, passive buzzer (**FET** + flyback), button — see [wiring](docs/wiring.md) / [parts-list](docs/parts-list.md). **ERC/DRC clean**; add **panel** only if you order arrays; **assembled bring-up** still on [roadmap](docs/roadmap.md) |
 | Firmware | 60–70% | Tracking + Wi‑Fi + settings portal + USB Hatire + release flow; board I/O, battery, and polish on [roadmap](docs/roadmap.md) |
 | 3D enclosure | 0% | Not started |
 
 ```
 Hardware/BOM   [████████████████████] 100%
-PCB            [███████████████████░] ~95%
+PCB (design)   [████████████████████] 100%
 Firmware       [█████████████░░░░░░░] 60–70%
 Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
 ```

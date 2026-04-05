@@ -1,6 +1,6 @@
 # KiCad
 
-**Integrated board:** open **`kicad/Azimuth_Design/Azimuth.kicad_pro`**. Schematic **`Azimuth.kicad_sch`**, layout **`Azimuth.kicad_pcb`**. Nets and GPIOs: [wiring.md](wiring.md) (PCB path). Human BOM summary: [parts-list.md](parts-list.md); **fab BOM** = export from KiCad after ERC/DRC.
+**Integrated board:** open **`kicad/Azimuth_Design/Azimuth.kicad_pro`**. Schematic **`Azimuth.kicad_sch`**, layout **`Azimuth.kicad_pcb`**. Nets and GPIOs: [wiring.md](wiring.md) (PCB path). Human BOM summary: [parts-list.md](parts-list.md); **fab BOM** = export from KiCad for each order (re-run **ERC** and **DRC** after any design change — repo snapshot is clean).
 
 | Location | Contents |
 |----------|----------|
@@ -13,7 +13,9 @@
 
 Always open the **`.kicad_pro`** inside **`Azimuth_Design/`** so **`${KIPRJMOD}`** and library paths work.
 
-**Before fab:** ERC, DRC, locked BOM; add panel per your house rules if you’re not ordering singles.
+**Before each fab order:** Re-run **ERC** and **DRC**, then export BOM and Gerbers; add a **panel** per your fab’s rules if you are not ordering singles.
+
+**Buzzer path:** **BUZZER1** is driven by **Q2** (**AO3400A**, **`ao3400_C20917`**) and **D2** (**B5819WS**, **`b5819ws_C64886`**) from **`easyeda2kicad_parts`** — see [parts-list.md](parts-list.md#buzzer-buzzer1) and [wiring.md](wiring.md#pcb-path-azimuth_design-u1-esp32-c3-wroom-02).
 
 **Legacy:** **`kicad/ESP32_BNO086/`** — old layout, not maintained. Use **`Azimuth_Design`**.
 

@@ -52,14 +52,14 @@ GPIO numbers are for ESP32-C3; **D*** labels refer to XIAO silk only (the module
 | RGB (Azimuth board) | 0, 1, 3 | — | Not present on default breadboard build |
 | Status / future | 3 | D1 | **`kPinStatusLed`**; full RGB on PCB uses 0, 1, 3 — [wiring.md](wiring.md) |
 | FUNC | 7 | D5 | Optional breadboard |
-| Buzzer | 21 | D6 | Optional breadboard |
+| Buzzer | 21 | D6 | PWM on **IO21** drives **Q2** gate on PCB; optional breadboard differs — [wiring.md](wiring.md), [parts-list](parts-list.md#buzzer-buzzer1) |
 | Battery sense | 2 | D0 | When populated |
 
 The Azimuth RGB LED is on **GPIO 0, 1, 3**—not a drop-in on XIAO silk; **`azimuth_main_diy`** does not drive that RGB layout.
 
 A future PCB that moves a function needs new defines in **`azimuth_hw.h`** and a new env—avoid silent drift from [wiring.md](wiring.md).
 
-**KiCad:** **`kicad/Azimuth_Design/`** — open **`Azimuth.kicad_pro`**. **U1** ↔ **IC1** routing and module notes are in [wiring.md](wiring.md) (**PCB path**). Libraries, panelization, workflow: [kicad.md](kicad.md).
+**KiCad:** **`kicad/Azimuth_Design/`** — open **`Azimuth.kicad_pro`**. **U1** ↔ **IC1** routing and module notes are in [wiring.md](wiring.md) (**PCB path**). Project snapshot is **ERC/DRC clean**; re-run after schematic or layout edits. Libraries, optional panelization, workflow: [kicad.md](kicad.md).
 
 ---
 
@@ -67,7 +67,7 @@ A future PCB that moves a function needs new defines in **`azimuth_hw.h`** and a
 
 - [x] Shared pin header **`include/azimuth_hw.h`**
 - [x] PlatformIO **`azimuth_main_diy`** / **`azimuth_main_pcb`** (+ debug variants)
-- [x] **Azimuth_Design**: Docs [**parts-list.md**](parts-list.md) / [**wiring.md**](wiring.md) match **`Azimuth.kicad_sch`** (re-verify after sch edits); ERC/DRC before fab; export BOM from KiCad for pick-and-place
+- [x] **Azimuth_Design**: Docs [**parts-list.md**](parts-list.md) / [**wiring.md**](wiring.md) match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** (re-verify after edits); **ERC/DRC clean** in current repo snapshot; export BOM from KiCad for each fab / pick-and-place order
 - [ ] Optional: CI build **`azimuth_main_pcb`** artifacts
 - [ ] Optional: second **`manifest.json`** entry for retail PCB
 

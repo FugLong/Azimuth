@@ -34,7 +34,7 @@ Example **JST-PH** 1S packs (check **polarity** against your connector before po
 
 ## Azimuth PCB (`Azimuth_Design`)
 
-Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below are copied from **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** as in the repo. For ordering, still **export the BOM from KiCad** after **ERC** / **DRC** so pick-and-place and stock codes stay in sync. Board workflow: [kicad.md](kicad.md).
+Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). For each order, **export the BOM from KiCad** so pick-and-place and stock codes stay in sync. Board workflow: [kicad.md](kicad.md).
 
 ### What’s on the board (by reference)
 
@@ -52,7 +52,9 @@ Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below are c
 | 1 | **F1** | 0805L050WR | `1_MyFootPrints:R0805` | Fuse |
 | 1 | **LED1** | TZ-P4-1615RGBTCA1-0.55T | `rgb_led_C779813:LED-SMD_4P-L1.6-W1.5-BR_TZ-P4-1615` | RGB; **COM+** to **3V3** (common anode) |
 | 1 | **CHG1** | XL-0201SURC | `1_MyFootPrints:LED-SMD_L0.65-W0.35-P0.41_XL-0201SURC` | Charge indicator LED |
-| 1 | **BUZZER1** | MLT-5020 | `1_MyFootPrints:BUZ-SMD_L5.0-W5.5-P4.60` | Magnetic (externally driven) — see [Buzzer (BUZZER1)](#buzzer-buzzer1) |
+| 1 | **BUZZER1** | MLT-5020 | `1_MyFootPrints:BUZ-SMD_L5.0-W5.5-P4.60` | Passive magnetic buzzer (LCSC **C94598**) — **+**→**3V3**, **−**→**Q2** drain; see [Buzzer (BUZZER1)](#buzzer-buzzer1) |
+| 1 | **Q2** | AO3400A | `ao3400_C20917:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR` | Low-side NMOS for **BUZZER1** (LCSC **C20917**); gate from **IO21** via **R20** |
+| 1 | **D2** | B5819WS | `b5819ws_C64886:SOD-323_L1.8-W1.3-LS2.5-RD` | Flyback Schottky (LCSC **C64886**) — **cathode**→**3V3**/**BUZZER1 +**, **anode**→drain/**BUZZER1 −** |
 | 1 | **FUNC1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | User button |
 | 1 | **RST1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | Reset / strap (per schematic) |
 | 2 | **BAT_0**, **GND_0** | DNP | `TestPoint:TestPoint_Pad_D1.0mm` | Optional test points (not populated by default) |
@@ -92,6 +94,8 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R17** | 4.7k | **IC1** support (per schematic) |
 | **R18** | 10k | **U2** / power (per schematic) |
 | **R19** | 10k | **U2** / power (per schematic) |
+| **R20** | 330R | **IO21** → **Q2** gate (series) |
+| **R21** | 100k | **Q2** gate → **GND** (pull-down) |
 
 ---
 
@@ -128,7 +132,7 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 | **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |
 | **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** sets **TP4054** charge current |
 | **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`** on **IO7** |
-| **BUZZER1** | **LOAD+** to **GPIO21** (**U1** **TXD**), **LOAD−** to **GND** | See [Buzzer (BUZZER1)](#buzzer-buzzer1) |
+| **BUZZER1** + **Q2** + **D2** | **BUZZER1 +**→**3V3**, **−**→**Q2** drain; **Q2** source→**GND**; **IO21**→**R20**→gate, **R21** gate→**GND**; **D2** flyback | See [Buzzer (BUZZER1)](#buzzer-buzzer1) |
 
 Long jumper wires on DIY builds: consider series resistors on **SPI** and a stronger **H_INTN** pull-up if needed (SparkFun driver can enable MCU-side pull-up).
 
@@ -136,11 +140,14 @@ Long jumper wires on DIY builds: consider series resistors on **SPI** and a stro
 
 ### Buzzer (BUZZER1)
 
-**MLT-5020** is a **magnetic, externally driven** (passive) buzzer: you feed it a **square wave** (e.g. ~4 kHz) and it draws current set by the coil. Vendor data for this family is often on the order of **~100 mA** at **3 V** rated operation—far above what an **ESP32-C3 GPIO** is meant to **source** continuously (~12 mA class).
+**MLT-5020** (LCSC **C94598**) is a **magnetic, passive** buzzer: drive it with **PWM** on the switched rail (vary **frequency** for pitch). Coil current can be on the order of **~100 mA** at **3 V** for this family—too much to hang directly on a GPIO.
 
-**Implications for Azimuth_Design as drawn**
+**Azimuth_Design (`Azimuth.kicad_sch`) — as built**
 
-- Driving **BUZZER1** directly from **GPIO21** is **not** a safe long-term assumption if you expect full volume or datasheet current.
-- **Practical options:** (1) Add a **low-side NMOS** (or NPN) + **flyback diode** across the buzzer, drive the gate/base from **GPIO21**; (2) Switch to a **piezo** or **active** buzzer with **≤~10 mA** at 3V3 if you must stay GPIO-direct; (3) Keep the part but accept **very weak** sound or **risk** to the pin if you PWM it without a transistor.
+- **High side:** **BUZZER1** pin **+** → **3V3**; pin **−** → **Q2** (**AO3400A**, LCSC **C20917**) **drain**; **Q2** **source** → **GND**.
+- **Flyback:** **D2** **B5819WS** (LCSC **C64886**) — **cathode** (band) → **3V3** / buzzer **+**, **anode** → buzzer **−** / **Q2** drain (same node).
+- **Gate drive:** **U1** **IO21** (symbol **TXD**) → **R20** (**330 Ω**) → **Q2** **gate**; **R21** (**100 kΩ**) **gate** → **GND** (default off when the pin is high-Z).
 
-Firmware can use **`ledcWriteTone()`** / PWM on **GPIO21** for a tone once the **hardware** can handle the current.
+Firmware: **`ledcWriteTone()`** / **LEDC** PWM on **GPIO21** toggles **Q2** and sets the acoustic frequency. Leave **BUZZER1** pin **NC** unconnected unless the datasheet requires otherwise.
+
+**DIY breadboard:** The table above is the **PCB** netlist. A simple **buzzer +** on **D6** with **−** to **GND** is *not* the same as the PCB (no transistor); use a transistor + diode there too if you mirror this design, or accept weak / risky direct drive.

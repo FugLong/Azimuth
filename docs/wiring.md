@@ -22,7 +22,7 @@ Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_
 | D3 | **5** | IMU CS |
 | D4 | **6** | IMU INT |
 | D5 | **7** | FUNC (optional tact switch) |
-| D6 | **21** | Buzzer + (optional); also UART TX |
+| D6 | **21** | Buzzer drive / **TXD** (optional); on **PCB**, **IO21** → FET gate — not buzzer **+**; also UART TX |
 | D7 | **20** | IMU NRST; same pin as UART RX—do not use both |
 | D8 | **8** | SPI SCK |
 | D9 | **9** | SPI MISO |
@@ -48,7 +48,7 @@ Arduino **FSPI** defaults match **D8 / D9 / D10** on this XIAO. Tie **PS0** / **
 
 If you use different pins for SPI, call **`SPI.begin(sck, miso, mosi, -1)`** before **`imu.beginSPI(...)`**.
 
-**Optional on breadboard:** tact switch **D5** (GPIO7), buzzer **+** on **D6** (GPIO21), **−** to GND—same GPIOs as the integrated PCB if you add them. There is no Azimuth-style RGB on the default DIY path.
+**Optional on breadboard:** tact switch **D5** (GPIO7). A buzzer on **D6** (GPIO21) is only **pin-compatible** with the PCB net name—the **integrated PCB** drives a **low-side FET** gate from **IO21**, not the buzzer **+** directly; see [PCB path](#pcb-path-azimuth_design-u1-esp32-c3-wroom-02) and [parts-list — Buzzer](parts-list.md#buzzer-buzzer1). There is no Azimuth-style RGB on the default DIY path.
 
 ---
 
@@ -78,7 +78,8 @@ On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows stra
 |----------|-----------|------|--------|
 | RGB **LED1** cathodes (via **R6** / **R7** / **R8**); **COM+** → **3V3** | **IO0**, **IO1**, **IO3** | 0, 1, 3 | **TZ-P4-1615RGB** — **common anode**; drive cathode nets **active low** in firmware; silk channel map on PCB |
 | **FUNC1** | **IO7** | 7 | Tact to GND; firmware pull-up |
-| **BUZZER1** + | **TXD** | 21 | **MLT-5020** − to GND — current vs GPIO: [parts-list.md — Buzzer](parts-list.md#buzzer-buzzer1) |
+| **Buzzer (PWM)** | **TXD** | 21 | **IO21** → **R20** (330 Ω) → **Q2** (**AO3400A**) gate; **R21** (100 kΩ) gate → **GND** |
+| **BUZZER1** + **Q2** + **D2** | — | — | **MLT-5020**: **+**→**3V3**, **−**→**Q2** drain; **Q2** source→**GND**; **D2** **B5819WS** flyback (**K**→**3V3**/**+**, **A**→drain/**−**) — [parts-list — Buzzer](parts-list.md#buzzer-buzzer1) |
 | Battery divider tap | **IO2** | 2 | **R1**/**R2** (220 kΩ each) per **`Azimuth.kicad_sch`** |
 
 **USB:** Data on **GPIO18** / **GPIO19** inside the module to the USB pads—no separate USB-UART IC. Firmware uses **USB CDC** for **`Serial`**.
@@ -101,6 +102,7 @@ Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list
 | **LED1** RGB | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**); **R5** 150 Ω is **CHG1**, not RGB | |
 | **Charger / charge LED** | **U3** **TP4054**, **R4** 2.5 kΩ (**PROG**), **CHG1**, **R5**, **C6**, **C7** | |
 | **Battery path** | **C1** 10 µF, **C2** 0.1 µF, **R1**/**R2** 220 kΩ divider | |
+| **Buzzer** | **R20** 330 Ω (**IO21**→gate), **R21** 100 kΩ (gate→**GND**); **Q2** **AO3400A**; **D2** **B5819WS**; **BUZZER1** **MLT-5020** | |
 
 ---
 
@@ -109,4 +111,4 @@ Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list
 1. IMU: **PS1** and rails at **3.3 V**, **PS0** high at reset, **BOOTN** high, **CLKSEL0** high, **CAP** bypassed (**C11** on PCB per **`Azimuth.kicad_sch`**).
 2. Short SPI traces; solid GND return.
 3. Run **`azimuth_debug_diy`** or **`azimuth_debug_pcb`** to match your hardware; then **`azimuth_main_*`** for Wi‑Fi / OpenTrack.
-4. If init fails: **3.3 V**, **NRST**, **INT**, SPI wiring; on PCB, **ERC** / **DRC** in KiCad.
+4. If init fails: **3.3 V**, **NRST**, **INT**, SPI wiring; on PCB, confirm the built board matches **`Azimuth.kicad_sch`** / layout (re-run **ERC** / **DRC** in KiCad if you changed the design).

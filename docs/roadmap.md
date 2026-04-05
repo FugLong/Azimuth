@@ -9,7 +9,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Workstream | Progress | Notes |
 |------------|----------|-------|
 | Hardware selection | **100%** | DIY: **XIAO ESP32-C3** + **BNO08x**; product: **Azimuth** PCB ([**Azimuth_Design**](../kicad/Azimuth_Design/)) |
-| Custom PCB (KiCad) | **~95%** | Layout + nets aligned with [wiring.md](wiring.md); DRC/ERC + BOM lock before fab; **panelization** remaining for production ordering |
+| Custom PCB (KiCad) | **100%** (design) | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean** in repo snapshot. Export BOM/Gerbers per fab order; **panelization** optional for production; **first-article assembly** = bring-up checklist below |
 | Firmware | **60–70%** | SPI IMU; **`azimuth_debug_*`** bring-up; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
 | End-user docs & release | **~50%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal banner documented; OTA TBD |
@@ -18,7 +18,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 
 ```
 Hardware/BOM     [████████████████████] 100%
-PCB design       [███████████████████░] ~95%
+PCB design       [████████████████████] 100%
 Firmware         [█████████████░░░░░░░] 60–70%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
@@ -37,8 +37,8 @@ Enclosure        [░░░░░░░░░░░░░░░░░░░░] 
 
 Use this as a checklist; tighten or relax before tagging V1.
 
-- [ ] **PCB** — Fabrication-ready: DRC clean, BOM fixed, assembly tested on at least one revision.
-- [ ] **Bring-up** — IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** PCB (breadboard path already exercised).
+- [x] **PCB (KiCad)** — **Azimuth_Design** fabrication-ready: **ERC and DRC clean**; BOM matches schematic/layout (re-export from KiCad for each order — [parts-list.md](parts-list.md), [kicad.md](kicad.md)).
+- [ ] **PCB (bring-up)** — At least one assembled revision: IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** board (breadboard path already exercised).
 - [ ] **Firmware core** — Clear module boundaries (HAL / drivers / app), pins and features match [wiring.md](wiring.md).
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
@@ -134,7 +134,9 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-22 | Initial roadmap: workstream snapshot + phases 1–4 + V1 draft criteria. |
 | 2026-03-22 | V1 posture: wireless required; USB supported; enclosure + PH2 assembly tradeoff documented. |
 | 2026-03-25 | Docs + BOM aligned with KiCad (**PWR1**, **`vcc`**, **BUZZER1**, **MLT-5020**, **FUNC1** footprint). |
+| 2026-04-02 | Docs + BOM: buzzer path **Q2** **AO3400A**, **D2** **B5819WS**, **R20**/**R21** gate network; **parts-list** / **wiring** / **hardware-profiles** / **kicad** / **README** / **easyeda2kicad** README. |
 | 2026-03-27 | Firmware ~30%: Hatire + WiFi/OpenTrack UDP; `secrets.h`; PCB ~95% with **panelization** left before fab. |
 | 2026-03-27 | Firmware ~40%: NVS + HTTP settings, provisioning portal; roadmap/tasks aligned; shared OpenTrack axis helper; portal HTML split to `portal_html.cpp`. |
 | 2026-03-28 | PlatformIO envs **`azimuth_main_diy`** / **`azimuth_debug_diy`** (+ **`_*_pcb`**); GitLab CI + GitHub Pages flasher; NVS portal axis map; **`VERSION`** / manifest sync; update banner. Docs split: README for overview; **[using-azimuth.md](using-azimuth.md)**; **[development.md](development.md)**. |
 | 2026-03-28 | Firmware snapshot toward V1 revised to **60–70%** (core tracking + wireless + settings + release path in place; I/O, battery, OTA, refactor still open). |
+| 2026-04-05 | **Azimuth_Design**: docs aligned with schematic/PCB; **ERC/DRC clean**; PCB design workstream **100%**; V1 checklist splits **KiCad ready** vs **assembled bring-up**; panelization remains optional for production. |
