@@ -88,7 +88,7 @@ On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows stra
 
 ### Battery (PCB)
 
-**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO2**, bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic.
+**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO2**, bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic. Charger **U3** (**TP4054**) uses **R4** = **2 kΩ** on **PROG** for **~500 mA** charge current; pack sizing notes: [parts-list — Off-board pack](parts-list.md#off-board-pack-pcb-wireless-use).
 
 ### Schematic passives (`Azimuth.kicad_sch`)
 
@@ -100,7 +100,7 @@ Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list
 | **U1** | Decoupling per schematic (e.g. **C5** and related nets) | See KiCad |
 | **IC1** BNO086 | **C3** 100 nF; **C11** 100 nF on **CAP**; **R13** 10 kΩ; **R14**/**R15** 10 kΩ (**ENV_SCL** / **ENV_SDA**); **R16**/**R17** 4.7 kΩ | |
 | **LED1** RGB | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**); **R5** 150 Ω is **CHG1**, not RGB | |
-| **Charger / charge LED** | **U3** **TP4054**, **R4** 2.5 kΩ (**PROG**), **CHG1**, **R5**, **C6**, **C7** | |
+| **Charger / charge LED** | **U3** **TP4054**, **R4** 2 kΩ (**PROG**, **~500 mA**), **CHG1**, **R5**, **C6**, **C7** | |
 | **Battery path** | **C1** 10 µF, **C2** 0.1 µF, **R1**/**R2** 220 kΩ divider | |
 | **Buzzer** | **R20** 330 Ω (**IO21**→gate), **R21** 100 kΩ (gate→**GND**); **Q2** **AO3400A**; **D2** **B5819WS**; **BUZZER1** **MLT-5020** | |
 

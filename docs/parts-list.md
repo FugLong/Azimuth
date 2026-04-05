@@ -65,6 +65,10 @@ Exact **LCSC** / **Manufacturer** fields live in the KiCad symbol properties.
 
 The PCB exposes **JST PH** for a **1S** pack when you are not on USB. Use a **protected** cell and correct **polarity** for **`PH2.0`** in **`Azimuth.kicad_sch`**. The same **class** of off-the-shelf **JST-PH** 1S packs as in [Optional: battery on the XIAO (wireless)](#optional-battery-on-the-xiao-wireless) usually applies—always confirm against **this** footprint.
 
+**Capacity guidance:** Treat **~400 mAh** as a practical **minimum** for this build (runtime vs mass on the head). **~850 mAh** is a comfortable “sweet spot” when you want more time without a large pack; anything **above 400 mAh** is electrically fine. Lighter smaller packs trade runtime for comfort.
+
+**Charge rate:** **U3** (**TP4054**) is set for **~500 mA** fast charge via **R4** (**PROG**). For a **400 mAh** cell that is a little over **1 C**; for **850 mAh** it is **under 0.6 C**. That is conservative compared with how small **1S** packs are often used in RC/drone contexts, but still respect your cell’s datasheet, quality, and **protected** packs only.
+
 Regulation, charging, and the full power path follow **`Azimuth.kicad_sch`** and [wiring.md](wiring.md) (PCB path).
 
 ---
@@ -78,7 +82,7 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R1** | 220K | Battery divider to **GPIO2** |
 | **R2** | 220K | Battery divider |
 | **R3** | 100k | Power / **U2** support (per schematic nets) |
-| **R4** | 2.5k | **U3** **PROG** (charge current set) |
+| **R4** | 2K | **U3** **PROG** — **TP4054**: **I_BAT ≈ 1000 / R4(kΩ) mA** → **~500 mA** |
 | **R5** | 150R | **CHG1** LED current limit (**3V3** side) |
 | **R6** | 680R | **LED1** cathode ↔ **IO3** |
 | **R7** | 150R | **LED1** cathode ↔ **IO0** |
@@ -130,7 +134,7 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 | **Charge LED (CHG1)** | **R5** 150 Ω | From **3V3** to **CHG1** anode net |
 | **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO2** |
 | **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |
-| **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** sets **TP4054** charge current |
+| **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** = **2 kΩ** on **PROG** → **~500 mA** (see [Off-board pack](#off-board-pack-pcb-wireless-use)) |
 | **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`** on **IO7** |
 | **BUZZER1** + **Q2** + **D2** | **BUZZER1 +**→**3V3**, **−**→**Q2** drain; **Q2** source→**GND**; **IO21**→**R20**→gate, **R21** gate→**GND**; **D2** flyback | See [Buzzer (BUZZER1)](#buzzer-buzzer1) |
 
