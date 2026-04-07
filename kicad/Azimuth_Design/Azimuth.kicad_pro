@@ -503,6 +503,10 @@
       {
         "netclass": "Default",
         "pattern": "/Bat-"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "GND"
       }
     ]
   },

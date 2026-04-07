@@ -41,7 +41,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [ ] **PCB (bring-up)** — At least one assembled revision: IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** board (breadboard path already exercised).
 - [ ] **Firmware core** — Clear module boundaries (HAL / drivers / app), pins and features match [wiring.md](wiring.md).
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
-- [ ] **Battery** — Voltage readout (divider on D0/GPIO2), low-battery indication or policy (thresholds TBD).
+- [ ] **Battery** — Voltage readout (**GPIO4** / XIAO **D2**; same on DIY and **Azimuth_Design**), low-battery indication or policy (thresholds TBD).
 - [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via **NVS portal** and optional **`secrets.h`**).
 - [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md), [using-azimuth.md](using-azimuth.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [x] **Updates (USB)** — GitHub Pages **esp-web-tools** flasher + repo **`VERSION`** / **`manifest.json`**; portal banner compares to hosted manifest (no OTA).

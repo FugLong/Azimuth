@@ -6,7 +6,7 @@ Azimuth is intentionally **two hardware paths**—you only build one:
 
 2. **Integrated PCB** — The routed board in [**`kicad/Azimuth_Design`**](https://github.com/FugLong/Azimuth/tree/main/kicad/Azimuth_Design) (**ESP32-C3-WROOM-02**, **BNO086** on the board, plus **RGB**, **buzzer**, and **FUNC** where populated). You flash **`azimuth_main_pcb`**. It runs the **same** head-tracking application (portal, UDP, Hatire); on-board extras are only relevant when that hardware exists.
 
-Both paths share **one GPIO map** in **`include/azimuth_hw.h`**, so the IMU and common signals land on the same ESP32-C3 pins whether you follow **XIAO silk** labels or **U1** symbol names on the schematic. **Breadboard wiring** (which **D** pin goes where) and **PCB layout** (which **IOx** net on **U1**) are spelled out separately in [**wiring.md**](wiring.md) so you are not flipping between two stories in one table.
+**DIY** (XIAO + breakout) and **Azimuth_Design** share the **same** GPIO assignments in **`include/azimuth_hw.h`** — only the **physical** connector differs (XIAO **D** pins vs **U1** module pads). See [**wiring.md**](wiring.md) (DIY table ↔ PCB table). **KiCad** (**`Azimuth.kicad_sch`** / **PCB**) is the authority for those assignments; [**wiring.md**](wiring.md) documents the **why** (e.g. **GPIO2** strap + **PS0**/**R14**, **GPIO4** battery sense).
 
 **Build suffixes:** **`_diy`** = XIAO + breakout. **`_pcb`** = Azimuth_Design. **`main`** = full firmware (portal, Hatire, UDP). **`debug`** = USB serial IMU angles only, no Wi‑Fi or portal.
 
@@ -34,6 +34,8 @@ python3 -m platformio run -e azimuth_main_pcb -t upload    # Azimuth_Design
 
 Firmware sets **`-DARDUINO_USB_MODE=1`** and **`-DARDUINO_USB_CDC_ON_BOOT=1`** so **`Serial`** is USB CDC on both targets; the stock **`esp32-c3-devkitc-02`** JSON does not enable that by itself.
 
+**SPI bus:** **`src/main.cpp`** calls **`SPI.begin(8, 9, 10, -1)`** before **`imu.beginSPI(...)`**. The XIAO variant already defaults to those pins, but **`esp32-c3-devkitc-02`** uses Arduino variant **`esp32c3`**, whose defaults are **4 / 5 / 6** — that would collide with **CS (5)** and **INT (6)** on the Azimuth PCB. The explicit **`begin`** keeps DIY and PCB builds on the same **FSPI** pins as **`Azimuth.kicad_sch`**.
+
 **Web flasher:** CI ships **`azimuth_main_diy`** by default. A second **`manifest.json`** entry (or fork) applies if you publish **`azimuth_main_pcb`** binaries.
 
 ---
@@ -48,16 +50,16 @@ GPIO numbers are for ESP32-C3; **D*** labels refer to XIAO silk only (the module
 |----------|------|------|--------|
 | SPI SCK / MISO / MOSI | 8 / 9 / 10 | D8–D10 | |
 | IMU CS / INT / NRST | 5 / 6 / 20 | D3, D4, D7 | |
-| PS0 / WAKE | 4 | D2 | |
+| PS0 / WAKE | 2 | D0 | **10 kΩ** to **3V3** on breadboard (same as **R14** on **Azimuth_Design**) |
 | RGB (Azimuth board) | 0, 1, 3 | — | Not present on default breadboard build |
 | Status / future | 3 | D1 | **`kPinStatusLed`**; full RGB on PCB uses 0, 1, 3 — [wiring.md](wiring.md) |
 | FUNC | 7 | D5 | Optional breadboard |
 | Buzzer | 21 | D6 | PWM on **IO21** drives **Q2** gate on PCB; optional breadboard differs — [wiring.md](wiring.md), [parts-list](parts-list.md#buzzer-buzzer1) |
-| Battery sense | 2 | D0 | When populated |
+| Battery sense | 4 | D2 | Divider tap; when populated — same as **Azimuth_Design** **IO4** |
 
 The Azimuth RGB LED is on **GPIO 0, 1, 3**—not a drop-in on XIAO silk; **`azimuth_main_diy`** does not drive that RGB layout.
 
-A future PCB that moves a function needs new defines in **`azimuth_hw.h`** and a new env—avoid silent drift from [wiring.md](wiring.md).
+If a hardware revision ever changes GPIO roles, update **`azimuth_hw.h`** and [wiring.md](wiring.md) together.
 
 **KiCad:** **`kicad/Azimuth_Design/`** — open **`Azimuth.kicad_pro`**. **U1** ↔ **IC1** routing and module notes are in [wiring.md](wiring.md) (**PCB path**). Project snapshot is **ERC/DRC clean**; re-run after schematic or layout edits. Libraries, optional panelization, workflow: [kicad.md](kicad.md).
 

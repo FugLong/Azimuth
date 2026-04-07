@@ -66,7 +66,7 @@ Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.g
 
 Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and optional I/O: [**wiring.md**](wiring.md). GPIO contract and PlatformIO targets: [**hardware-profiles.md**](hardware-profiles.md).
 
-If you move SPI off **D8–D10**, call **`SPI.begin(sck, miso, mosi, -1)`** before **`imu.beginSPI(...)`** (SparkFun driver uses the already-started **`SPI`** bus on ESP32).
+**`src/main.cpp`** always calls **`SPI.begin(8, 9, 10, -1)`** (via **`azimuth_hw`**) before **`imu.beginSPI(...)`** because the SparkFun driver’s **`beginSPI`** invokes **`SPI.begin()`** with no pin list. The XIAO variant already defaults to **8/9/10**, but **`esp32-c3-devkitc-02`** (Azimuth PCB profile) defaults to **4/5/6**, which would clash with **CS/INT** on **5/6** and break the IMU.
 
 ## Repository layout (firmware)
 

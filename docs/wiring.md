@@ -1,5 +1,9 @@
 # Wiring and pinout
 
+**Source of truth:** **`kicad/Azimuth_Design/Azimuth.kicad_sch`** and **`Azimuth.kicad_pcb`**. This page and **`include/azimuth_hw.h`** are written to match that design. If anything disagrees with KiCad, **fix KiCad or regenerate exports** (e.g. **`fab/Azimuth.net`**)—do not treat markdown alone as canonical.
+
+**GPIO2 vs GPIO4 (Azimuth_Design):** **GPIO2** is a **boot-strapping** pin on ESP32-C3; Espressif recommends it be **high** at reset. The board ties **BNO086 PS0/WAKE** here with **R14** (10 kΩ to **3V3**) so the line is **high at boot** and the IMU SPI strap is satisfied. **Battery voltage sense** uses **GPIO4** (divider **R1**/**R2** from **`VBAT_SW`**) because **GPIO4** is **not** a strapping pin—safer for an analog tap than putting the divider on **GPIO2**.
+
 Assignments match **`include/azimuth_hw.h`**. PlatformIO environments: [**hardware-profiles.md**](hardware-profiles.md).
 
 Pinout is split into **two paths** below—follow **either** the DIY (XIAO) section **or** the PCB (U1) section; they describe the same GPIO map in the form you need for that build.
@@ -16,9 +20,9 @@ Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_
 
 | XIAO | GPIO | Typical use in Azimuth |
 |------|------|-------------------------|
-| D0 | **2** | Battery divider when that circuit exists (Azimuth PCB) |
+| D0 | **2** | **PS0 / WAKE** — wire to IMU **PS0**; add **10 kΩ** to **3V3** (same idea as **R14** on **Azimuth_Design**). Matches **GPIO2** strap recommendation. |
 | D1 | **3** | — |
-| D2 | **4** | IMU PS0 / WAKE |
+| D2 | **4** | Battery divider tap if you add a sense network (same net as **Azimuth_Design** **IO4**) |
 | D3 | **5** | IMU CS |
 | D4 | **6** | IMU INT |
 | D5 | **7** | FUNC (optional tact switch) |
@@ -28,7 +32,7 @@ Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_
 | D9 | **9** | SPI MISO |
 | D10 | **10** | SPI MOSI |
 
-**Strapping:** On ESP32-C3, **GPIO2**, **GPIO8**, and **GPIO9** can affect boot. This design uses **D0** (GPIO2) when battery sense exists, and **D8–D10** for SPI—keep IMU power/strap pins valid at reset.
+**Strapping:** On ESP32-C3, **GPIO2**, **GPIO8**, and **GPIO9** can affect boot. **DIY** and **Azimuth_Design** use the **same** pin plan: **PS0** + pull-up on **GPIO2** (**D0** on XIAO), **battery** divider on **GPIO4** (**D2** on XIAO)—not a strapping pin. **D8–D10** are SPI—keep IMU power/straps valid at reset.
 
 ### IMU breakout → XIAO
 
@@ -39,7 +43,7 @@ Map breakout pins by **function** (your silk may differ from **BNO086** names):
 | CS | 5 | D3 | `kPinImuCs` |
 | INT | 6 | D4 | `kPinImuInt` |
 | NRST | 20 | D7 | `kPinImuRst` |
-| PS0 / WAKE | 4 | D2 | `kPinImuPs0Wake` |
+| PS0 / WAKE | 2 | D0 | `kPinImuPs0Wake` — **10 kΩ** to **3V3** recommended (matches **R14** on PCB) |
 | SCK / MISO / MOSI | 8 / 9 / 10 | D8 / D9 / D10 | FSPI |
 | VDD, VDDIO, PS1 | — | 3V3 | SPI straps (see breakout doc) |
 | GND | — | GND | |
@@ -63,14 +67,14 @@ For the integrated PCB: schematic **U1** is **`ESP32-C3-WROOM-02`** (e.g. **-N4*
 | **H_CSN** (CS) | **IO5** | 5 |
 | **H_INTN** | **IO6** | 6 |
 | **NRST** | **RXD** (UART0 RX) | 20 |
-| **PS0/WAKE** | **IO4** | 4 |
+| **PS0/WAKE** | **IO2** | 2 |
 | **H_SCL / SCK** | **IO8** | 8 |
 | **H_SDA / MISO** | **IO9** | 9 |
 | **SA0 / H_MOSI** | **IO10** | 10 |
 | **VDD**, **VDDIO**, **PS1** | **3V3** | — |
 | **GND** | **GND** | — |
 
-On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows straps and passives (**R13**–**R17**, **C3**, **C11** on **CAP**, etc.).
+On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows straps and passives (**R13**–**R17**, **C11** on **CAP**, shared **3V3** bypass, etc.).
 
 ### Other nets ↔ U1
 
@@ -80,7 +84,24 @@ On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows stra
 | **FUNC1** | **IO7** | 7 | Tact to GND; firmware pull-up |
 | **Buzzer (PWM)** | **TXD** | 21 | **IO21** → **R20** (330 Ω) → **Q2** (**AO3400A**) gate; **R21** (100 kΩ) gate → **GND** |
 | **BUZZER1** + **Q2** + **D2** | — | — | **MLT-5020**: **+**→**3V3**, **−**→**Q2** drain; **Q2** source→**GND**; **D2** **B5819WS** flyback (**K**→**3V3**/**+**, **A**→drain/**−**) — [parts-list — Buzzer](parts-list.md#buzzer-buzzer1) |
-| Battery divider tap | **IO2** | 2 | **R1**/**R2** (220 kΩ each) per **`Azimuth.kicad_sch`** |
+| Battery divider tap | **IO4** | 4 | **R1**/**R2** (220 kΩ each), **`VBAT_SW`** → tap → **GND** per **`Azimuth.kicad_sch`**; **DIY:** same GPIO (**D2** on XIAO) (**GPIO4** is **not** a strapping pin) |
+
+### Strap pins (ESP32-C3-WROOM-02)
+
+Per the **ESP32-C3-WROOM-02** datasheet (*Boot configurations*, Table 4-3), **GPIO2**, **GPIO8**, and **GPIO9** set **chip boot mode** at reset. Strapping is **latched** when **`CHIP_EN`** rises; pins then behave as normal GPIO. Default pin bias (Table 4-1): **GPIO9** has a **weak internal pull-up** (reads **1** if nothing else dominates); **GPIO2** and **GPIO8** default **floating**.
+
+| Boot mode | GPIO2 | GPIO8 | GPIO9 |
+|-----------|-------|-------|-------|
+| **SPI boot** (run from flash) | **1** | any | **1** |
+| **Joint download boot** (UART0 / USB-Serial-JTAG) | **1** | **1** | **0** |
+
+The same chapter notes that **GPIO2** does **not** choose between SPI boot and joint download (that is **GPIO8**/**GPIO9**), but **Espressif still recommends pulling GPIO2 up** to reduce glitch sensitivity. For **ROM message printing** to UART0, **GPIO8** also participates (see Table 4-4 in the datasheet); default eFuse settings usually match “normal” development expectations.
+
+**How this maps on Azimuth**
+
+- **GPIO9** (**SPI MISO** / **`/IO9`**) — Table 4-3 requires **1** for **SPI boot**. The chip’s **weak pull-up** on **GPIO9** usually wins when the IMU tri-states **MISO** with **CS** deasserted; that matches typical SPI flash boot.
+- **GPIO8** (**SPI SCK** / **`/IO8`**) — For **SPI boot**, **GPIO8** may be **any** level; your IMU strapping and SPI idling are consistent with **not** forcing joint download by accident (avoid **GPIO8 = 0** together with **GPIO9 = 0**, which the datasheet calls **invalid** for some modes).
+- **GPIO2** (**PS0/WAKE** + pull-up) — **`Azimuth.kicad_sch`** uses **R14** (**10 kΩ**) to **3V3**; breadboard **DIY** should duplicate that on **D0**. Battery sense is on **GPIO4** (**D2** on XIAO), not a strapping pin.
 
 **USB:** Data on **GPIO18** / **GPIO19** inside the module to the USB pads—no separate USB-UART IC. Firmware uses **USB CDC** for **`Serial`**.
 
@@ -88,7 +109,7 @@ On the board, **IC1** is the bare **BNO086**; **`Azimuth.kicad_sch`** shows stra
 
 ### Battery (PCB)
 
-**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO2**, bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic. Charger **U3** (**TP4054**) uses **R4** = **2 kΩ** on **PROG** for **~500 mA** charge current; pack sizing notes: [parts-list — Off-board pack](parts-list.md#off-board-pack-pcb-wireless-use).
+**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO4** (ADC), bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic. Charger **U3** (**TP4054**) uses **R4** = **2 kΩ** on **PROG** for **~500 mA** charge current; pack sizing notes: [parts-list — Off-board pack](parts-list.md#off-board-pack-pcb-wireless-use).
 
 ### Schematic passives (`Azimuth.kicad_sch`)
 
@@ -98,7 +119,7 @@ Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list
 |-------|------|------|
 | **USB-C J1** | **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (USB data series **U1** ↔ **J1**) | |
 | **U1** | Decoupling per schematic (e.g. **C5** and related nets) | See KiCad |
-| **IC1** BNO086 | **C3** 100 nF; **C11** 100 nF on **CAP**; **R13** 10 kΩ; **R14**/**R15** 10 kΩ (**ENV_SCL** / **ENV_SDA**); **R16**/**R17** 4.7 kΩ | |
+| **IC1** BNO086 | **C11** 100 nF on **CAP**; **3V3** rail caps per schematic (**C5**, **C9**, **C10**, **C12**); **R13** 10 kΩ; **R14** 10 kΩ (**PS0** on **IO2**); **R15** 10 kΩ (**CLKSEL0**); **R16**/**R17** 4.7 kΩ (**ENV**) | |
 | **LED1** RGB | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**); **R5** 150 Ω is **CHG1**, not RGB | |
 | **Charger / charge LED** | **U3** **TP4054**, **R4** 2 kΩ (**PROG**, **~500 mA**), **CHG1**, **R5**, **C6**, **C7** | |
 | **Battery path** | **C1** 10 µF, **C2** 0.1 µF, **R1**/**R2** 220 kΩ divider | |

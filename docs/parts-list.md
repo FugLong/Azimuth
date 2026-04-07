@@ -11,7 +11,7 @@ The **wired-only** build (breadboard or hand-wired, power from USB) is fine for 
 | Item | Where to buy · notes |
 |------|----------------------|
 | **Seeed XIAO ESP32-C3** | [Seeed Studio](https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html) · [Mouser **113991054**](https://www.mouser.com/ProductDetail/Seeed-Studio/113991054?qs=3Rah4i%252BhyCHVBerMrpzCkw%3D%3D) — MCU + USB-C. Pinout and docs: [Seeed Wiki — XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/). |
-| **BNO08x breakout (SPI)** | Example modules: [Amazon (GY-BNO085)](https://a.co/d/0f5FjqAz) · [AliExpress listing](https://www.aliexpress.us/item/3256806188033662.html) — strapped for **SPI**; follow the board’s **PS0 / PS1** and wire to the XIAO per [wiring.md](wiring.md) (DIY path). Other **BNO080 / BNO085 / BNO086** breakouts work if you set SPI straps per the vendor. |
+| **BNO08x breakout (SPI)** | Example modules: [Amazon (GY-BNO085)](https://a.co/d/0f5FjqAz) · [AliExpress listing](https://www.aliexpress.us/item/3256806188033662.html) — strapped for **SPI**; wire **PS0** to **GPIO2** (XIAO **D0**) with **10 kΩ** to **3V3** like **Azimuth_Design** **R14** — full map: [wiring.md](wiring.md). Other **BNO080 / BNO085 / BNO086** breakouts work if you set SPI straps per the vendor. |
 
 Also: breadboard or perfboard, jumper wire, **USB data** cable to the PC.
 
@@ -34,7 +34,20 @@ Example **JST-PH** 1S packs (check **polarity** against your connector before po
 
 ## Azimuth PCB (`Azimuth_Design`)
 
-Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). For each order, **export the BOM from KiCad** so pick-and-place and stock codes stay in sync. Board workflow: [kicad.md](kicad.md).
+Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). **Tracked BOM (KiCad CLI):** [`kicad/Azimuth_Design/fab/Azimuth_bom.csv`](../kicad/Azimuth_Design/fab/Azimuth_bom.csv) — regenerate with **`./scripts/export_azimuth_bom.sh`** after schematic edits. Board workflow: [kicad.md](kicad.md).
+
+### PCB / assembly quote — “Other Parameters” (PCBWay-style)
+
+Use these for **instant quote** fields that ask for **unique parts**, **SMD**, **BGA/QFP**, and **THT** (you can leave blanks for a manual quote). Numbers match the committed BOM **`fab/Azimuth_bom.csv`** and **`Azimuth.kicad_pcb`** in this repo.
+
+| Form field | Value | Notes |
+|------------|------|--------|
+| **Number of Unique Parts** (components) | **31** | Distinct order lines: **30** different **LCSC Part** codes on stuffed lines + **1** line with no LCSC (**IC1** BNO086). |
+| **Number of SMD Parts** (tooltip: *SMT Pads*) | **52** |
+| **Number of BGA/QFP Parts** (SMT BGA/QFP) | **0** | **IC1** is **LGA**, not BGA/QFP. |
+| **Number of Through-Hole Parts** | **0** | All stuffed parts are surface-mount. |
+
+Source of truth: [`fab/README.md`](../kicad/Azimuth_Design/fab/README.md).
 
 ### What’s on the board (by reference)
 
@@ -48,16 +61,16 @@ Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match
 | 1 | **PH2.0** | S2B-PH-SM4-TB(LF)(SN) | `Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal` | Battery |
 | 1 | **PWR1** | K3-1280S-K1 | `1_MyFootPrints:SW-SMD_K3-1280S-K1` | Slide switch |
 | 1 | **Q1** | LP0404N3T5G | `1_MyFootPrints:SOT-883-3_L1.0-W0.6-BR` | Power path FET |
+| 1 | **Q3** | AO3401A | `1_MyFootPrints:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR` | Reverse-polarity PMOS on battery input (LCSC **C347476**) |
 | 1 | **D1** | MBR0530_C5204746 | `1_MyFootPrints:SOD-123_L2.7-W1.6-LS3.7-RD-1` | Schottky |
 | 1 | **F1** | 0805L050WR | `1_MyFootPrints:R0805` | Fuse |
 | 1 | **LED1** | TZ-P4-1615RGBTCA1-0.55T | `rgb_led_C779813:LED-SMD_4P-L1.6-W1.5-BR_TZ-P4-1615` | RGB; **COM+** to **3V3** (common anode) |
 | 1 | **CHG1** | XL-0201SURC | `1_MyFootPrints:LED-SMD_L0.65-W0.35-P0.41_XL-0201SURC` | Charge indicator LED |
 | 1 | **BUZZER1** | MLT-5020 | `1_MyFootPrints:BUZ-SMD_L5.0-W5.5-P4.60` | Passive magnetic buzzer (LCSC **C94598**) — **+**→**3V3**, **−**→**Q2** drain; see [Buzzer (BUZZER1)](#buzzer-buzzer1) |
-| 1 | **Q2** | AO3400A | `ao3400_C20917:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR` | Low-side NMOS for **BUZZER1** (LCSC **C20917**); gate from **IO21** via **R20** |
-| 1 | **D2** | B5819WS | `b5819ws_C64886:SOD-323_L1.8-W1.3-LS2.5-RD` | Flyback Schottky (LCSC **C64886**) — **cathode**→**3V3**/**BUZZER1 +**, **anode**→drain/**BUZZER1 −** |
+| 1 | **Q2** | AO3400A | `1_MyFootPrints:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR` | Low-side NMOS for **BUZZER1** (LCSC **C20917**); gate from **IO21** via **R20** (same cell as **`ao3400_C20917`** in libs) |
+| 1 | **D2** | B5819WS | `1_MyFootPrints:SOD-323_L1.8-W1.3-LS2.5-RD` | Flyback Schottky (LCSC **C64886**) — **cathode**→**3V3**/**BUZZER1 +**, **anode**→drain/**BUZZER1 −** (same cell as **`b5819ws_C64886`** in libs) |
 | 1 | **FUNC1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | User button |
 | 1 | **RST1** | HX 3X4X2-2P-1.6N TACTILE SWITCH | `1_MyFootPrints:KEY-SMD_L4.0-W3.0-LS4.9-1` | Reset / strap (per schematic) |
-| 2 | **BAT_0**, **GND_0** | DNP | `TestPoint:TestPoint_Pad_D1.0mm` | Optional test points (not populated by default) |
 
 Exact **LCSC** / **Manufacturer** fields live in the KiCad symbol properties.
 
@@ -79,8 +92,8 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 
 | Ref | Value (KiCad) | Notes |
 |-----|---------------|--------|
-| **R1** | 220K | Battery divider to **GPIO2** |
-| **R2** | 220K | Battery divider |
+| **R1** | 220K | Battery divider (tap to **GPIO4** with **R2**) |
+| **R2** | 220K | Battery divider (**VBAT_SW** → **GPIO4** tap → **GND**) |
 | **R3** | 100k | Power / **U2** support (per schematic nets) |
 | **R4** | 2K | **U3** **PROG** — **TP4054**: **I_BAT ≈ 1000 / R4(kΩ) mA** → **~500 mA** |
 | **R5** | 150R | **CHG1** LED current limit (**3V3** side) |
@@ -92,7 +105,7 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R11** | 22R | USB data series (**U1** ↔ **J1** **D+** path) |
 | **R12** | 22R | USB data series (**U1** ↔ **J1** **D−** path) |
 | **R13** | 10k | **IC1** strap (per schematic) |
-| **R14** | 10k | **IC1** **ENV_SCL** pull-up |
+| **R14** | 10k | **PS0/WAKE** pull-up to **3V3** (**IO2**); shared with Espressif **GPIO2** strap |
 | **R15** | 10k | **IC1** **ENV_SDA** pull-up |
 | **R16** | 4.7k | **IC1** support (per schematic) |
 | **R17** | 4.7k | **IC1** support (per schematic) |
@@ -100,6 +113,7 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R19** | 10k | **U2** / power (per schematic) |
 | **R20** | 330R | **IO21** → **Q2** gate (series) |
 | **R21** | 100k | **Q2** gate → **GND** (pull-down) |
+| **R22** | 100k | **Q3** gate → **GND** (reverse-polarity PMOS bias) |
 
 ---
 
@@ -111,7 +125,7 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 |-----|---------------|----------------------------------|
 | **C1** | 10uf | Battery / switched rail |
 | **C2** | 0.1uf | HF bypass |
-| **C3** | 100nF | **IC1** / **3V3** decoupling |
+| **C3** | 100nF | **USB_5V** (post-fuse **VBUS**) HF bypass to **GND** — not the IMU rail |
 | **C4** | 2.2uF | Power / **U2** / **U3** branch |
 | **C5** | 2.2uF | Power / **U2** branch |
 | **C6** | 2.2uF | **U3** / charger branch |
@@ -128,11 +142,11 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 
 | Block | Refs | Notes |
 |-------|------|--------|
-| **BNO086 (IC1)** | **C3**, **C11** on **CAP**; **R13**–**R17** straps / **ENV** | **R14**/**R15** 10 kΩ on **ENV_SCL** / **ENV_SDA**; **R16**/**R17** 4.7 kΩ per schematic |
-| **USB-C (J1)** | **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (data series) | **6-pin** footprint vs 16-pin symbol may produce **DRC** “no pad for pin” on extra **GND** pins — electrically rely on shell / pour if intentional |
+| **BNO086 (IC1)** | **C11** on **CAP**; **3V3** decoupling via shared rail (**C5**, **C9**, **C10**, **C12** per schematic); **R13**–**R17** straps / **ENV** | **R14** 10 kΩ **PS0** (**IO2**); **R15** 10 kΩ **CLKSEL0**; **R16**/**R17** 4.7 kΩ **ENV**; see **`Azimuth.kicad_sch`** |
+| **USB-C (J1) / USB_5V** | **C3** 100 nF (**USB_5V** bypass); **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (data series) | **6-pin** footprint vs 16-pin symbol may produce **DRC** “no pad for pin” on extra **GND** pins — electrically rely on shell / pour if intentional |
 | **RGB (LED1)** | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**) | **COM+** on **3V3** — firmware should treat cathode pins as **active low** (sink) |
 | **Charge LED (CHG1)** | **R5** 150 Ω | From **3V3** to **CHG1** anode net |
-| **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO2** |
+| **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO4** (ADC); **PS0** on **IO2** via **R14** (see [wiring.md](wiring.md)) |
 | **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |
 | **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** = **2 kΩ** on **PROG** → **~500 mA** (see [Off-board pack](#off-board-pack-pcb-wireless-use)) |
 | **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`** on **IO7** |

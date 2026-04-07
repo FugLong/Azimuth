@@ -14,5 +14,6 @@
   (lib (name "tp4054_C5381776")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/tp4054_C5381776.kicad_sym")(options "")(descr "TP4054 Li-ion battery charger SOT-23-5 C5381776"))
   (lib (name "red_led_C3646923")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/red_led_C3646923.kicad_sym")(options "")(descr "XL-0201SURC red LED 0201 C3646923"))
   (lib (name "ao3400_C20917")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/ao3400_C20917.kicad_sym")(options "")(descr "AOS AO3400A N-MOSFET SOT-23 C20917"))
+  (lib (name "ao3401a_C347476")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/ao3401a_C347476.kicad_sym")(options "")(descr "UMW AO3401A P-MOSFET SOT-23 C347476"))
   (lib (name "b5819ws_C64886")(type "KiCad")(uri "${KIPRJMOD}/../easyeda2kicad_parts/easyeda2kicad/b5819ws_C64886.kicad_sym")(options "")(descr "MDD B5819WS Schottky SOD-323 C64886"))
 )

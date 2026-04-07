@@ -1,0 +1,362 @@
+ERC report (2026-04-07T15:35:46-0500, Encoding UTF8)
+Report includes: Errors, Warnings
+
+***** Sheet /
+[pin_not_connected]: Pin not connected
+    ; error
+    @(62.23 mm, 60.96 mm): Symbol PWR1 Pin 3 [3, Unspecified, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(74.93 mm, 102.87 mm): Symbol BUZZER1 Pin 3 [NC, Unspecified, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(45.72 mm, 146.05 mm): Symbol J1 Pin 3 [SBU2, Unspecified, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(45.72 mm, 161.29 mm): Symbol J1 Pin 9 [SBU1, Unspecified, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(106.68 mm, 132.08 mm): Symbol IC1 Pin 7 [RESV_NC_2, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(106.68 mm, 134.62 mm): Symbol IC1 Pin 8 [RESV_NC_3, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(166.37 mm, 43.18 mm): Symbol U2 Pin 4 [NC, Unspecified, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(106.68 mm, 144.78 mm): Symbol IC1 Pin 12 [RESV_NC_4, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(106.68 mm, 147.32 mm): Symbol IC1 Pin 13 [RESV_NC_5, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 129.54 mm): Symbol IC1 Pin 1 [RESV_NC_1, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 134.62 mm): Symbol IC1 Pin 27 [XIN32, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 137.16 mm): Symbol IC1 Pin 26 [XOUT32/CLKSEL1, Passive, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(156.21 mm, 139.70 mm): Symbol #PWR01 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 142.24 mm): Symbol IC1 Pin 24 [RESV_NC_9, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 144.78 mm): Symbol IC1 Pin 23 [RESV_NC_8, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 147.32 mm): Symbol IC1 Pin 22 [RESV_NC_7, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(154.94 mm, 149.86 mm): Symbol IC1 Pin 21 [RESV_NC_6, Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(48.26 mm, 45.72 mm): Symbol R22 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(62.23 mm, 50.80 mm): Symbol PWR1 Pin 1 [1, Unspecified, Line]
+    @(57.15 mm, 39.37 mm): Symbol Q3 Pin 3 [D, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(62.23 mm, 55.88 mm): Symbol PWR1 Pin 2 [2, Unspecified, Line]
+    @(46.99 mm, 55.88 mm): Symbol R2 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(31.75 mm, 95.25 mm): Symbol FUNC1 Pin 1 [1, Unspecified, Line]
+    @(220.98 mm, 124.46 mm): Symbol U1 Pin 6 [IO7, Unspecified, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(52.07 mm, 88.90 mm): Symbol R20 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(41.91 mm, 95.25 mm): Symbol FUNC1 Pin 2 [2, Unspecified, Line]
+    @(44.45 mm, 95.25 mm): Symbol #PWR06 Pin 1 [Power input, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(48.26 mm, 92.71 mm): Symbol R21 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(97.79 mm, 46.99 mm): Symbol F1 Pin 1 [1, Unspecified, Line]
+    @(45.72 mm, 143.51 mm): Symbol J1 Pin 2 [VBUS, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(59.69 mm, 92.71 mm): Symbol D2 Pin 2 [A, Unspecified, Line]
+    @(59.69 mm, 104.14 mm): Symbol Q2 Pin 3 [D, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(54.61 mm, 96.52 mm): Symbol Q2 Pin 1 [G, Unspecified, Line]
+    @(52.07 mm, 92.71 mm): Symbol R20 Pin 1 [1, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(49.53 mm, 104.14 mm): Symbol Q2 Pin 2 [S, Unspecified, Line]
+    @(44.45 mm, 95.25 mm): Symbol #PWR06 Pin 1 [Power input, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(69.85 mm, 92.71 mm): Symbol D2 Pin 1 [K, Unspecified, Line]
+    @(48.26 mm, 121.92 mm): Symbol LED1 Pin 1 [COM+, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(111.76 mm, 35.56 mm): Symbol Q1 Pin 3 [D, Unspecified, Line]
+    @(46.99 mm, 55.88 mm): Symbol R2 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(107.95 mm, 46.99 mm): Symbol F1 Pin 2 [2, Unspecified, Line]
+    @(110.49 mm, 50.80 mm): Symbol C3 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(69.85 mm, 96.52 mm): Symbol BUZZER1 Pin 1 [+, Unspecified, Line]
+    @(69.85 mm, 92.71 mm): Symbol D2 Pin 1 [K, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(69.85 mm, 99.06 mm): Symbol BUZZER1 Pin 2 [-, Unspecified, Line]
+    @(59.69 mm, 104.14 mm): Symbol Q2 Pin 3 [D, Unspecified, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(110.49 mm, 54.61 mm): Symbol C3 [CAP-0201]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(116.84 mm, 45.72 mm): Symbol Q1 Pin 1 [G, Unspecified, Line]
+    @(116.84 mm, 50.80 mm): Symbol R3 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(48.26 mm, 116.84 mm): Symbol LED1 Pin 2 [-, Unspecified, Line]
+    @(48.26 mm, 116.84 mm): Symbol R6 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(121.92 mm, 35.56 mm): Symbol Q1 Pin 2 [S, Unspecified, Line]
+    @(133.35 mm, 45.72 mm): Symbol C4 Pin 1 [1, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(119.38 mm, 46.99 mm): Symbol D1 Pin 2 [A, Unspecified, Line]
+    @(116.84 mm, 45.72 mm): Symbol Q1 Pin 1 [G, Unspecified, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(116.84 mm, 54.61 mm): Symbol R3 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(48.26 mm, 121.92 mm): Symbol LED1 Pin 1 [COM+, Unspecified, Line]
+    @(97.79 mm, 116.84 mm): Symbol R14 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(63.50 mm, 116.84 mm): Symbol LED1 Pin 3 [-, Unspecified, Line]
+    @(63.50 mm, 116.84 mm): Symbol R7 Pin 2 [Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'Power_Gnd'
+    ; warning
+    @(116.84 mm, 64.77 mm): Symbol #PWR013 [GND]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(63.50 mm, 121.92 mm): Symbol LED1 Pin 4 [-, Unspecified, Line]
+    @(63.50 mm, 121.92 mm): Symbol R8 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(129.54 mm, 46.99 mm): Symbol D1 Pin 1 [K, Unspecified, Line]
+    @(133.35 mm, 45.72 mm): Symbol C4 Pin 1 [1, Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(133.35 mm, 49.53 mm): Symbol C4 [CAP-0201]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(45.72 mm, 140.97 mm): Symbol J1 Pin 1 [GND, Unspecified, Line]
+    @(35.56 mm, 140.97 mm): Symbol #PWR09 Pin 1 [Power input, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(139.70 mm, 49.53 mm): Symbol C5 [CAP-0201]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(143.51 mm, 41.91 mm): Symbol R19 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(45.72 mm, 143.51 mm): Symbol J1 Pin 2 [VBUS, Unspecified, Line]
+    @(45.72 mm, 166.37 mm): Symbol J1 Pin 11 [VBUS, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(148.59 mm, 38.10 mm): Symbol U2 Pin 1 [IN, Unspecified, Line]
+    @(143.51 mm, 38.10 mm): Symbol R19 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(148.59 mm, 40.64 mm): Symbol U2 Pin 2 [GND, Unspecified, Line]
+    @(139.70 mm, 53.34 mm): Symbol C5 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(148.59 mm, 43.18 mm): Symbol U2 Pin 3 [EN, Unspecified, Line]
+    @(143.51 mm, 45.72 mm): Symbol R19 Pin 1 [1, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(45.72 mm, 148.59 mm): Symbol J1 Pin 4 [CC1, Unspecified, Line]
+    @(35.56 mm, 148.59 mm): Symbol R9 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(67.31 mm, 140.97 mm): Symbol J1 Pin 14 [SHELL, Unspecified, Line]
+    @(76.20 mm, 140.97 mm): Symbol #PWR011 Pin 1 [Power input, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(148.59 mm, 48.26 mm): Symbol RST1 Pin 2 [2, Unspecified, Line]
+    @(148.59 mm, 43.18 mm): Symbol U2 Pin 3 [EN, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(45.72 mm, 151.13 mm): Symbol J1 Pin 5 [DN2, Unspecified, Line]
+    @(45.72 mm, 156.21 mm): Symbol J1 Pin 7 [DN1, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(148.59 mm, 58.42 mm): Symbol RST1 Pin 1 [1, Unspecified, Line]
+    @(139.70 mm, 53.34 mm): Symbol C5 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(45.72 mm, 153.67 mm): Symbol J1 Pin 6 [DP1, Unspecified, Line]
+    @(45.72 mm, 158.75 mm): Symbol J1 Pin 8 [DP2, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(45.72 mm, 156.21 mm): Symbol J1 Pin 7 [DN1, Unspecified, Line]
+    @(69.85 mm, 160.02 mm): Symbol R12 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(45.72 mm, 158.75 mm): Symbol J1 Pin 8 [DP2, Unspecified, Line]
+    @(69.85 mm, 153.67 mm): Symbol R11 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(45.72 mm, 163.83 mm): Symbol J1 Pin 10 [CC2, Unspecified, Line]
+    @(35.56 mm, 163.83 mm): Symbol R10 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(166.37 mm, 38.10 mm): Symbol U2 Pin 5 [OUT, Unspecified, Line]
+    @(172.72 mm, 45.72 mm): Symbol C6 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(45.72 mm, 168.91 mm): Symbol J1 Pin 12 [GND, Unspecified, Line]
+    @(35.56 mm, 171.45 mm): Symbol #PWR010 Pin 1 [Power input, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(172.72 mm, 49.53 mm): Symbol C6 [CAP-0201]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(67.31 mm, 168.91 mm): Symbol J1 Pin 13 [SHELL, Unspecified, Line]
+    @(76.20 mm, 168.91 mm): Symbol #PWR012 Pin 1 [Power input, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'Power_Gnd'
+    ; warning
+    @(193.04 mm, 60.96 mm): Symbol #PWR014 [GND]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(199.39 mm, 49.53 mm): Symbol C7 [CAP-0201]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(199.39 mm, 54.61 mm): Symbol R4 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(208.28 mm, 49.53 mm): Symbol U3 Pin 4 [VCC, Unspecified, Line]
+    @(203.20 mm, 49.53 mm): Symbol C7 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(208.28 mm, 54.61 mm): Symbol U3 Pin 5 [PROG, Unspecified, Line]
+    @(203.20 mm, 54.61 mm): Symbol R4 Pin 1 [1, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(233.68 mm, 49.53 mm): Symbol U3 Pin 3 [BAT, Unspecified, Line]
+    @(242.57 mm, 41.91 mm): Symbol C8 Pin 1 [1, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(233.68 mm, 52.07 mm): Symbol U3 Pin 2 [GND, Unspecified, Line]
+    @(250.19 mm, 41.91 mm): Symbol C8 Pin 2 [2, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(242.57 mm, 41.91 mm): Horizontal Wire, length 3.175 mm
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(234.95 mm, 41.91 mm): Horizontal Wire, length 4.445 mm
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(239.395 mm, 41.91 mm): Vertical Wire, length 2.54 mm
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(238.76 mm, 54.61 mm): Symbol CHG1 Pin 2 [K, Unspecified, Line]
+    @(233.68 mm, 54.61 mm): Symbol U3 Pin 1 [CHRG, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 111.76 mm): Symbol U1 Pin 1 [3V3, Unspecified, Line]
+    @(201.93 mm, 114.30 mm): Symbol R18 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 114.30 mm): Symbol U1 Pin 2 [EN, Unspecified, Line]
+    @(210.82 mm, 119.38 mm): Symbol C12 Pin 2 [Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(246.38 mm, 41.91 mm): Symbol C8 [CAP-0201]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 116.84 mm): Symbol U1 Pin 3 [IO4, Unspecified, Line]
+    @(106.68 mm, 129.54 mm): Symbol IC1 Pin 6 [PS0/WAKE, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 119.38 mm): Symbol U1 Pin 4 [IO5, Unspecified, Line]
+    @(132.08 mm, 177.80 mm): Symbol IC1 Pin 18 [H_CSN, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 121.92 mm): Symbol U1 Pin 5 [IO6, Unspecified, Line]
+    @(106.68 mm, 149.86 mm): Symbol IC1 Pin 14 [H_INTN, Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'Power_Gnd'
+    ; warning
+    @(250.19 mm, 34.29 mm): Symbol #PWR015 [GND]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(248.92 mm, 54.61 mm): Symbol CHG1 Pin 1 [A, Unspecified, Line]
+    @(250.19 mm, 54.61 mm): Symbol R5 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 127.00 mm): Symbol U1 Pin 7 [IO8, Unspecified, Line]
+    @(134.62 mm, 177.80 mm): Symbol IC1 Pin 19 [H_SCL/SCK/RX, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 129.54 mm): Symbol U1 Pin 8 [IO9, Unspecified, Line]
+    @(154.94 mm, 152.40 mm): Symbol IC1 Pin 20 [H_SDA/H_MISO/TX, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(220.98 mm, 132.08 mm): Symbol U1 Pin 9 [GND, Unspecified, Line]
+    @(210.82 mm, 127.00 mm): Symbol C12 Pin 1 [Passive, Line]
+[lib_symbol_issues]: The current configuration does not include the symbol library 'XIAO ESP32C3_v1.3-eagle-import'
+    ; warning
+    @(254.00 mm, 54.61 mm): Symbol R5 [RES-0201]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(241.30 mm, 109.22 mm): Symbol U1 Pin 19 [EP, Unspecified, Line]
+    @(241.30 mm, 109.22 mm): Symbol #PWR08 Pin 1 [Power input, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 111.76 mm): Symbol U1 Pin 18 [IO0, Unspecified, Line]
+    @(71.12 mm, 116.84 mm): Symbol R7 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 114.30 mm): Symbol U1 Pin 17 [IO1, Unspecified, Line]
+    @(71.12 mm, 121.92 mm): Symbol R8 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 116.84 mm): Symbol U1 Pin 16 [IO2, Unspecified, Line]
+    @(39.37 mm, 66.04 mm): Symbol R1 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 119.38 mm): Symbol U1 Pin 15 [IO3, Unspecified, Line]
+    @(40.64 mm, 116.84 mm): Symbol R6 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 121.92 mm): Symbol U1 Pin 14 [IO19, Unspecified, Line]
+    @(77.47 mm, 153.67 mm): Symbol R11 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 124.46 mm): Symbol U1 Pin 13 [IO18, Unspecified, Line]
+    @(77.47 mm, 160.02 mm): Symbol R12 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 127.00 mm): Symbol U1 Pin 12 [TXD, Unspecified, Line]
+    @(52.07 mm, 85.09 mm): Symbol R20 Pin 2 [2, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 129.54 mm): Symbol U1 Pin 11 [RXD, Unspecified, Line]
+    @(106.68 mm, 142.24 mm): Symbol IC1 Pin 11 [NRST, Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(241.30 mm, 132.08 mm): Symbol U1 Pin 10 [IO10, Unspecified, Line]
+    @(129.54 mm, 177.80 mm): Symbol IC1 Pin 17 [SA0/H_MOSI, Passive, Line]
+
+ ** ERC messages: 98  Errors 17  Warnings 81

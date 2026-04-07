@@ -1,17 +1,15 @@
 /**
- * Seeed XIAO ESP32-C3 + BNO08x (SPI) — fused orientation.
+ * Seeed XIAO ESP32-C3 + BNO08x (SPI) fused orientation.
  *
- * DIY — XIAO + BNO08x breakout: SPI + BNO08x straps (see docs/wiring.md)
- *   FSPI: SCK=D8 (GPIO8), MISO=D9 (GPIO9), MOSI=D10 (GPIO10)
- *   CS=D3 (GPIO5), H_INT=D4 (GPIO6), NRST=D7 (GPIO20)
- *   PS0/WAKE=D2 (GPIO4); PS1 + VDD + VDDIO → 3V3 on PCB
+ * DIY: XIAO + BNO08x breakout (see docs/wiring.md)
+ *   FSPI: SCK D8 (GPIO8), MISO D9 (GPIO9), MOSI D10 (GPIO10)
+ *   CS D3 (GPIO5), INT D4 (GPIO6), NRST D7 (GPIO20)
+ *   PS0 or WAKE D0 (GPIO2) + 10k to 3V3; battery sense D2 (GPIO4) if used; PS1 VDD VDDIO to 3V3
  *
- * Azimuth custom PCB (kicad/Azimuth_Design): same SPI GPIO map; on-board RGB / buzzer / button — see docs/wiring.md
+ * Azimuth_Design PCB: same GPIO map as azimuth_hw.h (R14 on PS0 and IO2, divider on IO4, RGB buzzer FUNC).
  *
- * PlatformIO: `*_diy` (XIAO) vs `*_pcb` (Azimuth_Design module board). Pins: include/azimuth_hw.h
- *   IMU_DEBUG_MODE=1 (debug) vs 0 (main).
- *   Debug — yaw/pitch/roll on USB serial only.
- *   Main — Hatire USB (115200) + optional Wi‑Fi OpenTrack UDP (6× double).
+ * PlatformIO: azimuth_*_diy (XIAO) vs azimuth_*_pcb (custom PCB). Pins: include/azimuth_hw.h
+ *   IMU_DEBUG_MODE 1 = USB serial angles only; 0 = Hatire + WiFi or portal + OpenTrack UDP.
  */
 
 #include <Arduino.h>
@@ -139,6 +137,11 @@ void setup() {
   hatireInitPacket();
   trackNetworkLoadTrackingPrefs();
 #endif
+
+  // SparkFun BNO08x beginSPI() calls SPI.begin() with no pins — board defaults apply.
+  // XIAO variant maps SPI to GPIO 8/9/10; esp32-c3-devkitc-02 uses variant esp32c3 (4/5/6).
+  // Azimuth_Design wires FSPI to 8/9/10, so always bind the bus explicitly.
+  SPI.begin(azimuth_hw::kPinSpiSck, azimuth_hw::kPinSpiMiso, azimuth_hw::kPinSpiMosi, -1);
 
   if (!imu.beginSPI(kPinCs, kPinInt, kPinRst, kSpiHz, SPI)) {
 #if IMU_DEBUG_MODE

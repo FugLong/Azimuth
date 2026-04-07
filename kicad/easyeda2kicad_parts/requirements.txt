@@ -1,2 +1,2 @@
 # LCSC / EasyEDA → KiCad (symbol + footprint + 3D). Used with .venv_easyeda2kicad at repo root.
-easyeda2kicad==0.8.0
+easyeda2kicad==1.0.1
