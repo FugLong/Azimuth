@@ -6,7 +6,7 @@ Azimuth is intentionally **two hardware paths**—you only build one:
 
 2. **Integrated PCB** — The routed board in [**`kicad/Azimuth_Design`**](https://github.com/FugLong/Azimuth/tree/main/kicad/Azimuth_Design) (**ESP32-C3-WROOM-02**, **BNO086** on the board, plus **RGB**, **buzzer**, and **FUNC** where populated). You flash **`azimuth_main_pcb`**. It runs the **same** head-tracking application (portal, UDP, Hatire); on-board extras are only relevant when that hardware exists.
 
-**DIY** (XIAO + breakout) and **Azimuth_Design** share the **same** GPIO assignments in **`include/azimuth_hw.h`** — only the **physical** connector differs (XIAO **D** pins vs **U1** module pads). See [**wiring.md**](wiring.md) (DIY table ↔ PCB table). **KiCad** (**`Azimuth.kicad_sch`** / **PCB**) is the authority for those assignments; [**wiring.md**](wiring.md) documents the **why** (e.g. **GPIO2** strap + **PS0**/**R14**, **GPIO4** battery sense).
+**DIY** (XIAO + breakout) and **Azimuth_Design** share the **same** GPIO assignments in **`include/azimuth_hw.h`** — only the **physical** connector differs (XIAO **D** pins vs **U1** module pads). See [**wiring.md**](wiring.md) (DIY table ↔ PCB table).
 
 **Build suffixes:** **`_diy`** = XIAO + breakout. **`_pcb`** = Azimuth_Design. **`main`** = full firmware (portal, Hatire, UDP). **`debug`** = USB serial IMU angles only, no Wi‑Fi or portal.
 

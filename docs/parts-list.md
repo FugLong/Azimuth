@@ -34,7 +34,9 @@ Example **JST-PH** 1S packs (check **polarity** against your connector before po
 
 ## Azimuth PCB (`Azimuth_Design`)
 
-Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). **Tracked BOM (KiCad CLI):** [`kicad/Azimuth_Design/fab/Azimuth_bom.csv`](../kicad/Azimuth_Design/fab/Azimuth_bom.csv) — regenerate with **`./scripts/export_azimuth_bom.sh`** after schematic edits. Board workflow: [kicad.md](kicad.md).
+Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). **Tracked BOM (KiCad CLI):** [`kicad/Azimuth_Design/fab/Azimuth_bom.csv`](../kicad/Azimuth_Design/fab/Azimuth_bom.csv) — regenerate with **`./scripts/export_azimuth_bom.sh`** after schematic edits (that script also refreshes **[`Azimuth_bom_cost.txt`](../kicad/Azimuth_Design/fab/Azimuth_bom_cost.txt)** — **1× board, parts-only USD** ballpark from symbol **`Unit Price (USD)`** or the LCSC table in **`scripts/update_azimuth_sch_bom_fields.py`**). Board workflow: [kicad.md](kicad.md).
+
+To sync **unit prices** onto schematic instances before exporting the BOM: `python3 scripts/update_azimuth_sch_bom_fields.py` (manual snapshot; not live LCSC).
 
 ### PCB / assembly quote — “Other Parameters” (PCBWay-style)
 

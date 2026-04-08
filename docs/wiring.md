@@ -1,8 +1,6 @@
 # Wiring and pinout
 
-**Source of truth:** **`kicad/Azimuth_Design/Azimuth.kicad_sch`** and **`Azimuth.kicad_pcb`**. This page and **`include/azimuth_hw.h`** are written to match that design. If anything disagrees with KiCad, **fix KiCad or regenerate exports** (e.g. **`fab/Azimuth.net`**)—do not treat markdown alone as canonical.
-
-**GPIO2 vs GPIO4 (Azimuth_Design):** **GPIO2** is a **boot-strapping** pin on ESP32-C3; Espressif recommends it be **high** at reset. The board ties **BNO086 PS0/WAKE** here with **R14** (10 kΩ to **3V3**) so the line is **high at boot** and the IMU SPI strap is satisfied. **Battery voltage sense** uses **GPIO4** (divider **R1**/**R2** from **`VBAT_SW`**) because **GPIO4** is **not** a strapping pin—safer for an analog tap than putting the divider on **GPIO2**.
+GPIO and nets follow **`kicad/Azimuth_Design/Azimuth.kicad_sch`**; this page and **`include/azimuth_hw.h`** match that project.
 
 Assignments match **`include/azimuth_hw.h`**. PlatformIO environments: [**hardware-profiles.md**](hardware-profiles.md).
 
@@ -20,7 +18,7 @@ Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_
 
 | XIAO | GPIO | Typical use in Azimuth |
 |------|------|-------------------------|
-| D0 | **2** | **PS0 / WAKE** — wire to IMU **PS0**; add **10 kΩ** to **3V3** (same idea as **R14** on **Azimuth_Design**). Matches **GPIO2** strap recommendation. |
+| D0 | **2** | **PS0 / WAKE** — wire to IMU **PS0**; add **10 kΩ** to **3V3** (same as **Azimuth_Design** **R14** on **IO2**) |
 | D1 | **3** | — |
 | D2 | **4** | Battery divider tap if you add a sense network (same net as **Azimuth_Design** **IO4**) |
 | D3 | **5** | IMU CS |
@@ -32,7 +30,7 @@ Per Seeed’s [XIAO ESP32-C3 pin map](https://wiki.seeedstudio.com/XIAO_ESP32C3_
 | D9 | **9** | SPI MISO |
 | D10 | **10** | SPI MOSI |
 
-**Strapping:** On ESP32-C3, **GPIO2**, **GPIO8**, and **GPIO9** can affect boot. **DIY** and **Azimuth_Design** use the **same** pin plan: **PS0** + pull-up on **GPIO2** (**D0** on XIAO), **battery** divider on **GPIO4** (**D2** on XIAO)—not a strapping pin. **D8–D10** are SPI—keep IMU power/straps valid at reset.
+**Strapping:** On ESP32-C3, **GPIO2**, **GPIO8**, and **GPIO9** can affect boot. **DIY** matches the PCB pin plan (**PS0** on **GPIO2**, battery sense on **GPIO4**). **D8–D10** are SPI—keep IMU power/straps valid at reset.
 
 ### IMU breakout → XIAO
 

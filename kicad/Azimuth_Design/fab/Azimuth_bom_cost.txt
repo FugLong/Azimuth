@@ -1,0 +1,7 @@
+Azimuth_Design — 1× board, parts-only estimate (USD)
+
+Total (qty-weighted): $16.20
+Priced lines: 52 / 52
+
+Ballpark low-qty LCSC / Mouser-class numbers — not live quotes. Excludes PCB fab, assembly, shipping.
+Regenerate: ./scripts/export_azimuth_bom.sh

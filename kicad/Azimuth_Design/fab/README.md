@@ -43,6 +43,10 @@ These are derived from **`Azimuth_bom.csv`** as checked in — re-open the CSV a
 
 **PCBWay:** their KiCad plugin often writes under **`_pcbway_export_review/`** (gitignored here). If you use their CSV for an order, copy or regenerate into this **`fab/`** folder when you want those exact columns tracked in git.
 
+## `Azimuth_bom_cost.txt`
+
+**One-board parts-only USD estimate** (unit prices × qty). Written by **`./scripts/export_azimuth_bom.sh`** after the BOM CSV export. Uses **`Unit Price (USD)`** from the schematic when present; otherwise fills from the same LCSC/MPN table as **`scripts/update_azimuth_sch_bom_fields.py`**. **Not** live pricing, **not** PCB fab or shipping.
+
 ## `Azimuth.net` (optional)
 
-If you commit a **SPICE/netlist** export here, regenerate it after **schematic** changes so it matches **`Azimuth.kicad_sch`**. Nets in that file should agree with [wiring.md](../../../docs/wiring.md) (e.g. **PS0/WAKE** and **R14** on **GPIO2**, battery divider on **GPIO4** per the current board definition).
+Regenerate after schematic changes if you track a netlist export here.
