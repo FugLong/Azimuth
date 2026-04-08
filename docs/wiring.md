@@ -107,7 +107,7 @@ The same chapter notes that **GPIO2** does **not** choose between SPI boot and j
 
 ### Battery (PCB)
 
-**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO4** (ADC), bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic. Charger **U3** (**TP4054**) uses **R4** = **2 kΩ** on **PROG** for **~500 mA** charge current; pack sizing notes: [parts-list — Off-board pack](parts-list.md#off-board-pack-pcb-wireless-use).
+**JST PH2.0**, slide switch **PWR1**, switched rail, divider **R1**/**R2** to **IO4** (ADC), bulk **C1**, bypass **C2**—exact nets in **`Azimuth.kicad_sch`**. Regulation and charging follow the schematic. Charger **U3** (**TP4054**) uses **R4** = **2 kΩ** on **PROG** for **~500 mA** charge current; battery pack, **JST polarity**, and charge notes: [parts-list — Off-board pack](parts-list.md#off-board-pack-azimuth-pcb-wireless).
 
 ### Schematic passives (`Azimuth.kicad_sch`)
 
@@ -118,7 +118,7 @@ Summary for bring-up; full tables match **`Azimuth.kicad_sch`** in [**parts-list
 | **USB-C J1** | **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (USB data series **U1** ↔ **J1**) | |
 | **U1** | Decoupling per schematic (e.g. **C5** and related nets) | See KiCad |
 | **IC1** BNO086 | **C11** 100 nF on **CAP**; **3V3** rail caps per schematic (**C5**, **C9**, **C10**, **C12**); **R13** 10 kΩ; **R14** 10 kΩ (**PS0** on **IO2**); **R15** 10 kΩ (**CLKSEL0**); **R16**/**R17** 4.7 kΩ (**ENV**) | |
-| **LED1** RGB | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**); **R5** 150 Ω is **CHG1**, not RGB | |
+| **LED1** RGB | **R6** 220 Ω (**IO3** blue), **R7** 100 Ω (**IO0** red), **R8** 68 Ω (**IO1** green); **R5** 150 Ω is **CHG1**, not RGB | |
 | **Charger / charge LED** | **U3** **TP4054**, **R4** 2 kΩ (**PROG**, **~500 mA**), **CHG1**, **R5**, **C6**, **C7** | |
 | **Battery path** | **C1** 10 µF, **C2** 0.1 µF, **R1**/**R2** 220 kΩ divider | |
 | **Buzzer** | **R20** 330 Ω (**IO21**→gate), **R21** 100 kΩ (gate→**GND**); **Q2** **AO3400A**; **D2** **B5819WS**; **BUZZER1** **MLT-5020** | |

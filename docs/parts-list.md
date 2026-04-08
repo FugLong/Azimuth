@@ -19,16 +19,13 @@ Also: breadboard or perfboard, jumper wire, **USB data** cable to the PC.
 
 ### Optional: battery on the XIAO (wireless)
 
-Soldering a **1S LiPo** to the **battery pads on the back of the XIAO** is the only DIY add-on that enables **unplugged / wireless** use (same Wi‑Fi + UDP firmware path; see [using-azimuth.md](using-azimuth.md#power-heat-and-battery) for rough runtime). **Recommended for intermediate makers** — the USB-only build above is the approachable path for beginners.
+**DIY path only** — there is **no** Azimuth **JST PH** connector on this build.
 
-The XIAO includes **charge management**; after you connect the pack correctly, routine charge/discharge is handled on-board. **Be careful soldering** the battery leads to the pads (**polarity** per Seeed’s silk/wiki). **Never short the battery leads** together (even briefly).
+Soldering a **1S LiPo** to the **battery pads on the back of the XIAO** is the add-on that enables **unplugged / wireless** use (same Wi‑Fi + UDP firmware path; see [using-azimuth.md](using-azimuth.md#power-heat-and-battery) for rough runtime). **Recommended for intermediate makers** — the USB-only build above is the approachable path for beginners.
 
-Example **JST-PH** 1S packs (check **polarity** against your connector before powering):
+The XIAO includes **charge management**; after you connect the pack correctly, routine charge/discharge is handled on-board. **Match +/− to Seeed’s pad labels** on the XIAO. You can solder leads directly or attach your own **JST-PH** pigtail—**you** are responsible for polarity on those pads. **Never short the battery leads** together (even briefly).
 
-| | |
-|:---|:---|
-| **Adafruit** [**3898**](https://www.adafruit.com/product/3898) | 3.7 V nominal **400 mAh**, JST-PH; ~**36 × 17 × 7.8 mm** (vendor) |
-| **DigiKey** [**1528-2731-ND**](https://www.digikey.com/en/products/detail/adafruit-industries-llc/3898/9685336) | Same MPN **3898** |
+The **JST PH polarity rules** in [Off-board pack (Azimuth PCB)](#off-board-pack-azimuth-pcb-wireless) below apply to the **integrated Azimuth PCB**, not to the XIAO’s solder pads.
 
 ---
 
@@ -44,7 +41,7 @@ Use these for **instant quote** fields that ask for **unique parts**, **SMD**, *
 
 | Form field | Value | Notes |
 |------------|------|--------|
-| **Number of Unique Parts** (components) | **31** | Distinct order lines: **30** different **LCSC Part** codes on stuffed lines + **1** line with no LCSC (**IC1** BNO086). |
+| **Number of Unique Parts** (components) | **33** | Distinct order lines: **32** different **LCSC Part** codes on stuffed lines + **1** line with no LCSC (**IC1** BNO086). |
 | **Number of SMD Parts** (tooltip: *SMT Pads*) | **52** |
 | **Number of BGA/QFP Parts** (SMT BGA/QFP) | **0** | **IC1** is **LGA**, not BGA/QFP. |
 | **Number of Through-Hole Parts** | **0** | All stuffed parts are surface-mount. |
@@ -76,15 +73,27 @@ Source of truth: [`fab/README.md`](../kicad/Azimuth_Design/fab/README.md).
 
 Exact **LCSC** / **Manufacturer** fields live in the KiCad symbol properties.
 
-### Off-board pack (PCB wireless use)
+### Off-board pack (Azimuth PCB, wireless)
 
-The PCB exposes **JST PH** for a **1S** pack when you are not on USB. Use a **protected** cell and correct **polarity** for **`PH2.0`** in **`Azimuth.kicad_sch`**. The same **class** of off-the-shelf **JST-PH** 1S packs as in [Optional: battery on the XIAO (wireless)](#optional-battery-on-the-xiao-wireless) usually applies—always confirm against **this** footprint.
+**This section is for the integrated Azimuth PCB only** (`Azimuth_Design`). DIY XIAO users do not get this connector out of the box—they solder to the XIAO or add their own pigtail; the silkscreen and JST rules below are **for the custom PCB**.
 
-**Capacity guidance:** Treat **~400 mAh** as a practical **minimum** for this build (runtime vs mass on the head). **~850 mAh** is a comfortable “sweet spot” when you want more time without a large pack; anything **above 400 mAh** is electrically fine. Lighter smaller packs trade runtime for comfort.
+The board exposes **JST PH2.0** (**`PH2.0`**) for a **1S** pack when you are not on USB. Use a **protected** cell where possible. Regulation, charging, and the full power path follow **`Azimuth.kicad_sch`** and [wiring.md](wiring.md) (PCB path).
 
-**Charge rate:** **U3** (**TP4054**) is set for **~500 mA** fast charge via **R4** (**PROG**). For a **400 mAh** cell that is a little over **1 C**; for **850 mAh** it is **under 0.6 C**. That is conservative compared with how small **1S** packs are often used in RC/drone contexts, but still respect your cell’s datasheet, quality, and **protected** packs only.
+#### Polarity (read this before plugging anything in)
 
-Regulation, charging, and the full power path follow **`Azimuth.kicad_sch`** and [wiring.md](wiring.md) (PCB path).
+**Adafruit and many other US hobby LiPo packs with JST-PH are wired the opposite way from this PCB.** Do **not** use Adafruit batteries (or any pack that follows the same red/black convention as Adafruit) with the Azimuth **PH2.0** connector—they **will not work** with this layout and **can damage the board or battery** if forced.
+
+Just **behind** the **PH2.0** connector, the PCB silk shows **+** and **−**. The pack’s **red** lead must line up with the **+** marking. If your connector’s red wire would sit on the **−** side, **do not plug it in**—you need a pack wired like our reference vendor below, or you must re-pin / rewire the JST to match.
+
+#### Recommended source and capacity
+
+A known-good match for **JST pinout and polarity** is **YDL Battery** wiring. Example pack (check their site for current stock and specs):
+
+- [**YDL — 3.7 V 800 mAh 802346 LiPo**](https://ydlbattery.com/products/3-7v-800mah-802346-lithium-polymer-ion-battery) — use packs that match **YDL’s** red/black orientation on **JST-PH** relative to the Azimuth **+ / −** silk.
+
+**Capacity:** **~400 mAh to ~900 mAh** is the practical recommended range for this build (runtime vs size on the head). Other capacities can be fine electrically; still verify **JST polarity** against the silk **before** first connect.
+
+**Charge rate:** **U3** (**TP4054**) is set for **~500 mA** via **R4** (**PROG**). Compare that to your cell’s **C** rating and datasheet. Respect **protected** packs and cell quality.
 
 ---
 
@@ -99,16 +108,16 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R3** | 100k | Power / **U2** support (per schematic nets) |
 | **R4** | 2K | **U3** **PROG** — **TP4054**: **I_BAT ≈ 1000 / R4(kΩ) mA** → **~500 mA** |
 | **R5** | 150R | **CHG1** LED current limit (**3V3** side) |
-| **R6** | 680R | **LED1** cathode ↔ **IO3** |
-| **R7** | 150R | **LED1** cathode ↔ **IO0** |
-| **R8** | 150R | **LED1** cathode ↔ **IO1** |
+| **R6** | 220R | **LED1** blue cathode ↔ **IO3** |
+| **R7** | 100R | **LED1** red cathode ↔ **IO0** |
+| **R8** | 68R | **LED1** green cathode ↔ **IO1** |
 | **R9** | 5.1K | **J1** **CC** (e.g. CC2 branch) |
 | **R10** | 5.1K | **J1** **CC** (e.g. CC1 branch) |
 | **R11** | 22R | USB data series (**U1** ↔ **J1** **D+** path) |
 | **R12** | 22R | USB data series (**U1** ↔ **J1** **D−** path) |
 | **R13** | 10k | **IC1** strap (per schematic) |
 | **R14** | 10k | **PS0/WAKE** pull-up to **3V3** (**IO2**); shared with Espressif **GPIO2** strap |
-| **R15** | 10k | **IC1** **ENV_SDA** pull-up |
+| **R15** | 10k | **IC1** **CLKSEL0** pull-up to **3V3** |
 | **R16** | 4.7k | **IC1** support (per schematic) |
 | **R17** | 4.7k | **IC1** support (per schematic) |
 | **R18** | 10k | **U2** / power (per schematic) |
@@ -146,11 +155,11 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 |-------|------|--------|
 | **BNO086 (IC1)** | **C11** on **CAP**; **3V3** decoupling via shared rail (**C5**, **C9**, **C10**, **C12** per schematic); **R13**–**R17** straps / **ENV** | **R14** 10 kΩ **PS0** (**IO2**); **R15** 10 kΩ **CLKSEL0**; **R16**/**R17** 4.7 kΩ **ENV**; see **`Azimuth.kicad_sch`** |
 | **USB-C (J1) / USB_5V** | **C3** 100 nF (**USB_5V** bypass); **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (data series) | **6-pin** footprint vs 16-pin symbol may produce **DRC** “no pad for pin” on extra **GND** pins — electrically rely on shell / pour if intentional |
-| **RGB (LED1)** | **R6** 680 Ω (**IO3**), **R7**/**R8** 150 Ω (**IO0** / **IO1**) | **COM+** on **3V3** — firmware should treat cathode pins as **active low** (sink) |
+| **RGB (LED1)** | **R6** 220 Ω (**IO3** blue), **R7** 100 Ω (**IO0** red), **R8** 68 Ω (**IO1** green) | **COM+** on **3V3** — firmware should treat cathode pins as **active low** (sink); values tuned for **TZ-P4-1615RGBTCA1** on **3V3** |
 | **Charge LED (CHG1)** | **R5** 150 Ω | From **3V3** to **CHG1** anode net |
 | **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO4** (ADC); **PS0** on **IO2** via **R14** (see [wiring.md](wiring.md)) |
 | **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |
-| **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** = **2 kΩ** on **PROG** → **~500 mA** (see [Off-board pack](#off-board-pack-pcb-wireless-use)) |
+| **Charging** | **U3**, **R4**, **C6**, **C7** | **R4** = **2 kΩ** on **PROG** → **~500 mA** (see [Off-board pack](#off-board-pack-azimuth-pcb-wireless)) |
 | **FUNC1** | Switch to **GND** | Firmware **`INPUT_PULLUP`** on **IO7** |
 | **BUZZER1** + **Q2** + **D2** | **BUZZER1 +**→**3V3**, **−**→**Q2** drain; **Q2** source→**GND**; **IO21**→**R20**→gate, **R21** gate→**GND**; **D2** flyback | See [Buzzer (BUZZER1)](#buzzer-buzzer1) |
 

@@ -15640,7 +15640,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Battery divider low side: VBAT/2 tap to IO4 for ADC (with R1)"
+		(property "Description" "Battery divider low side: VBAT_SW tap to IO4 for ADC (with R1)"
 			(at 43.18 55.88 0)
 			(effects
 				(font
@@ -16948,7 +16948,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "PS0/WAKE pull-up to 3V3 on IO2 (BNO086 SPI strap + ESP32 strap GPIO2 high)"
+		(property "Description" "PS0/WAKE pull-up to 3V3 on IO2 (BNO086 SPI strap + ESP32 GPIO2)"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -18312,7 +18312,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "680R"
+		(property "Value" "220R"
 			(at 46.99 116.84 90)
 			(effects
 				(font
@@ -18339,7 +18339,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED blue cathode resistor (IO3): lower current for brightness balance"
+		(property "Description" "RGB LED blue cathode resistor (IO3); tuned with R7/R8 for TZ-P4-1615RGBTCA1 balance on 3V3"
 			(at 44.45 116.84 0)
 			(effects
 				(font
@@ -18348,7 +18348,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "RC0201FR-07680RL"
+		(property "Manufacturer_Part_Number" "GR0201F220RTAG00"
 			(at 44.45 116.84 0)
 			(effects
 				(font
@@ -18357,7 +18357,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC Part" "C274876"
+		(property "LCSC Part" "C49654383"
 			(at 44.45 116.84 0)
 			(effects
 				(font
@@ -18366,7 +18366,7 @@
 				(hide yes)
 			)
 		)
-		(property "Unit Price (USD)" "0.0011"
+		(property "Unit Price (USD)" "0.0006"
 			(at 0 0 0)
 			(effects
 				(font
@@ -18738,7 +18738,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "150R"
+		(property "Value" "68R"
 			(at 69.85 121.92 90)
 			(effects
 				(font
@@ -18774,7 +18774,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "RC0201FR-07150RL"
+		(property "Manufacturer_Part_Number" "GR0201J68RTAG00"
 			(at 67.31 121.92 0)
 			(effects
 				(font
@@ -18783,7 +18783,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC Part" "C295773"
+		(property "LCSC Part" "C49655823"
 			(at 67.31 121.92 0)
 			(effects
 				(font
@@ -18792,7 +18792,7 @@
 				(hide yes)
 			)
 		)
-		(property "Unit Price (USD)" "0.0011"
+		(property "Unit Price (USD)" "0.001"
 			(at 0 0 0)
 			(effects
 				(font
@@ -18955,7 +18955,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB_5V (post-fuse VBUS) HF bypass to GND — not IMU rail"
+		(property "Description" "USB_5V (post-fuse VBUS) HF bypass to GND"
 			(at 110.49 54.61 0)
 			(effects
 				(font
@@ -21104,7 +21104,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "150R"
+		(property "Value" "100R"
 			(at 69.85 116.84 90)
 			(effects
 				(font
@@ -21140,7 +21140,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "RC0201FR-07150RL"
+		(property "Manufacturer_Part_Number" "RC0201FR-07100RL"
 			(at 67.31 116.84 0)
 			(effects
 				(font
@@ -21149,7 +21149,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC Part" "C295773"
+		(property "LCSC Part" "C77623"
 			(at 67.31 116.84 0)
 			(effects
 				(font

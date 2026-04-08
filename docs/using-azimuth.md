@@ -64,6 +64,10 @@ Not measured on every PCB revision—use for **planning only** and measure your 
 
 The radio dominates current. For **Wi‑Fi + IMU + UDP** (no USB), a **400 mAh** 1S LiPo might land in a **~4–9 hour** band depending on signal and settings, with **~5–7 h** as a mid guess until you bench it. **USB-only Hatire** with Wi‑Fi off lasts **much longer**.
 
+### Azimuth PCB: which battery to plug in
+
+Only applies if you built the **integrated Azimuth board** with the **JST PH** battery connector. **Adafruit-style JST LiPos are not compatible** with that connector’s polarity; follow the **+ / −** silk by **PH2.0** and use a pack wired like the **YDL** reference in [parts-list → Off-board pack](parts-list.md#off-board-pack-azimuth-pcb-wireless). **DIY XIAO** builds use the XIAO’s battery pads or your own wiring—different story.
+
 ---
 
 **Related:** [quickstart.md](quickstart.md) · [development.md](development.md) · [README](../README.md)

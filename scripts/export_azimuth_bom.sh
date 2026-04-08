@@ -6,6 +6,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCH="$ROOT/kicad/Azimuth_Design/Azimuth.kicad_sch"
 OUT="$ROOT/kicad/Azimuth_Design/fab/Azimuth_bom.csv"
+NETLIST="$ROOT/kicad/Azimuth_Design/fab/Azimuth.net"
 
 KICAD_CLI="${KICAD_CLI:-}"
 if [[ -z "$KICAD_CLI" ]]; then
@@ -27,5 +28,7 @@ mkdir -p "$(dirname "$OUT")"
   --labels 'Refs,Value,Footprint,LCSC Part,Description,Unit Price (USD),Qty,DNP' \
   -o "$OUT" \
   "$SCH"
+
+"$KICAD_CLI" sch export netlist --format kicadsexpr -o "$NETLIST" "$SCH"
 
 python3 "$ROOT/scripts/summarize_azimuth_bom_cost.py" --bom "$OUT" --write-summary "$ROOT/kicad/Azimuth_Design/fab/Azimuth_bom_cost.txt"
