@@ -9,7 +9,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Workstream | Progress | Notes |
 |------------|----------|-------|
 | Hardware selection | **100%** | DIY: **XIAO ESP32-C3** + **BNO08x**; product: **Azimuth** PCB ([**Azimuth_Design**](../kicad/Azimuth_Design/)) |
-| Custom PCB (KiCad) | **100%** (design) | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean** in repo snapshot. Export BOM/Gerbers per fab order; **panelization** optional for production; **first-article assembly** = bring-up checklist below |
+| Custom PCB — **V0.1** | **100%** (design) · **in fab** | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean**. **V0.1** finalized; **boards ordered**; PCBA nearly complete — assembled units expected **~15 days** (status as of **2026-04-18**). **Panelization** still optional for future arrays; **first-article bring-up** = checklist below once boards arrive |
 | Firmware | **60–70%** | SPI IMU; **`azimuth_debug_*`** bring-up; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, **VERSION** / web flasher / update banner. Still ahead: board I/O, battery ADC, OTA, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **0%** | Not started |
 | End-user docs & release | **~50%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal banner documented; OTA TBD |
@@ -18,7 +18,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 
 ```
 Hardware/BOM     [████████████████████] 100%
-PCB design       [████████████████████] 100%
+PCB design       [████████████████████] 100%  (V0.1 in fab)
 Firmware         [█████████████░░░░░░░] 60–70%
 Enclosure        [░░░░░░░░░░░░░░░░░░░░] 0%
 ```
@@ -38,7 +38,8 @@ Enclosure        [░░░░░░░░░░░░░░░░░░░░] 
 Use this as a checklist; tighten or relax before tagging V1.
 
 - [x] **PCB (KiCad)** — **Azimuth_Design** fabrication-ready: **ERC and DRC clean**; BOM matches schematic/layout (re-export from KiCad for each order — [parts-list.md](parts-list.md), [kicad.md](kicad.md)).
-- [ ] **PCB (bring-up)** — At least one assembled revision: IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** board (breadboard path already exercised).
+- [x] **PCB (V0.1 manufacturing)** — **V0.1** design locked; bare PCB **ordered**; **PCBA** nearly complete; assembled boards expected **~15 days** (snapshot **2026-04-18**).
+- [ ] **PCB (bring-up)** — At least one assembled **V0.1** board: IMU, USB serial, Hatire, and WiFi/UDP verified on the **actual** board (breadboard path already exercised).
 - [ ] **Firmware core** — Clear module boundaries (HAL / drivers / app), pins and features match [wiring.md](wiring.md).
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and behavior documented.
 - [ ] **Battery** — Voltage readout (**GPIO4** / XIAO **D2**; same on DIY and **Azimuth_Design**), low-battery indication or policy (thresholds TBD).
@@ -140,3 +141,4 @@ These are common for head trackers; pick what matches your audience.
 | 2026-03-28 | PlatformIO envs **`azimuth_main_diy`** / **`azimuth_debug_diy`** (+ **`_*_pcb`**); GitLab CI + GitHub Pages flasher; NVS portal axis map; **`VERSION`** / manifest sync; update banner. Docs split: README for overview; **[using-azimuth.md](using-azimuth.md)**; **[development.md](development.md)**. |
 | 2026-03-28 | Firmware snapshot toward V1 revised to **60–70%** (core tracking + wireless + settings + release path in place; I/O, battery, OTA, refactor still open). |
 | 2026-04-05 | **Azimuth_Design**: docs aligned with schematic/PCB; **ERC/DRC clean**; PCB design workstream **100%**; V1 checklist splits **KiCad ready** vs **assembled bring-up**; panelization remains optional for production. |
+| 2026-04-18 | **V0.1** PCB **finalized**; **ordered** from fab; PCBA nearly complete (**~15 days** to assembled units). README + roadmap + V1 checklist: manufacturing milestone checked; **bring-up** pending board arrival. |

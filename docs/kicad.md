@@ -1,5 +1,7 @@
 # KiCad
 
+**V0.1 (current revision):** Design **finalized**; **PCBs ordered**; PCBA nearly complete (**~15 days** to assembled units). Timeline and bring-up: [roadmap](roadmap.md).
+
 **Integrated board:** open **`kicad/Azimuth_Design/Azimuth.kicad_pro`**. Schematic **`Azimuth.kicad_sch`**, layout **`Azimuth.kicad_pcb`**. Nets and GPIOs: [wiring.md](wiring.md) (PCB path). Human BOM summary: [parts-list.md](parts-list.md). **Tracked machine BOM:** **`kicad/Azimuth_Design/fab/Azimuth_bom.csv`** (KiCad **`kicad-cli sch export bom`** — regenerate with **`./scripts/export_azimuth_bom.sh`**; notes in **`fab/README.md`**). **Parts-only cost ballpark:** **`fab/Azimuth_bom_cost.txt`** (same script run). For each **fab order**, re-run **ERC** and **DRC**, refresh **`fab/`** exports if the schematic changed, then export **gerbers** / fab BOM as required.
 
 | Location | Contents |

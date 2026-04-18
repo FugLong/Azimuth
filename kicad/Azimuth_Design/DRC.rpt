@@ -1,16 +1,20 @@
 ** Drc report for Azimuth.kicad_pcb **
-** Created on 2026-04-02T15:26:13-0500 **
+** Created on 2026-04-09T08:38:03-0500 **
 ** Report includes: Errors, Warnings **
 
-** Found 25 DRC violations **
+** Found 29 DRC violations **
 [starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
     Local override; error
     @(148.5000 mm, 101.5000 mm): Zone [GND] on F.Cu, priority 2
-    @(140.3550 mm, 83.7750 mm): Pad 1 [GND] of C1 on F.Cu
+    @(116.8750 mm, 85.2250 mm): Pad 1 [GND] of C12 on F.Cu
 [starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
     Local override; error
     @(148.5000 mm, 101.5000 mm): Zone [GND] on F.Cu, priority 2
-    @(140.3600 mm, 84.5000 mm): Pad 2 [GND] of C2 on F.Cu
+    @(139.2900 mm, 85.3000 mm): Pad 2 [GND] of C2 on F.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; error
+    @(148.5000 mm, 101.5000 mm): Zone [GND] on F.Cu, priority 2
+    @(137.6250 mm, 100.0200 mm): Pad 2 [GND] of R21 on F.Cu
 [starved_thermal]: Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1)
     Local override; error
     @(148.5000 mm, 101.5000 mm): Zone [GND] on B.Cu, priority 3
@@ -19,41 +23,37 @@
     Local override; error
     @(148.5000 mm, 101.5000 mm): Zone [GND] on B.Cu, priority 3
     @(130.5850 mm, 99.6250 mm): Pad 2 [GND] of C4 on B.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(148.5000 mm, 101.5000 mm): Zone [GND] on B.Cu, priority 3
-    @(134.7500 mm, 93.9750 mm): Pad 2 [GND] of U3 on B.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(148.5000 mm, 101.5000 mm): Zone [GND] on B.Cu, priority 3
-    @(141.7400 mm, 92.6200 mm): Pad 1 [GND] of J1 on B.Cu
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(151.2500 mm, 83.8500 mm): Segment of PWR1 on F.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(151.2500 mm, 85.3500 mm): Segment of PWR1 on F.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(107.5700 mm, 82.0000 mm): Segment of U1 on B.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
-    @(107.5700 mm, 100.0100 mm): Segment of U1 on B.Silkscreen
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5700 mm, 82.0000 mm): Segment of U1 on B.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(114.0100 mm, 100.0100 mm): Segment of U1 on B.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.3000 mm, 81.2200 mm): Circle of U1 on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(148.9400 mm, 100.3900 mm): Segment of J1 on B.Silkscreen
 [silk_edge_clearance]: Silkscreen clipped by board edge
     Rule: board setup constraints silk; warning
-    @(107.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
+    @(113.5000 mm, 80.5000 mm): Rectangle on Edge.Cuts
     @(149.0900 mm, 91.3200 mm): Segment of J1 on B.Silkscreen
 [lib_footprint_mismatch]: Footprint 'SW-SMD_K3-1280S-K1' does not match copy in library '1_MyFootPrints'.
     Local override; warning
@@ -61,9 +61,6 @@
 [lib_footprint_mismatch]: Footprint 'USB-C-SMD_TYPE-C-6PIN-2MD-073' does not match copy in library '1_MyFootPrints'.
     Local override; warning
     @(144.1200 mm, 95.8200 mm): Footprint J1
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(142.2000 mm, 96.0750 mm): Reference field of BUZZER1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(143.2100 mm, 98.7900 mm): Segment of BUZZER1 on F.Silkscreen
@@ -91,15 +88,26 @@
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(149.0900 mm, 91.3200 mm): Segment of J1 on B.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(144.5800 mm, 93.2100 mm): Segment of BUZZER1 on F.Silkscreen
+    @(145.7500 mm, 96.0000 mm): Reference field of BUZZER1
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(145.7500 mm, 96.0000 mm): Reference field of BUZZER1
+    @(147.2800 mm, 98.8000 mm): Segment of BUZZER1 on F.Silkscreen
+[nonmirrored_text_on_back_layer]: Non-Mirrored text on back layer
+    Local override; warning
+    @(146.5000 mm, 83.6250 mm): PCB text '+' on B.Silkscreen
+[nonmirrored_text_on_back_layer]: Non-Mirrored text on back layer
+    Local override; warning
+    @(148.3750 mm, 88.9250 mm): PCB text '-' on B.Silkscreen
+[nonmirrored_text_on_back_layer]: Non-Mirrored text on back layer
+    Local override; warning
+    @(146.2500 mm, 84.7000 mm): PCB text '!' on B.Silkscreen
 
 ** Found 0 unconnected pads **
 
-** Found 2 Footprint errors **
-[net_conflict]: No pad found for pin 13 (GND) in schematic.
-    Local override; warning
-    @(144.1200 mm, 95.8200 mm): Footprint J1
-[net_conflict]: No pad found for pin 14 (GND) in schematic.
-    Local override; warning
-    @(144.1200 mm, 95.8200 mm): Footprint J1
+** Found 0 Footprint errors **
 
 ** End of Report **
