@@ -192,6 +192,26 @@
       margin: 0 0 0.85rem;
       line-height: 1.45;
     }
+    .target-row {
+      margin: 0 0 1rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .target-row label {
+      font-size: 0.86rem;
+      color: var(--tx-soft);
+      font-weight: 600;
+    }
+    .target-row select {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg-elev);
+      color: var(--tx);
+      padding: 0.55rem 0.7rem;
+      font: inherit;
+      font-size: 0.92rem;
+    }
   </style>
 </head>
 <body>
@@ -206,23 +226,30 @@
   <section class="panel" aria-labelledby="h-flash">
     <h2 id="h-flash">Install</h2>
     <p id="flasherFwVersionLine" class="flash-fw-version" hidden>Firmware in this installer: <strong id="flasherFwVersionVal"></strong></p>
+    <div class="target-row">
+      <label for="hardwareTarget">Hardware target</label>
+      <select id="hardwareTarget" aria-label="Hardware target">
+        <option value="diy" selected>DIY (XIAO + BNO08x breakout)</option>
+        <option value="pcb">Custom PCB (Azimuth_Design)</option>
+      </select>
+    </div>
     <div id="browserProblem" class="browser-problem" hidden role="alert">
       Use <strong>Chrome</strong> or <strong>Edge</strong> on a <strong>computer</strong> (not a phone). This browser can’t use USB serial, so flashing from here won’t work.
     </div>
     <ol class="steps" id="installSteps">
       <li>Use a USB cable that carries data (not charge-only).</li>
-      <li>Plug in a <strong>Seeed XIAO ESP32-C3</strong>.</li>
+      <li id="hardwareStep">Plug in a <strong>Seeed XIAO ESP32-C3</strong>.</li>
       <li>Click the button below and pick the serial port.</li>
     </ol>
     <div id="serialInstaller">
       <div class="flash-wrap">
-        <esp-web-install-button manifest="manifest.json">
+        <esp-web-install-button id="installButton" manifest="manifest.json">
           <button slot="activate" type="button">Install firmware</button>
         </esp-web-install-button>
       </div>
       <details>
         <summary>Stuck? Bootloader mode</summary>
-        Hold <strong>BOOT</strong>, tap <strong>RST</strong>, release <strong>BOOT</strong>, then try the button again.
+        <span id="bootHelpBody">Hold <strong>BOOT</strong>, tap <strong>RST</strong>, release <strong>BOOT</strong>, then try the button again.</span>
       </details>
       <p class="flash-timing">The progress dialog uses a generic time estimate; on this board, flashing is usually well under a minute.</p>
     </div>
@@ -245,19 +272,52 @@
 </div>
 <script>
 (function () {
-  fetch("manifest.json", { cache: "reload" })
-    .then(function (r) {
-      return r.ok ? r.json() : Promise.reject();
-    })
-    .then(function (m) {
-      var line = document.getElementById("flasherFwVersionLine");
-      var v = document.getElementById("flasherFwVersionVal");
-      if (m && m.version && line && v) {
-        v.textContent = m.version;
-        line.hidden = false;
-      }
-    })
-    .catch(function () {});
+  var TARGETS = {
+    diy: {
+      manifest: "manifest.json",
+      hardwareStep: "Plug in a <strong>Seeed XIAO ESP32-C3</strong>.",
+      bootHelp: "Hold <strong>BOOT</strong>, tap <strong>RST</strong>, release <strong>BOOT</strong>, then try the button again."
+    },
+    pcb: {
+      manifest: "manifest-pcb.json",
+      hardwareStep: "Plug in your <strong>Azimuth custom PCB</strong>.",
+      bootHelp: "For ESP32-C3 module boards without BOOT button: hold <strong>GPIO9 low</strong>, ensure <strong>GPIO8 high</strong>, reset/power-cycle the board, then retry flashing."
+    }
+  };
+
+  var select = document.getElementById("hardwareTarget");
+  var install = document.getElementById("installButton");
+  var step = document.getElementById("hardwareStep");
+  var bootHelp = document.getElementById("bootHelpBody");
+  var line = document.getElementById("flasherFwVersionLine");
+  var v = document.getElementById("flasherFwVersionVal");
+
+  function syncForTarget(target) {
+    var cfg = TARGETS[target] || TARGETS.diy;
+    if (install) install.setAttribute("manifest", cfg.manifest);
+    if (step) step.innerHTML = cfg.hardwareStep;
+    if (bootHelp) bootHelp.innerHTML = cfg.bootHelp;
+    fetch(cfg.manifest, { cache: "reload" })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (m) {
+        if (m && m.version && line && v) {
+          v.textContent = m.version + " (" + (target === "pcb" ? "Custom PCB" : "DIY") + ")";
+          line.hidden = false;
+        }
+      })
+      .catch(function () {
+        if (line) line.hidden = true;
+      });
+  }
+
+  if (select) {
+    select.addEventListener("change", function () {
+      syncForTarget(select.value);
+    });
+    syncForTarget(select.value);
+  } else {
+    syncForTarget("diy");
+  }
 })();
 </script>
 <script>

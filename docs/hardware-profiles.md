@@ -2,7 +2,7 @@
 
 Azimuth is intentionally **two hardware paths**—you only build one:
 
-1. **DIY / breadboard** — A **Seeed XIAO ESP32-C3** and a **BNO08x-class** IMU breakout wired for **SPI**. Parts are easy to source — store links and options are in [**parts-list.md**](parts-list.md). The [**web flasher**](https://fuglong.github.io/Azimuth/) and default release build target this path (**`azimuth_main_diy`**). USB for flashing and **Hatire** is through the XIAO.
+1. **DIY / breadboard** — A **Seeed XIAO ESP32-C3** and a **BNO08x-class** IMU breakout wired for **SPI**. Parts are easy to source — store links and options are in [**parts-list.md**](parts-list.md). The [**web flasher**](https://fuglong.github.io/Azimuth/) supports this path and keeps it as the default choice (**`azimuth_main_diy`**). USB for flashing and **Hatire** is through the XIAO.
 
 2. **Integrated PCB** — The routed board in [**`kicad/Azimuth_Design`**](https://github.com/FugLong/Azimuth/tree/main/kicad/Azimuth_Design) (**ESP32-C3-WROOM-02**, **BNO086** on the board, plus **RGB**, **buzzer**, and **FUNC** where populated). You flash **`azimuth_main_pcb`**. It runs the **same** head-tracking application (portal, UDP, Hatire); on-board extras are only relevant when that hardware exists.
 
@@ -36,7 +36,7 @@ Firmware sets **`-DARDUINO_USB_MODE=1`** and **`-DARDUINO_USB_CDC_ON_BOOT=1`** s
 
 **SPI bus:** **`src/main.cpp`** calls **`SPI.begin(8, 9, 10, -1)`** before **`imu.beginSPI(...)`**. The XIAO variant already defaults to those pins, but **`esp32-c3-devkitc-02`** uses Arduino variant **`esp32c3`**, whose defaults are **4 / 5 / 6** — that would collide with **CS (5)** and **INT (6)** on the Azimuth PCB. The explicit **`begin`** keeps DIY and PCB builds on the same **FSPI** pins as **`Azimuth.kicad_sch`**.
 
-**Web flasher:** CI ships **`azimuth_main_diy`** by default. A second **`manifest.json`** entry (or fork) applies if you publish **`azimuth_main_pcb`** binaries.
+**Web flasher:** CI publishes both **`azimuth_main_diy`** and **`azimuth_main_pcb`** with a hardware selector in the installer UI. DIY remains the default selection.
 
 ---
 
@@ -70,7 +70,7 @@ If a hardware revision ever changes GPIO roles, update **`azimuth_hw.h`** and [w
 - [x] Shared pin header **`include/azimuth_hw.h`**
 - [x] PlatformIO **`azimuth_main_diy`** / **`azimuth_main_pcb`** (+ debug variants)
 - [x] **Azimuth_Design**: Docs [**parts-list.md**](parts-list.md) / [**wiring.md**](wiring.md) match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** (re-verify after edits); **ERC/DRC clean** in current repo snapshot; export BOM from KiCad for each fab / pick-and-place order
-- [ ] Optional: CI build **`azimuth_main_pcb`** artifacts
-- [ ] Optional: second **`manifest.json`** entry for retail PCB
+- [x] CI build **`azimuth_main_pcb`** artifacts
+- [x] Web flasher hardware selector (DIY + PCB manifests)
 
 **Related:** [wiring.md](wiring.md) · [parts-list.md](parts-list.md) · [development.md](development.md) · [kicad.md](kicad.md)

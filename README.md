@@ -15,8 +15,8 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 
 | Path | What it is | Status |
 |------|------------|--------|
-| **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; the [**web flasher**](https://fuglong.github.io/Azimuth/) ships this build. | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
-| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**. | **V0.1 finalized** — KiCad **ERC/DRC** clean; **boards ordered**; PCBA nearly done (**~15 days** to assembled units). Same app as DIY; **hardware bring-up** when boards land — [roadmap](docs/roadmap.md). |
+| **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; selected by default in the [**web flasher**](https://fuglong.github.io/Azimuth/). | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
+| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**; available in the web flasher hardware selector. | **V0.1 finalized** — KiCad **ERC/DRC** clean; **boards ordered**; PCBA nearly done (**~15 days** to assembled units). Same app as DIY; **hardware bring-up** when boards land — [roadmap](docs/roadmap.md). |
 
 [**docs/wiring.md**](docs/wiring.md) (pinouts) · [**docs/hardware-profiles.md**](docs/hardware-profiles.md) (PlatformIO / GPIO) · [**docs/parts-list.md**](docs/parts-list.md) (sourcing — DIY store links + PCB BOM)
 

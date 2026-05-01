@@ -1,0 +1,17 @@
+{
+  "name": "Azimuth (Custom PCB)",
+  "version": "0.1.0",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "firmware/pcb/bootloader.bin", "offset": 0 },
+        { "path": "firmware/pcb/partitions.bin", "offset": 32768 },
+        { "path": "firmware/pcb/boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/pcb/firmware.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

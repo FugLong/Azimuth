@@ -2,7 +2,7 @@
 
 Short path from a fresh flash to head tracking in **OpenTrack** over Wi‑Fi.
 
-Assumes firmware is already installed (the published web flasher build is the default XIAO image). **Hardware paths** and which build to flash: [**README**](../README.md), [**hardware-profiles.md**](hardware-profiles.md). Deeper portal and OpenTrack detail: [**using-azimuth.md**](using-azimuth.md).
+Assumes firmware is already installed (web flasher supports both hardware targets; `DIY` is the default selection). **Hardware paths** and which build to flash: [**README**](../README.md), [**hardware-profiles.md**](hardware-profiles.md). Deeper portal and OpenTrack detail: [**using-azimuth.md**](using-azimuth.md).
 
 ## 1. Join your home Wi‑Fi (first setup)
 

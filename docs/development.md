@@ -37,18 +37,20 @@ python3 -m platformio run -e azimuth_main_diy -t upload
 python3 -m platformio run -e azimuth_main_pcb -t upload
 ```
 
-**Local web flasher bundle** (copy binaries into **`web-flasher/firmware/`** for testing GitHub Pages–style install):
+**Local web flasher bundle** (copy binaries into **`web-flasher/firmware/{diy,pcb}/`** for testing GitHub Pages–style install):
 
 ```bash
 pio run -e azimuth_main_diy
-./scripts/prepare_web_flasher_firmware.sh
+pio run -e azimuth_main_pcb
+./scripts/prepare_web_flasher_firmware.sh azimuth_main_diy web-flasher/firmware/diy
+./scripts/prepare_web_flasher_firmware.sh azimuth_main_pcb web-flasher/firmware/pcb
 ```
 
 ## Firmware version and release URLs
 
 - **Source of truth:** repo root **`VERSION`** (first line = semver, e.g. `0.1.0`).
 - **`scripts/pio_set_version.py`** injects it as **`AZIMUTH_FW_VERSION`** into **`azimuth_main_diy`** / **`azimuth_main_pcb`** builds.
-- **`web-flasher/manifest.json`** field **`version`** is synced by **`scripts/sync_manifest_version.py`** (via **`prepare_web_flasher_firmware.sh`** and the GitHub Pages workflow) so the USB installer and running firmware agree.
+- **`web-flasher/manifest.json`** and **`web-flasher/manifest-pcb.json`** fields **`version`** are synced by **`scripts/sync_manifest_version.py`** (via **`prepare_web_flasher_firmware.sh`** and the GitHub Pages workflow) so the USB installer and running firmware agree.
 - **Intended scheme:** align with board generations—e.g. board **0.1** ships **0.1.0**, then patch bumps until a **1.0** board ships **1.0.0**, etc.
 - **Update hint on device:** After STA is up, firmware may fetch the published **`manifest.json`** once per boot (default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner linking to the USB installer. **No OTA install**—users still flash from the browser. Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. That HTTPS client uses **certificate validation off** for this single read-only check.
 - **esp-web-tools / Improv:** The web installer can show live firmware info when the device implements **Improv Serial** and a non-zero **`new_install_improv_wait_time`**. Azimuth does **not** implement Improv yet (**wait time 0**), so the page does not auto-compare the connected board to the hosted build—use the portal **Device** line and the update banner on Wi‑Fi.
@@ -58,7 +60,7 @@ pio run -e azimuth_main_diy
 | What | Where |
 |------|--------|
 | **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** with **`secrets.h`** copied from the example. Artifacts under **`ci-artifacts/firmware/`**. |
-| **GitHub Pages USB flasher** | **`.github/workflows/github-pages-flasher.yml`** builds **`azimuth_main_diy`**, runs **`prepare_web_flasher_firmware.sh`**, syncs **`manifest.json`**, deploys **`web-flasher/`** with [esp-web-tools](https://github.com/esphome/esp-web-tools). Repo: **Settings → Pages → Source: GitHub Actions**; environment **`azimuth-flasher`**. |
+| **GitHub Pages USB flasher** | **`.github/workflows/github-pages-flasher.yml`** builds **`azimuth_main_diy`** + **`azimuth_main_pcb`**, runs **`prepare_web_flasher_firmware.sh`** for both targets, syncs **`manifest.json`** + **`manifest-pcb.json`**, deploys **`web-flasher/`** with [esp-web-tools](https://github.com/esphome/esp-web-tools). Repo: **Settings → Pages → Source: GitHub Actions**; environment **`azimuth-flasher`**. |
 
 Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.github.io/Azimuth/manifest.json`**, flasher **`https://fuglong.github.io/Azimuth/`**.
 
@@ -77,7 +79,7 @@ Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and option
 | **`src/track_network.cpp`** | Wi‑Fi, portal, UDP in **`azimuth_main_*`**; stubs in **`azimuth_debug_*`**. |
 | **`src/portal_html.cpp`** | Settings UI in PROGMEM (**`azimuth_main_*`** only; filtered out of debug build). |
 | **`platformio.ini`** | `espressif32`; **`azimuth_main_diy`** / **`azimuth_main_pcb`** (see [**hardware-profiles.md**](hardware-profiles.md)); SparkFun **BNO08x**; **`azimuth_main_*`** adds version script, **ArduinoJson**, default release URLs. |
-| **`VERSION`** | Semver line for **`azimuth_main_*`** and **`web-flasher/manifest.json`**. |
+| **`VERSION`** | Semver line for **`azimuth_main_*`**, **`web-flasher/manifest.json`**, and **`web-flasher/manifest-pcb.json`**. |
 | **`web-flasher/`** | Static USB installer + manifest for GitHub Pages. |
 
 Planned work (board I/O, battery, enclosure, OTA, etc.) is tracked in [**roadmap.md**](roadmap.md).
