@@ -25,8 +25,11 @@ constexpr uint8_t kPinImuRst = 20;  // NRST (same GPIO as UART RX on XIAO)
 // PS0/WAKE — GPIO2 (XIAO D0); use 10 kΩ to 3V3 on breadboard to match Azimuth_Design **R14**
 constexpr uint8_t kPinImuPs0Wake = 2;
 
-// Planned board I/O (wiring.md — not all used in firmware yet)
-// Azimuth_Design RGB LED uses GPIO 0, 1, 3 — see docs/wiring.md. kPinStatusLed is one channel / future use.
+// RGB (Azimuth_Design only): common anode — cathodes on IO0 / IO1 / IO3 (see docs/wiring.md). Drive active-low / inverted PWM.
+constexpr uint8_t kPinRgbR = 0;
+constexpr uint8_t kPinRgbG = 1;
+constexpr uint8_t kPinRgbB = 3;
+// DIY single-LED path uses GPIO3 as a simple status line (no Azimuth RGB layout).
 constexpr uint8_t kPinStatusLed = 3;
 constexpr uint8_t kPinButtonFunc = 7;
 constexpr uint8_t kPinBuzzer = 21;

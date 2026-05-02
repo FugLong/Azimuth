@@ -10,6 +10,8 @@ Azimuth is intentionally **two hardware paths**—you only build one:
 
 **Build suffixes:** **`_diy`** = XIAO + breakout. **`_pcb`** = Azimuth_Design. **`main`** = full firmware (portal, Hatire, UDP). **`debug`** = USB serial IMU angles only, no Wi‑Fi or portal.
 
+Firmware now also tags each build with a board profile (`DIY` or `PCB`) and enables features through a shared capability layer. That keeps one app codebase while cleanly gating optional hardware (RGB, buzzer, FUNC button, battery sense) per path.
+
 ---
 
 ## Targets
@@ -19,6 +21,17 @@ Azimuth is intentionally **two hardware paths**—you only build one:
 | **MCU** | XIAO ESP32-C3 | WROOM-class module on Azimuth_Design |
 | **IMU** | BNO08x breakout | BNO086 on board |
 | **Extra I/O** | Buzzer/button optional (same GPIOs as PCB) | RGB LED, buzzer, FUNC on board |
+
+Capability defaults in current firmware:
+
+| Capability | **`_diy`** | **`_pcb`** |
+|-----------|------------|------------|
+| RGB LED | Off (no RGB layout expected) | On |
+| Buzzer | On (optional wiring) | On |
+| FUNC button | On (optional wiring) | On |
+| Battery sense | Stubbed in firmware for now | Stubbed in firmware for now |
+
+On **`_pcb`**, firmware treats the RGB as **common anode** (see [**wiring.md**](wiring.md)) and runs a **rainbow demo** by default so you can confirm all three channels at a glance. **`_diy`** does not use the Azimuth RGB footprint; optional buzzer/button GPIOs match the PCB when wired.
 
 **Firmware:** **`azimuth_main_diy`** and **`azimuth_main_pcb`** are the same application. Tracking does not require LED, buzzer, or button.
 

@@ -16,6 +16,10 @@
 #include <SPI.h>
 
 #include "azimuth_hw.h"
+#include "battery_monitor.h"
+#include "io_button.h"
+#include "io_buzzer.h"
+#include "io_led.h"
 #include "SparkFun_BNO08x_Arduino_Library.h"
 
 #ifndef IMU_DEBUG_MODE
@@ -55,6 +59,10 @@ BNO08x imu;
 #if IMU_DEBUG_MODE
 uint32_t gLastPrintMs = 0;
 #endif
+
+void onFuncButtonPress() {
+  azimuth_io_buzzer::playFuncButtonTune();
+}
 
 #if !IMU_DEBUG_MODE
 /**
@@ -122,6 +130,12 @@ void enableReports() {
 
 void setup() {
   Serial.begin(115200);
+  azimuth_io_led::init();
+  azimuth_io_buzzer::init();
+  azimuth_io_button::init();
+  azimuth_io_button::setPressCallback(onFuncButtonPress);
+  azimuth_battery::init();
+  azimuth_io_led::setStatus(true);
 
 #if IMU_DEBUG_MODE
   const uint32_t usbWaitMs = 4000;
@@ -162,9 +176,13 @@ void setup() {
 #if !IMU_DEBUG_MODE
   trackNetworkInit();
 #endif
+  azimuth_io_buzzer::chirp(2400, 30);
 }
 
 void loop() {
+  azimuth_io_button::tick();
+  azimuth_io_buzzer::tick();
+  azimuth_io_led::tick();
 #if !IMU_DEBUG_MODE
   trackNetworkLoop();
   const bool usbConnected = static_cast<bool>(Serial);
@@ -182,6 +200,7 @@ void loop() {
   }
 
   if (!imu.getSensorEvent()) {
+    azimuth_io_led::setStatus(false);
     yield();  // avoid 100% CPU busy-spin between 100 Hz IMU reports (major heat / power)
     return;
   }
@@ -193,6 +212,7 @@ void loop() {
   const float yawDeg = imu.getYaw() * kRadToDeg;
   const float pitchDeg = imu.getPitch() * kRadToDeg;
   const float rollDeg = imu.getRoll() * kRadToDeg;
+  azimuth_io_led::setStatus(true);
 
 #if IMU_DEBUG_MODE
   const uint32_t now = millis();

@@ -36,8 +36,12 @@ case "$TARGET" in
     ;;
 esac
 
-if ! command -v pio >/dev/null 2>&1; then
-  echo "PlatformIO not found in PATH. Install it first:"
+if command -v pio >/dev/null 2>&1; then
+  PIO=(pio)
+elif python3 -m platformio --version >/dev/null 2>&1; then
+  PIO=(python3 -m platformio)
+else
+  echo "PlatformIO not found. Install it first:"
   echo "  python3 -m pip install --user platformio"
   exit 1
 fi
@@ -100,7 +104,7 @@ echo "Environment: $ENV_NAME"
 echo "Port:        $PORT"
 echo "Starting build + upload..."
 
-pio run -e "$ENV_NAME" -t upload --upload-port "$PORT"
+"${PIO[@]}" run -e "$ENV_NAME" -t upload --upload-port "$PORT"
 
 echo
 echo "Flash complete."

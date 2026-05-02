@@ -54,6 +54,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 - **First Wi‑Fi setup** — Join **Azimuth-Setup**, open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md).
 - **OpenTrack** — Use **either** UDP **or** Hatire as the input, not both at once. Defaults and axis mapping: [**Using Azimuth**](docs/using-azimuth.md#opentrack-on-the-pc).
 - **Board feels warm** — Normal when Wi‑Fi is active on a small module. More context: [**Using Azimuth → Power & heat**](docs/using-azimuth.md#power-heat-and-battery).
+- **Power tuning** — Portal includes power profile + Wi‑Fi TX controls; details: [**Power & thermal (firmware)**](docs/power-and-thermal.md).
 
 ## Documentation
 
@@ -61,6 +62,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 |-----|----------|
 | [**Quick start**](docs/quickstart.md) | Fast path from flash to tracking over Wi‑Fi |
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
+| [**Power & thermal (firmware)**](docs/power-and-thermal.md) | How Wi‑Fi power saving works; what the portal poll does and does not do |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |

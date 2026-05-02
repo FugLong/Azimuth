@@ -18,6 +18,16 @@ Build flags, **PlatformIO** environments, **CI**, and how the firmware repo is l
 
 ## Build and upload
 
+**One-liner** (from repo root; defaults to **`azimuth_main_pcb`**, auto-picks a USB serial port; use `diy` for XIAO or pass a port as the second argument):
+
+```bash
+./scripts/flash.sh              # PCB
+./scripts/flash.sh diy          # DIY
+./scripts/flash.sh pcb --ask    # pick port if several devices
+```
+
+The script uses **`pio`** when it is on your **`PATH`**, otherwise **`python3 -m platformio`**.
+
 **Debug (serial monitor, IMU angles):**
 
 ```bash
@@ -48,10 +58,10 @@ pio run -e azimuth_main_pcb
 
 ## Firmware version and release URLs
 
-- **Source of truth:** repo root **`VERSION`** (first line = semver, e.g. `0.1.0`).
+- **Source of truth:** repo root **`VERSION`** (first line = semver, e.g. `0.2.0`).
 - **`scripts/pio_set_version.py`** injects it as **`AZIMUTH_FW_VERSION`** into **`azimuth_main_diy`** / **`azimuth_main_pcb`** builds.
 - **`web-flasher/manifest.json`** and **`web-flasher/manifest-pcb.json`** fields **`version`** are synced by **`scripts/sync_manifest_version.py`** (via **`prepare_web_flasher_firmware.sh`** and the GitHub Pages workflow) so the USB installer and running firmware agree.
-- **Intended scheme:** align with board generations—e.g. board **0.1** ships **0.1.0**, then patch bumps until a **1.0** board ships **1.0.0**, etc.
+- **Intended scheme:** align with board generations—e.g. board **0.2** ships **0.2.0**, then patch bumps until a **1.0** board ships **1.0.0**, etc.
 - **Update hint on device:** After STA is up, firmware may fetch the published **`manifest.json`** once per boot (default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner linking to the USB installer. **No OTA install**—users still flash from the browser. Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. That HTTPS client uses **certificate validation off** for this single read-only check.
 - **esp-web-tools / Improv:** The web installer can show live firmware info when the device implements **Improv Serial** and a non-zero **`new_install_improv_wait_time`**. Azimuth does **not** implement Improv yet (**wait time 0**), so the page does not auto-compare the connected board to the hosted build—use the portal **Device** line and the update banner on Wi‑Fi.
 

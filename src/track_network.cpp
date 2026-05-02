@@ -30,6 +30,9 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 
 #include "opentrack_pose.h"
 #include "portal_html.h"
+#include "board_config.h"
+#include "battery_monitor.h"
+#include "power_policy.h"
 #include "secrets.h"
 
 #ifndef OPENTRACK_UDP_PORT
@@ -84,6 +87,11 @@ bool gPrefsOpened = false;
 uint16_t gImuPeriodMsRuntime = 10;
 bool gHatireUsbRuntime = true;
 OtAxisMapConfig gOtAxisMapRuntime{};
+azimuth_power::PowerProfile gPowerProfileRuntime = azimuth_power::PowerProfile::Balanced;
+uint32_t gLastPortalActivityMs = 0;
+uint32_t gLastNetworkServiceMs = 0;
+uint32_t gLastBackgroundTickMs = 0;
+bool gWifiSleepEnabled = false;
 
 bool ensurePrefsOpen() {
   if (gPrefsOpened) {
@@ -105,11 +113,16 @@ wifi_power_t wifiTxFromProfile(uint8_t profile) {
 }
 
 uint8_t mergedWifiTxProfile() {
-  const uint32_t v = gPrefs.getUInt("wifi_tx", 1);
+  const uint32_t v = gPrefs.getUInt("wifi_tx", 0);
   if (v > 2) {
-    return 1;
+    return 0;
   }
   return static_cast<uint8_t>(v);
+}
+
+azimuth_power::PowerProfile mergedPowerProfile() {
+  const uint32_t v = gPrefs.getUInt("power_profile", 1);
+  return azimuth_power::fromStoredValue(static_cast<uint8_t>(v));
 }
 
 uint16_t mergedImuPeriodMs() {
@@ -147,12 +160,36 @@ void refreshRuntimeFromPrefs() {
   gImuPeriodMsRuntime = mergedImuPeriodMs();
   gHatireUsbRuntime = mergedHatireUsb();
   gOtAxisMapRuntime = mergedOtAxisMap();
+  gPowerProfileRuntime = mergedPowerProfile();
 }
 
 void applyStaWifiTxPower() {
   if (WiFi.status() == WL_CONNECTED) {
     WiFi.setTxPower(wifiTxFromProfile(mergedWifiTxProfile()));
   }
+}
+
+void markPortalActivity() {
+  gLastPortalActivityMs = millis();
+}
+
+void applyAdaptiveWifiSleep() {
+  if (gSetupApMode || WiFi.status() != WL_CONNECTED) {
+    if (gWifiSleepEnabled) {
+      WiFi.setSleep(false);
+      gWifiSleepEnabled = false;
+    }
+    return;
+  }
+
+  const uint32_t idleForMs = millis() - gLastPortalActivityMs;
+  const bool shouldSleep =
+      idleForMs >= azimuth_power::wifiSleepIdleDelayMs(gPowerProfileRuntime);
+  if (shouldSleep == gWifiSleepEnabled) {
+    return;
+  }
+  WiFi.setSleep(shouldSleep);
+  gWifiSleepEnabled = shouldSleep;
 }
 
 bool hostnameCharsValid(const char* s) {
@@ -402,10 +439,10 @@ static bool semverLess(const SemVer& a, const SemVer& b) {
 static void performFirmwareUpdateCheckOnce() {
   gFwUpdateCheckDone = true;
   WiFiClientSecure client;
-  client.setTimeout(6000);
+  client.setTimeout(2500);
   client.setInsecure();
   HTTPClient http;
-  http.setTimeout(6000);
+  http.setTimeout(2500);
   if (!http.begin(client, AZIMUTH_RELEASE_MANIFEST_URL)) {
     return;
   }
@@ -450,11 +487,13 @@ void sendJson(WebServer& http, int code, const JsonDocument& doc) {
 }
 
 void handleRoot(WebServer& http) {
+  markPortalActivity();
   http.sendHeader("Cache-Control", "no-store");
   http.send_P(200, "text/html; charset=utf-8", kPortalIndexHtml);
 }
 
 void handleStatus(WebServer& http) {
+  markPortalActivity();
   JsonDocument doc;
   doc["setup_ap"] = gSetupApMode;
   doc["wifi_connected"] = (WiFi.status() == WL_CONNECTED);
@@ -481,7 +520,14 @@ void handleStatus(WebServer& http) {
     doc["ot_resolved_ip"] = nullptr;
   }
   doc["ot_using_dns"] = (!gOtHostIsLiteralIp && gOtHostTrimmed.length() > 0);
-  doc["battery_mv"] = nullptr;
+  const auto batt = azimuth_battery::readStatus();
+  if (batt.millivolts >= 0) {
+    doc["battery_mv"] = batt.millivolts;
+  } else {
+    doc["battery_mv"] = nullptr;
+  }
+  doc["battery_state"] = batt.stub ? "stub" : "active";
+  doc["board"] = azimuth_board::boardName();
   doc["fw_version"] = AZIMUTH_FW_VERSION;
   doc["fw_update_available"] = gFwUpdateAvailable;
   if (gFwUpdateAvailable) {
@@ -495,12 +541,14 @@ void handleStatus(WebServer& http) {
   doc["hostname"] = mergedHostname();
   doc["mdns_on"] = mergedMdnsOn();
   doc["wifi_tx"] = mergedWifiTxProfile();
+  doc["power_profile"] = azimuth_power::toStoredValue(gPowerProfileRuntime);
   appendOtAxesToJson(doc);
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
 
 void handleScan(WebServer& http) {
+  markPortalActivity();
   JsonDocument doc;
   JsonArray arr = doc["networks"].to<JsonArray>();
   const int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
@@ -516,6 +564,7 @@ void handleScan(WebServer& http) {
 }
 
 void handleConfigPost(WebServer& http) {
+  markPortalActivity();
   if (!ensurePrefsOpen()) {
     JsonDocument err;
     err["error"] = "storage unavailable";
@@ -623,6 +672,15 @@ void handleConfigPost(WebServer& http) {
     }
   }
 
+  if (!errMsg && !body["power_profile"].isNull()) {
+    const int p = body["power_profile"].as<int>();
+    if (p < 0 || p > 2) {
+      errMsg = "power_profile must be 0, 1, or 2";
+    } else {
+      gPrefs.putUInt("power_profile", static_cast<uint32_t>(p));
+    }
+  }
+
   if (!errMsg && !body["mdns_on"].isNull()) {
     if (!body["mdns_on"].is<bool>()) {
       errMsg = "mdns_on must be boolean";
@@ -717,6 +775,7 @@ void handleConfigPost(WebServer& http) {
 }
 
 void handleRebootPost(WebServer& http) {
+  markPortalActivity();
   http.send(200, "application/json", "{\"ok\":true}");
   http.client().stop();
   delay(200);
@@ -724,6 +783,7 @@ void handleRebootPost(WebServer& http) {
 }
 
 void handleFactoryResetPost(WebServer& http) {
+  markPortalActivity();
   if (!ensurePrefsOpen()) {
     JsonDocument err;
     err["error"] = "prefs";
@@ -794,6 +854,8 @@ void startProvisioningPortal() {
   registerRoutes(gWebAp, true);
   gWebAp.begin();
   gApPortalActive = true;
+  gWifiSleepEnabled = false;
+  gLastPortalActivityMs = millis();
 }
 
 void networkInit() {
@@ -836,8 +898,8 @@ void networkInit() {
 
   applyStaWifiTxPower();
   tryOpenUdpSocket();
-  // Modem sleep can drop or delay mDNS multicast; keep radio awake so `azimuth.local` resolves reliably.
-  WiFi.setSleep(false);
+  gLastPortalActivityMs = millis();
+  applyAdaptiveWifiSleep();
 
   if (mergedMdnsOn()) {
     if (MDNS.begin(mergedHostname().c_str())) {
@@ -852,23 +914,35 @@ void networkInit() {
 }
 
 void networkLoop() {
-  if (gApPortalActive) {
-    gDnsCaptive.processNextRequest();
-    gWebAp.handleClient();
+  const uint32_t now = millis();
+  const uint16_t serviceInterval = azimuth_power::networkServiceIntervalMs(gPowerProfileRuntime);
+  if (now - gLastNetworkServiceMs >= serviceInterval) {
+    gLastNetworkServiceMs = now;
+    if (gApPortalActive) {
+      gDnsCaptive.processNextRequest();
+      gWebAp.handleClient();
+    }
+    if (gStaWebActive) {
+      gWebSta.handleClient();
+    }
   }
-  if (gStaWebActive) {
-    gWebSta.handleClient();
+
+  if (now - gLastBackgroundTickMs >= 200) {
+    gLastBackgroundTickMs = now;
+    if (WiFi.status() == WL_CONNECTED) {
+      tryOpenUdpSocket();
+      maybeRefreshOtHostname();
+    }
+    applyAdaptiveWifiSleep();
   }
-  if (WiFi.status() == WL_CONNECTED) {
-    tryOpenUdpSocket();
-    maybeRefreshOtHostname();
-  }
-  if (gStaWebActive && WiFi.status() == WL_CONNECTED && !gFwUpdateCheckDone) {
+
+  if (gStaWebActive && WiFi.status() == WL_CONNECTED && !gFwUpdateCheckDone &&
+      azimuth_power::runFirmwareUpdateCheck(gPowerProfileRuntime)) {
     static uint32_t sStaStableMs = 0;
     if (sStaStableMs == 0) {
-      sStaStableMs = millis();
+      sStaStableMs = now;
     }
-    if (millis() - sStaStableMs >= 4000) {
+    if (now - sStaStableMs >= 8000) {
       performFirmwareUpdateCheckOnce();
     }
   }

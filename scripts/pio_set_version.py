@@ -5,7 +5,7 @@ from pathlib import Path
 
 root = Path(env["PROJECT_DIR"])
 vf = root / "VERSION"
-ver = "0.1.0"
+ver = "0.2.0"
 if vf.is_file():
     lines = vf.read_text(encoding="utf-8").strip().splitlines()
     if lines and lines[0].strip():

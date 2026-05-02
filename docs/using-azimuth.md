@@ -22,13 +22,19 @@ The UI is grouped roughly as follows:
 | **Wi‑Fi** | SSID / password, **Scan networks** (brief tracking pause). New credentials → **reboot**. |
 | **LAN & discovery** | mDNS on/off, **hostname** (letters, digits, hyphen; max 24). Changes → **reboot**. |
 | **OpenTrack (PC)** | USB Hatire on/off, UDP on/off, **UDP address** / **port**, **axis mapping** (which yaw/pitch/roll go to **Rot 0–2**, optional **invert**). Use **Fill address** when you open the portal on the PC running OpenTrack. **`something.local` from the ESP32** is unreliable—prefer a numeric LAN IP. |
-| **Tracking & radio** | IMU report interval (5–40 ms). Change → **reboot**. **Wi‑Fi TX power** (low / balanced / high) applies on save. |
-| **Device** | Firmware **version**, save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
+| **Tracking & radio** | **Power profile** (performance / balanced / battery saver), IMU report interval (5–40 ms), and **Wi‑Fi TX power** (low / balanced / high). IMU interval change → **reboot**. |
+| **Device** | Firmware **version**, battery state (currently **stub** until battery monitoring is wired), save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
 | **Advanced** | **Reset all settings** (clears stored config and reboots; may return to **Azimuth-Setup** if no home SSID remains). |
 
 Settings live in **flash (NVS)** on the device. If something is unset, the build can fall back to optional compile-time defaults in **`include/secrets.h`** (see [**development.md**](development.md)).
 
 Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that network, it falls back to **Azimuth-Setup** so you can fix SSID/password without reflashing.
+
+## Integrated PCB: RGB, FUNC, buzzer
+
+On **`azimuth_main_pcb`**, the Azimuth board’s **common-anode** RGB (cathodes on **IO0 / IO1 / IO3**) is driven with **inverted** PWM in firmware so colors match the schematic. While running, firmware shows a **slow rainbow** on the RGB LED as an easy visual that the board is alive (DIY builds without that LED layout keep a simple GPIO3 status line instead).
+
+**FUNC** (**IO7**, pull-up, switch to GND) triggers a **short four-note chime** on the buzzer (**IO21** → FET on the PCB). This is for feedback and bring-up; behavior may be extended later (e.g. recenter, menu).
 
 ## OpenTrack on the PC
 
@@ -56,7 +62,15 @@ On home Wi‑Fi, firmware may do **one** check per boot against the published in
 
 ### Why the board feels warm
 
-The **ESP32-C3** runs warm mainly because **Wi‑Fi** stays associated and sends frequent packets—not because the UDP payload is large. A small board without much metal to spread heat **can feel hot**; that is common for this class of module. While on your LAN with the settings server enabled, firmware keeps **modem sleep off** so **mDNS** (`azimuth.local`) stays reliable, which uses a bit more radio duty cycle than the lowest possible sleep modes. You can lower **TX power** in the portal (**Tracking & radio**) if you want; use **high** only if the link is flaky at distance.
+The **ESP32-C3** runs warm mainly because Wi‑Fi work dominates current draw. A small board without much metal to spread heat can feel hot; that is common for this class of module. Current firmware now applies adaptive Wi‑Fi sleep in steady tracking mode and lets you tune behavior with **Power profile** in the portal:
+
+- **Performance tracking** keeps network servicing most responsive.
+- **Balanced** is the default compromise.
+- **Battery saver** favors lower heat/power (with less aggressive background network activity).
+
+You can further reduce heat by lowering **Wi‑Fi TX power** when your router is close; use **high** only for weak-link scenarios.
+
+**Implementation detail:** how modem sleep, power profiles, and portal polling interact with tracking — [**power-and-thermal.md**](power-and-thermal.md).
 
 ### Battery runtime (rough)
 
@@ -70,4 +84,4 @@ Only applies if you built the **integrated Azimuth board** with the **JST PH** b
 
 ---
 
-**Related:** [quickstart.md](quickstart.md) · [development.md](development.md) · [README](../README.md)
+**Related:** [quickstart.md](quickstart.md) · [power-and-thermal.md](power-and-thermal.md) · [development.md](development.md) · [README](../README.md)

@@ -224,7 +224,13 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 
 <div class="card">
 <div class="hd">Tracking & radio</div>
-<p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. Wi‑Fi TX power trades range vs heat.</p>
+<p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. Power profile adjusts network servicing and Wi‑Fi sleep behavior.</p>
+<label for="powerProfile">Power profile</label>
+<select id="powerProfile" aria-label="Power profile">
+<option value="0">Performance tracking — max responsiveness</option>
+<option value="1" selected>Balanced — default</option>
+<option value="2">Battery saver — lowest heat / battery use</option>
+</select>
 <label for="imuPeriod">IMU report interval</label>
 <select id="imuPeriod" aria-label="IMU period">
 <option value="5">200 Hz (5 ms) — lowest latency</option>
@@ -243,7 +249,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 
 <div class="card">
 <div class="hd">Device</div>
-<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: not wired yet.</p>
+<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
 <div class="row row-actions">
 <button type="button" class="btn btn-primary" id="btnSave">Save</button>
 <button type="button" class="btn btn-sec" id="btnReboot">Reboot</button>
@@ -293,6 +299,10 @@ function applyShell(j){
   const line2='FW '+(j.fw_version||'?')+' · ~'+hz+' Hz · '+ (j.hostname||'azimuth')+' · '+udpSummary+' · STA '+(j.wifi_connected?'on':'off');
   $('stats').textContent=line1+line1b+'\n'+line2;
   if($('fwVer'))$('fwVer').textContent=j.fw_version||'—';
+  if($('battState')){
+    if(j.battery_mv!=null){$('battState').textContent=(j.battery_mv+' mV')}
+    else{$('battState').textContent=(j.battery_state||'stub')}
+  }
   if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
   if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
   if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
@@ -350,7 +360,7 @@ function collectOtAxes(){
 }
 function nudgeInputPaint(){
   requestAnimationFrame(()=>{
-    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx'].forEach(id=>{
+    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','powerProfile','imuPeriod','wifiTx'].forEach(id=>{
       const el=$(id);
       if(!el)return;
       el.style.transform='translateZ(1px)';
@@ -369,6 +379,7 @@ async function hydrateForm(){
   const p=j.imu_period_ms||10;
   $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
   $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
+  $('powerProfile').value=([0,1,2].includes(j.power_profile))?String(j.power_profile):'1';
   applyOtAxesFromStatus(j.ot_axes);
   uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
   applyShell(j);
@@ -416,9 +427,11 @@ $('btnSave').onclick=async()=>{
     hatire_usb:$('hatireToggle').classList.contains('on'),
     mdns_on:$('mdnsToggle').classList.contains('on'),
     hostname:$('hostname').value.trim().toLowerCase(),
+    power_profile:parseInt($('powerProfile').value,10),
     imu_period_ms:parseInt($('imuPeriod').value,10)||10,
     wifi_tx:parseInt($('wifiTx').value,10)
   };
+  if(![0,1,2].includes(body.power_profile))body.power_profile=1;
   if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
   const pw=$('pass').value;
   if(pw.length)body.password=pw;
@@ -443,7 +456,7 @@ $('btnFactory').onclick=async()=>{
   }catch(e){setMsg('Request failed','err')}
 };
 hydrateForm();
-setInterval(pollOnly,8000);
+setInterval(()=>{if(!document.hidden)pollOnly();},15000);
 </script>
 </body>
 </html>
