@@ -39,5 +39,8 @@ docs/.bno08x_datasheet_extract.txt
 # WiFi / OpenTrack host (copy from include/secrets.h.example)
 include/secrets.h
 
+# Web flasher — built by CI (GitHub Pages) or locally; do not commit
+web-flasher/firmware/**/*.bin
+
 # Optional: reference-only downloads (uncomment if you do not want these tracked)
 # kicad/_reference/
