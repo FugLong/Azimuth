@@ -18765,7 +18765,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED green cathode resistor (IO1)"
+		(property "Description" "RGB LED green cathode resistor (IO0)"
 			(at 67.31 121.92 0)
 			(effects
 				(font
@@ -21131,7 +21131,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED red cathode resistor (IO0)"
+		(property "Description" "RGB LED red cathode resistor (IO1)"
 			(at 67.31 116.84 0)
 			(effects
 				(font

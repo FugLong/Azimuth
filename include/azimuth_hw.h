@@ -25,9 +25,11 @@ constexpr uint8_t kPinImuRst = 20;  // NRST (same GPIO as UART RX on XIAO)
 // PS0/WAKE — GPIO2 (XIAO D0); use 10 kΩ to 3V3 on breadboard to match Azimuth_Design **R14**
 constexpr uint8_t kPinImuPs0Wake = 2;
 
-// RGB (Azimuth_Design only): common anode — cathodes on IO0 / IO1 / IO3 (see docs/wiring.md). Drive active-low / inverted PWM.
-constexpr uint8_t kPinRgbR = 0;
-constexpr uint8_t kPinRgbG = 1;
+// RGB (Azimuth_Design): common anode, inverted PWM. Resistor nets R6/R7/R8 — logical R/G/B must match
+// the *physical* cathode for each die (TZ-P4-1615 pad order vs schematic labels). Verified on V0.1:
+// IO1+R7 (100 Ω) = red, IO0+R8 (68 Ω) = green, IO3+R6 (220 Ω) = blue (not IO0=red as older docs said).
+constexpr uint8_t kPinRgbR = 1;
+constexpr uint8_t kPinRgbG = 0;
 constexpr uint8_t kPinRgbB = 3;
 // DIY single-LED path uses GPIO3 as a simple status line (no Azimuth RGB layout).
 constexpr uint8_t kPinStatusLed = 3;

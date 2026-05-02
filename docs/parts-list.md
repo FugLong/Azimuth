@@ -111,8 +111,8 @@ Default footprint for listed **R** parts: **`Resistor_SMD:R_0201_0603Metric`**. 
 | **R4** | 2K | **U3** **PROG** — **TP4054**: **I_BAT ≈ 1000 / R4(kΩ) mA** → **~500 mA** |
 | **R5** | 150R | **CHG1** LED current limit (**3V3** side) |
 | **R6** | 220R | **LED1** blue cathode ↔ **IO3** |
-| **R7** | 100R | **LED1** red cathode ↔ **IO0** |
-| **R8** | 68R | **LED1** green cathode ↔ **IO1** |
+| **R7** | 100R | **LED1** red cathode ↔ **IO1** |
+| **R8** | 68R | **LED1** green cathode ↔ **IO0** |
 | **R9** | 5.1K | **J1** **CC** (e.g. CC2 branch) |
 | **R10** | 5.1K | **J1** **CC** (e.g. CC1 branch) |
 | **R11** | 22R | USB data series (**U1** ↔ **J1** **D+** path) |
@@ -157,7 +157,7 @@ Default footprint: **`Capacitor_SMD:C_0201_0603Metric`**.
 |-------|------|--------|
 | **BNO086 (IC1)** | **C11** on **CAP**; **3V3** decoupling via shared rail (**C5**, **C9**, **C10**, **C12** per schematic); **R13**–**R17** straps / **ENV** | **R14** 10 kΩ **PS0** (**IO2**); **R15** 10 kΩ **CLKSEL0**; **R16**/**R17** 4.7 kΩ **ENV**; see **`Azimuth.kicad_sch`** |
 | **USB-C (J1) / USB_5V** | **C3** 100 nF (**USB_5V** bypass); **R9**, **R10** 5.1 kΩ (**CC**); **R11**, **R12** 22 Ω (data series) | **6-pin** footprint vs 16-pin symbol may produce **DRC** “no pad for pin” on extra **GND** pins — electrically rely on shell / pour if intentional |
-| **RGB (LED1)** | **R6** 220 Ω (**IO3** blue), **R7** 100 Ω (**IO0** red), **R8** 68 Ω (**IO1** green) | **COM+** on **3V3** — firmware should treat cathode pins as **active low** (sink); values tuned for **TZ-P4-1615RGBTCA1** on **3V3** |
+| **RGB (LED1)** | **R6**→**IO3** (blue), **R7**→**IO1** (red), **R8**→**IO0** (green) | **COM+** on **3V3** — cathodes **active low**. **`include/azimuth_hw.h`** maps logical R/G/B to these GPIOs (matches V0.1 routing + LED pinout); ballast in **`src/io_led.cpp`** |
 | **Charge LED (CHG1)** | **R5** 150 Ω | From **3V3** to **CHG1** anode net |
 | **Battery path** | **PH2.0**, **PWR1**, **F1**, **C1**, **C2**, **R1**, **R2** | Divider tap → **IO4** (ADC); **PS0** on **IO2** via **R14** (see [wiring.md](wiring.md)) |
 | **3.3 V regulation** | **U2**, **Q1**, **D1**, **R3**, **R18**, **R19**, **C4**, **C5**, **C8**, **C9**, **C10**, **C12** | Exact nets: **`Azimuth.kicad_sch`** |

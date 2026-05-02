@@ -13,6 +13,7 @@ namespace {
 
 bool gHasRgb = false;
 RgbPreset gPreset = RgbPreset::Status;
+bool gManualHold = false;
 bool gStatusOn = false;
 uint8_t gR = 0;
 uint8_t gG = 0;
@@ -21,14 +22,17 @@ uint8_t gB = 0;
 uint32_t gRainbowPhase = 0;
 uint32_t gLastRainbowMs = 0;
 
-/** Cumulative weights for inverse-CDF hue mapping (index 0 unused; prefix[i] = sum w[0..i-1]). */
-uint32_t gHueWeightPrefix[257];
+uint8_t scaleCap255(uint16_t v) {
+  return static_cast<uint8_t>(v > 255 ? 255 : v);
+}
 
-/** Common-anode RGB: cathode pins — higher logical brightness => more time LOW (sink). */
-void writeRgbInverted(uint8_t r, uint8_t g, uint8_t b) {
-  analogWrite(azimuth_hw::kPinRgbR, 255 - r);
-  analogWrite(azimuth_hw::kPinRgbG, 255 - g);
-  analogWrite(azimuth_hw::kPinRgbB, 255 - b);
+void writeRgbBallastInverted(uint8_t r, uint8_t g, uint8_t b) {
+  const uint8_t pr = r;
+  const uint8_t pg = scaleCap255((static_cast<uint16_t>(g) * 68U) / 100U);
+  const uint8_t pb = scaleCap255((static_cast<uint16_t>(b) * 220U) / 100U);
+  analogWrite(azimuth_hw::kPinRgbR, 255 - pr);
+  analogWrite(azimuth_hw::kPinRgbG, 255 - pg);
+  analogWrite(azimuth_hw::kPinRgbB, 255 - pb);
 }
 
 void wheel(uint8_t pos, uint8_t& r, uint8_t& g, uint8_t& b) {
@@ -50,54 +54,30 @@ void wheel(uint8_t pos, uint8_t& r, uint8_t& g, uint8_t& b) {
   }
 }
 
-/**
- * Per-hue dwell weights for the rainbow: uniform advance in phase spends equal *time* in each
- * weight bucket. Extra weight on red-primary paths offsets PCB current imbalance (R7 100 Ω red vs
- * R8 68 Ω green, R6 220 Ω blue) so red / orange / yellow are not rushed compared to cyan / green.
- */
-uint32_t hueDwellWeight(uint8_t r, uint8_t g, uint8_t b) {
-  constexpr uint32_t kBase = 1000;
-  uint32_t w = kBase;
-  if (r >= g && r >= b && r > 40) {
-    w += 520;
-  }
-  if (r > 95 && g > 95 && b < 110) {
-    w += 340;
-  }
-  if (r > 85 && b > 85 && g < 110) {
-    w += 280;
-  }
-  return w;
-}
-
-void buildHueTimingTable() {
-  gHueWeightPrefix[0] = 0;
-  for (int h = 0; h < 256; h++) {
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0;
-    wheel(static_cast<uint8_t>(h), r, g, b);
-    gHueWeightPrefix[h + 1] = gHueWeightPrefix[h] + hueDwellWeight(r, g, b);
-  }
-}
-
+/** Phase → hue: 43% warm (0–84), 30% green/cyan (85–169), rest blue/magenta (170–255). */
 uint8_t phaseToWarpedHue(uint32_t phase) {
-  const uint32_t sum = gHueWeightPrefix[256];
-  if (sum == 0) {
-    return static_cast<uint8_t>(phase >> 8);
+  constexpr uint32_t kMod = 65536U;
+  constexpr unsigned kPctWarm = 43U;
+  constexpr unsigned kPctCyan = 30U;
+  constexpr uint32_t kWarmEnd = (kMod * kPctWarm) / 100U;
+  constexpr uint32_t kCyanEnd = kWarmEnd + (kMod * kPctCyan) / 100U;
+
+  const uint32_t p = phase & 0xFFFFU;
+
+  if (p < kWarmEnd) {
+    const uint32_t span = kWarmEnd > 1U ? kWarmEnd - 1U : 1U;
+    return static_cast<uint8_t>((static_cast<uint64_t>(p) * 84U) / span);
   }
-  const uint64_t target = (static_cast<uint64_t>(phase) * static_cast<uint64_t>(sum)) >> 16;
-  uint8_t lo = 0;
-  uint8_t hi = 255;
-  while (lo < hi) {
-    const uint8_t mid = static_cast<uint8_t>((lo + hi + 1) >> 1);
-    if (gHueWeightPrefix[mid] <= target) {
-      lo = mid;
-    } else {
-      hi = static_cast<uint8_t>(mid - 1);
-    }
+  if (p < kCyanEnd) {
+    const uint32_t x = p - kWarmEnd;
+    const uint32_t span = kCyanEnd - kWarmEnd;
+    const uint32_t denom = span > 1U ? span - 1U : 1U;
+    return static_cast<uint8_t>(85U + (static_cast<uint64_t>(x) * 84U) / denom);
   }
-  return lo;
+  const uint32_t x = p - kCyanEnd;
+  const uint32_t span = kMod - kCyanEnd;
+  const uint32_t denom = span > 1U ? span - 1U : 1U;
+  return static_cast<uint8_t>(170U + (static_cast<uint64_t>(x) * 85U) / denom);
 }
 
 void applyRainbow(bool slow) {
@@ -126,11 +106,10 @@ void init() {
   const auto caps = azimuth_board::capabilities();
   gHasRgb = caps.hasRgb;
   gPreset = gHasRgb ? RgbPreset::Rainbow : RgbPreset::Status;
+  gManualHold = false;
   gStatusOn = false;
   gRainbowPhase = 0;
   gLastRainbowMs = 0;
-
-  buildHueTimingTable();
 
   if (gHasRgb) {
     pinMode(azimuth_hw::kPinRgbR, OUTPUT);
@@ -150,7 +129,7 @@ void setRgb(uint8_t r, uint8_t g, uint8_t b) {
   if (!gHasRgb) {
     return;
   }
-  writeRgbInverted(gR, gG, gB);
+  writeRgbBallastInverted(gR, gG, gB);
 }
 
 void setStatus(bool active) {
@@ -162,7 +141,7 @@ void setStatus(bool active) {
   if (rainbowActive()) {
     return;
   }
-  if (gPreset == RgbPreset::Manual) {
+  if (gManualHold) {
     return;
   }
   setRgb(active ? 0 : 8, active ? 24 : 8, active ? 0 : 8);
@@ -184,6 +163,9 @@ void tick() {
 
 void setRgbPreset(RgbPreset preset) {
   gPreset = preset;
+  if (preset != RgbPreset::Manual) {
+    gManualHold = false;
+  }
   if (!gHasRgb) {
     return;
   }
@@ -202,8 +184,14 @@ void setRgbPreset(RgbPreset preset) {
 RgbPreset rgbPreset() { return gPreset; }
 
 void setManualRgb(uint8_t r, uint8_t g, uint8_t b) {
+  gManualHold = true;
   gPreset = RgbPreset::Manual;
   setRgb(r, g, b);
+}
+
+void clearManualRgb() {
+  gManualHold = false;
+  setRgbPreset(RgbPreset::Status);
 }
 
 }  // namespace azimuth_io_led

@@ -32,7 +32,7 @@ Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that netw
 
 ## Integrated PCB: RGB, FUNC, buzzer
 
-On **`azimuth_main_pcb`**, the Azimuth board’s **common-anode** RGB (cathodes on **IO0 / IO1 / IO3**) is driven with **inverted** PWM in firmware so colors match the schematic. While running, firmware shows a **slow rainbow** on the RGB LED as an easy visual that the board is alive (DIY builds without that LED layout keep a simple GPIO3 status line instead).
+On **`azimuth_main_pcb`**, the Azimuth board’s **common-anode** RGB uses **inverted** PWM on **IO0** (green, **R8**), **IO1** (red, **R7**), **IO3** (blue, **R6**), with simple ballast scaling in firmware vs those resistors (DIY builds without that LED layout keep a simple GPIO3 status line instead).
 
 **FUNC** (**IO7**, pull-up, switch to GND) triggers a **short four-note chime** on the buzzer (**IO21** → FET on the PCB). This is for feedback and bring-up; behavior may be extended later (e.g. recenter, menu).
 

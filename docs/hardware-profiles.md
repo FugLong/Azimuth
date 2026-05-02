@@ -31,7 +31,7 @@ Capability defaults in current firmware:
 | FUNC button | On (optional wiring) | On |
 | Battery sense | Stubbed in firmware for now | Stubbed in firmware for now |
 
-On **`_pcb`**, firmware treats the RGB as **common anode** (see [**wiring.md**](wiring.md)) and runs a **rainbow demo** by default so you can confirm all three channels at a glance. **`_diy`** does not use the Azimuth RGB footprint; optional buzzer/button GPIOs match the PCB when wired.
+On **`_pcb`**, firmware treats the RGB as **common anode** (see [**wiring.md**](wiring.md)) and applies simple **per-channel PWM scaling** from ballast **R6–R8** so logical RGB is closer to matched drive. **`_diy`** does not use the Azimuth RGB footprint; optional buzzer/button GPIOs match the PCB when wired.
 
 **Firmware:** **`azimuth_main_diy`** and **`azimuth_main_pcb`** are the same application. Tracking does not require LED, buzzer, or button.
 
@@ -64,8 +64,8 @@ GPIO numbers are for ESP32-C3; **D*** labels refer to XIAO silk only (the module
 | SPI SCK / MISO / MOSI | 8 / 9 / 10 | D8–D10 | |
 | IMU CS / INT / NRST | 5 / 6 / 20 | D3, D4, D7 | |
 | PS0 / WAKE | 2 | D0 | **10 kΩ** to **3V3** on breadboard (same as **R14** on **Azimuth_Design**) |
-| RGB (Azimuth board) | 0, 1, 3 | — | Not present on default breadboard build |
-| Status / future | 3 | D1 | **`kPinStatusLed`**; full RGB on PCB uses 0, 1, 3 — [wiring.md](wiring.md) |
+| RGB (Azimuth board) | 0, 1, 3 | — | Not present on default breadboard build; **R→IO1, G→IO0, B→IO3** — [wiring.md](wiring.md) |
+| Status / future | 3 | D1 | **`kPinStatusLed`**; shares **IO3** with RGB blue on PCB — [wiring.md](wiring.md) |
 | FUNC | 7 | D5 | Optional breadboard |
 | Buzzer | 21 | D6 | PWM on **IO21** drives **Q2** gate on PCB; optional breadboard differs — [wiring.md](wiring.md), [parts-list](parts-list.md#buzzer-buzzer1) |
 | Battery sense | 4 | D2 | Divider tap; when populated — same as **Azimuth_Design** **IO4** |
