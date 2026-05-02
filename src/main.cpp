@@ -176,7 +176,7 @@ void setup() {
 #if !IMU_DEBUG_MODE
   trackNetworkInit();
 #endif
-  azimuth_io_buzzer::chirp(2400, 30);
+  azimuth_io_buzzer::playFuncButtonTune();
 }
 
 void loop() {
