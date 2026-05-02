@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="color-scheme" content="dark light"/>
   <title>Install Azimuth firmware</title>
+  <!-- ESP32-C3 native USB: Web Serial setSignals often fails on Chromium/macOS or CDC drivers; esptool-js still connects if we swallow the error (same link CLI uses). -->
+  <script>
+  (function () {
+    if (typeof SerialPort === "undefined" || !SerialPort.prototype || !SerialPort.prototype.setSignals) return;
+    var orig = SerialPort.prototype.setSignals;
+    SerialPort.prototype.setSignals = function (signals) {
+      try {
+        var ret = orig.apply(this, arguments);
+        if (ret && typeof ret.catch === "function") {
+          return ret.catch(function (err) {
+            console.warn("[Azimuth flasher] Ignoring SerialPort.setSignals failure:", err);
+          });
+        }
+        return ret;
+      } catch (err) {
+        console.warn("[Azimuth flasher] Ignoring SerialPort.setSignals throw:", err);
+        return Promise.resolve();
+      }
+    };
+  })();
+  </script>
   <script type="module" src="https://unpkg.com/esp-web-tools@10.2.1/dist/web/install-button.js?module"></script>
   <style>
     :root {
