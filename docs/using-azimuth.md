@@ -60,27 +60,9 @@ On home Wi‑Fi, firmware may do **one** check per boot against the published in
 
 ## Power, heat, and battery
 
-### Why the board feels warm
+Expect the module to feel **warm when Wi‑Fi is on** — that is normal for a small ESP32‑C3. Tune **Tracking & radio** in the portal: **Power profile**, **Wi‑Fi TX power**, and **IMU report interval** (IMU interval affects tracking smoothness and load, not just “power”).
 
-The **ESP32-C3** runs warm mainly because Wi‑Fi work dominates current draw. A small board without much metal to spread heat can feel hot; that is common for this class of module. Current firmware now applies adaptive Wi‑Fi sleep in steady tracking mode and lets you tune behavior with **Power profile** in the portal:
-
-- **Performance tracking** keeps network servicing most responsive.
-- **Balanced** is the default compromise.
-- **Battery saver** favors lower heat/power (with less aggressive background network activity).
-
-You can further reduce heat by lowering **Wi‑Fi TX power** when your router is close; use **high** only for weak-link scenarios.
-
-**Implementation detail:** how modem sleep, power profiles, and portal polling interact with tracking — [**power-and-thermal.md**](power-and-thermal.md).
-
-### Battery runtime (rough)
-
-Not measured on every PCB revision—use for **planning only** and measure your build if you need a firm number.
-
-The radio dominates current. For **Wi‑Fi + IMU + UDP** (no USB), a **400 mAh** 1S LiPo might land in a **~4–9 hour** band depending on signal and settings, with **~5–7 h** as a mid guess until you bench it. **USB-only Hatire** with Wi‑Fi off lasts **much longer**.
-
-### Azimuth PCB: which battery to plug in
-
-Only applies if you built the **integrated Azimuth board** with the **JST PH** battery connector. **Adafruit-style JST LiPos are not compatible** with that connector’s polarity; follow the **+ / −** silk by **PH2.0** and use a pack wired like the **YDL** reference in [parts-list → Off-board pack](parts-list.md#off-board-pack-azimuth-pcb-wireless). **DIY XIAO** builds use the XIAO’s battery pads or your own wiring—different story.
+**Everything the firmware does to save power and heat** (modem sleep, network loop scheduling, portal polling, defaults): see [**power-and-thermal.md**](power-and-thermal.md). **Rough battery runtime guesses** and **which LiPo packs match the Azimuth PCB JST** are in that doc too, with full sourcing detail in [**parts-list**](parts-list.md#off-board-pack-azimuth-pcb-wireless).
 
 ---
 

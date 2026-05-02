@@ -21,7 +21,7 @@ Also: breadboard or perfboard, jumper wire, **USB data** cable to the PC.
 
 **DIY path only** — there is **no** Azimuth **JST PH** connector on this build.
 
-Soldering a **1S LiPo** to the **battery pads on the back of the XIAO** is the add-on that enables **unplugged / wireless** use (same Wi‑Fi + UDP firmware path; see [using-azimuth.md](using-azimuth.md#power-heat-and-battery) for rough runtime). **Recommended for intermediate makers** — the USB-only build above is the approachable path for beginners.
+Soldering a **1S LiPo** to the **battery pads on the back of the XIAO** is the add-on that enables **unplugged / wireless** use (same Wi‑Fi + UDP firmware path; see [power-and-thermal.md](power-and-thermal.md#battery-runtime-planning) for rough runtime). **Recommended for intermediate makers** — the USB-only build above is the approachable path for beginners.
 
 The XIAO includes **charge management**; after you connect the pack correctly, routine charge/discharge is handled on-board. **Match +/− to Seeed’s pad labels** on the XIAO. You can solder leads directly or attach your own **JST-PH** pigtail—**you** are responsible for polarity on those pads. **Never short the battery leads** together (even briefly).
 
@@ -31,7 +31,7 @@ The **JST PH polarity rules** in [Off-board pack (Azimuth PCB)](#off-board-pack-
 
 ## Azimuth PCB (`Azimuth_Design`)
 
-**Manufacturing:** **V0.1** — design finalized; **boards ordered**; PCBA nearly complete (**~15 days** to assembled units). Status: **[roadmap](roadmap.md)** (snapshot **2026-04-18**).
+**Manufacturing:** **V0.1** — design finalized; **assembled boards received**; **bring-up / testing in progress**. Status: **[roadmap](roadmap.md)**.
 
 Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). **Tracked BOM (KiCad CLI):** [`kicad/Azimuth_Design/fab/Azimuth_bom.csv`](../kicad/Azimuth_Design/fab/Azimuth_bom.csv) — regenerate with **`./scripts/export_azimuth_bom.sh`** after schematic edits (that script also refreshes **[`Azimuth_bom_cost.txt`](../kicad/Azimuth_Design/fab/Azimuth_bom_cost.txt)** — **1× board, parts-only USD** ballpark from symbol **`Unit Price (USD)`** or the LCSC table in **`scripts/update_azimuth_sch_bom_fields.py`**). Board workflow: [kicad.md](kicad.md).
 

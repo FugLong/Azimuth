@@ -1,8 +1,10 @@
-# Power and thermal behavior (firmware)
+# Power, heat, and battery (firmware)
 
-This document describes **how current firmware reduces heat and battery use** without changing the head-tracking path. Implementation lives mainly in [`src/track_network.cpp`](../src/track_network.cpp), [`src/power_policy.cpp`](../src/power_policy.cpp), and the settings UI in [`src/portal_html.cpp`](../src/portal_html.cpp).
+This is the **single place** for how firmware manages **power and thermal** behavior, plus **planning notes** for battery runtime and **PCB battery wiring**. Day-to-day portal steps stay in [**Using Azimuth**](using-azimuth.md) (see **Portal sections** and **Power, heat, and battery** there).
 
-**User-facing controls:** portal **Tracking & radio** — **Power profile**, **Wi‑Fi TX power**, and **IMU report interval** (see [**Using Azimuth → Power, heat, and battery**](using-azimuth.md#power-heat-and-battery)).
+Implementation code: mainly [`src/track_network.cpp`](../src/track_network.cpp), [`src/power_policy.cpp`](../src/power_policy.cpp), and [`src/portal_html.cpp`](../src/portal_html.cpp).
+
+**Portal knobs:** **Tracking & radio** — **Power profile**, **Wi‑Fi TX power**, **IMU report interval**.
 
 ---
 
@@ -99,7 +101,26 @@ That rate is **much slower** than once per second; it is **not** the tracking ra
 
 ---
 
+## Battery runtime planning
+
+Not measured on every PCB revision — **bench your build** if you need a firm number.
+
+The **radio dominates** current. For **Wi‑Fi + IMU + UDP** (no USB), a **400 mAh** 1S LiPo might land in a **~4–9 hour** band depending on signal and settings, with **~5–7 h** as a rough mid guess. **USB-only Hatire** with Wi‑Fi off lasts **much longer**.
+
+---
+
+## Battery packs and the Azimuth PCB (hardware)
+
+Only applies if you use the **integrated Azimuth board** with the **JST PH2.0** battery connector.
+
+**Adafruit-style JST LiPos are not compatible** with this PCB’s connector polarity. Follow **+ / −** silk at **PH2.0** and use a pack wired like the **YDL** reference in [**parts-list → Off-board pack**](parts-list.md#off-board-pack-azimuth-pcb-wireless).
+
+**DIY XIAO** builds: battery on the **XIAO pads** or your own wiring — see [parts-list](parts-list.md) and [wiring.md](wiring.md); polarity rules differ from the Azimuth PCB JST.
+
+---
+
 ## Related docs
 
-- [**Using Azimuth → Power, heat, and battery**](using-azimuth.md#power-heat-and-battery) — practical guidance and portal knobs.
-- [**Development**](development.md) — build / flash; not specific to power.
+- [**Using Azimuth**](using-azimuth.md) — portal URLs, OpenTrack, short pointer here for power.
+- [**Parts list — Off-board pack**](parts-list.md#off-board-pack-azimuth-pcb-wireless) — sourcing and connector detail.
+- [**Development**](development.md) — build / flash.

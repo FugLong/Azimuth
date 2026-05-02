@@ -16,7 +16,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | Path | What it is | Status |
 |------|------------|--------|
 | **DIY (XIAO + BNO08x)** | **Seeed XIAO ESP32-C3** + **BNO08x** breakout on **SPI** — breadboard or hand-wired. Default **`azimuth_main_diy`**; selected by default in the [**web flasher**](https://fuglong.github.io/Azimuth/). | **Ready** — tracking, Wi‑Fi, portal, USB Hatire, OpenTrack UDP. |
-| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**; available in the web flasher hardware selector. | **V0.1 finalized** — KiCad **ERC/DRC** clean; **boards ordered**; PCBA nearly done (**~15 days** to assembled units). Same app as DIY; **hardware bring-up** when boards land — [roadmap](docs/roadmap.md). |
+| **Integrated PCB** | [**`kicad/Azimuth_Design`**](kicad/Azimuth_Design/): **ESP32-C3** module, **BNO086**, RGB, buzzer, button. **`azimuth_main_pcb`**; available in the web flasher hardware selector. | **V0.1** — KiCad **ERC/DRC** clean; **assembled boards in hand**, **bring-up and testing in progress**. Same app as DIY — [roadmap](docs/roadmap.md). |
 
 [**docs/wiring.md**](docs/wiring.md) (pinouts) · [**docs/hardware-profiles.md**](docs/hardware-profiles.md) (PlatformIO / GPIO) · [**docs/parts-list.md**](docs/parts-list.md) (sourcing — DIY store links + PCB BOM)
 
@@ -53,8 +53,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 - **Flashing** — Browser install needs **Chrome** or **Edge** (Web Serial). If the installer offers **erase flash**, use it for a clean device (same effect as a full settings reset).
 - **First Wi‑Fi setup** — Join **Azimuth-Setup**, open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md).
 - **OpenTrack** — Use **either** UDP **or** Hatire as the input, not both at once. Defaults and axis mapping: [**Using Azimuth**](docs/using-azimuth.md#opentrack-on-the-pc).
-- **Board feels warm** — Normal when Wi‑Fi is active on a small module. More context: [**Using Azimuth → Power & heat**](docs/using-azimuth.md#power-heat-and-battery).
-- **Power tuning** — Portal includes power profile + Wi‑Fi TX controls; details: [**Power & thermal (firmware)**](docs/power-and-thermal.md).
+- **Power, heat, tuning** — Normal for Wi‑Fi on a small module; portal **Tracking & radio** settings; full behavior + battery notes: [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md).
 
 ## Documentation
 
@@ -62,7 +61,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 |-----|----------|
 | [**Quick start**](docs/quickstart.md) | Fast path from flash to tracking over Wi‑Fi |
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
-| [**Power & thermal (firmware)**](docs/power-and-thermal.md) | How Wi‑Fi power saving works; what the portal poll does and does not do |
+| [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md) | Wi‑Fi power saving, portal polling, defaults; battery runtime / PCB pack polarity |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |
@@ -79,15 +78,15 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | Area | Progress | Notes |
 |------|:--------:|--------|
 | Hardware / BOM | 100% | [Parts list](docs/parts-list.md) |
-| Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) — **V0.1** | **100%** (layout) · **in fab** | RGB LED, passive buzzer (**FET** + flyback), button — see [wiring](docs/wiring.md) / [parts-list](docs/parts-list.md). **V0.1** locked; **ordered**; PCBA ~**15 days**; **bring-up** next — [roadmap](docs/roadmap.md) |
-| Firmware | 60–70% | Tracking + Wi‑Fi + settings portal + USB Hatire + release flow; board I/O, battery, and polish on [roadmap](docs/roadmap.md) |
-| 3D enclosure | 0% | Not started |
+| Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) — **V0.1** | **100%** (layout) · **units received** | Assembled boards **under test**. RGB / buzzer / FUNC in firmware for bring-up — see [wiring](docs/wiring.md) / [parts-list](docs/parts-list.md) — [roadmap](docs/roadmap.md) |
+| Firmware | 60–75% | Tracking + Wi‑Fi + portal + Hatire + release + modular I/O scaffold; **battery ADC** and polish still open — [roadmap](docs/roadmap.md) |
+| 3D enclosure | Starting | **Design in progress** (not released yet) |
 
 ```
 Hardware/BOM   [████████████████████] 100%
-PCB (V0.1)     [████████████████████] 100% design · ordered (~15d PCBA)
-Firmware       [█████████████░░░░░░░] 60–70%
-Enclosure      [░░░░░░░░░░░░░░░░░░░░] 0%
+PCB (V0.1)     [████████████████████] 100% design · boards received · testing
+Firmware       [███████████████░░░░░] 60–75%
+Enclosure      [█░░░░░░░░░░░░░░░░░░░] in progress (design)
 ```
 
 **Detailed roadmap:** [docs/roadmap.md](docs/roadmap.md)
