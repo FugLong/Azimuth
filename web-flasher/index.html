@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="color-scheme" content="dark light"/>
   <title>Install Azimuth firmware</title>
-  <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.2.1/dist/web/install-button.js?module"></script>
   <style>
     :root {
       --bg: #0c1118;
@@ -91,6 +91,18 @@
       color: var(--tx);
       line-height: 1.5;
     }
+    .serial-tips {
+      background: var(--accent-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      margin: 0 0 1.15rem;
+      font-size: 0.88rem;
+      color: var(--tx-soft);
+      line-height: 1.55;
+    }
+    .serial-tips strong { color: var(--tx); }
+    .serial-tips code { font-size: 0.92em; }
     .steps {
       list-style: none;
       padding: 0;
@@ -236,6 +248,11 @@
     <div id="browserProblem" class="browser-problem" hidden role="alert">
       Use <strong>Chrome</strong> or <strong>Edge</strong> on a <strong>computer</strong> (not a phone). This browser can’t use USB serial, so flashing from here won’t work.
     </div>
+    <div id="serialTips" class="serial-tips" hidden>
+      <strong>Web Serial tips</strong> (ESP32‑C3 USB): Use <strong>Chrome</strong> or <strong>Edge</strong> — avoid <strong>Brave</strong> for flashing if you hit errors. Use this page over <strong>HTTPS</strong> from GitHub Pages (not a local file copy). If the dialog hangs on “Connecting…” or you see <code>setSignals</code>, close every other tab using the port, update the browser, or on macOS try launching Chrome with<br/>
+      <code style="display:block;margin-top:0.45rem;word-break:break-all;">open -b com.google.Chrome --args --disable-features=SerialSplitDtrAndRts</code>
+      If install stays on “Preparing…”, open DevTools → Network and confirm <code>firmware/…/*.bin</code> return 200. On Windows, add the same <code>--disable-features=SerialSplitDtrAndRts</code> flag to a Chrome shortcut’s target.
+    </div>
     <ol class="steps" id="installSteps">
       <li>Use a USB cable that carries data (not charge-only).</li>
       <li id="hardwareStep">Plug in a <strong>Seeed XIAO ESP32-C3</strong>.</li>
@@ -280,8 +297,8 @@
     },
     pcb: {
       manifest: "manifest-pcb.json",
-      hardwareStep: "Plug in your <strong>Azimuth custom PCB</strong>.",
-      bootHelp: "For ESP32-C3 module boards without BOOT button: hold <strong>GPIO9 low</strong>, ensure <strong>GPIO8 high</strong>, reset/power-cycle the board, then retry flashing."
+      hardwareStep: "Select <strong>Custom PCB</strong> above, plug in your Azimuth board, then install (same ESP32‑C3 USB device as DIY).",
+      bootHelp: "Many boards work as-is over USB. If the installer can’t connect: hold <strong>GPIO9</strong> low, pulse reset/power, release <strong>GPIO9</strong>, then click Install again (see docs for strap details)."
     }
   };
 
@@ -322,6 +339,8 @@
 </script>
 <script>
 (function () {
+  var tips = document.getElementById("serialTips");
+  if (tips) tips.hidden = !("serial" in navigator);
   if ("serial" in navigator) return;
   var bp = document.getElementById("browserProblem");
   if (bp) bp.hidden = false;
