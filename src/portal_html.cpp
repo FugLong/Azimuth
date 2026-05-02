@@ -63,6 +63,29 @@ select{
   -webkit-appearance:none;appearance:none
 }
 select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-dim)}
+input[type=range]{
+  width:100%;max-width:100%;height:2rem;margin:.35rem 0 0;-webkit-appearance:none;appearance:none;
+  background:transparent;accent-color:var(--acc)
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:6px;border-radius:999px;background:var(--bg2);border:1px solid var(--bd)
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:1.15rem;height:1.15rem;margin-top:-.4rem;border-radius:50%;
+  background:linear-gradient(165deg,#4eb0f2,var(--acc));border:none;box-shadow:0 1px 6px rgba(0,0,0,.35);cursor:pointer
+}
+.sound-ctl{margin:0;padding:0}
+.sound-ctl-head{
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:.35rem .5rem;margin:0 0 .45rem;line-height:1.3
+}
+.sound-ctl-label{margin:0;font-size:.75rem;font-weight:500;color:var(--muted)}
+.sound-ctl-pct{
+  margin:0;font-size:.8125rem;font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.sound-ctl input[type=range]{margin:.1rem 0 0;width:100%}
+.sound-ctl-hint{margin:.5rem 0 0;font-size:.72rem;line-height:1.45}
+#buzzerVolumeRow{margin-top:1.05rem;padding-top:1rem;border-top:1px solid rgba(61,158,229,.18)}
+#buzzerVolumeRow.only-buzzer{border-top:none;padding-top:0;margin-top:.35rem}
 .hint{font-size:.75rem;color:var(--muted);margin:-.25rem 0 .85rem;line-height:1.45}
 code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var(--acc)}
 .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
@@ -247,6 +270,30 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
 </div>
 
+<div class="card" id="cardSoundLight" style="display:none">
+<div class="hd">Sound & light</div>
+<p class="hint" id="soundLightHint" style="display:none">Stored in flash — use <strong>Save</strong> with the rest of the page.</p>
+<div id="rgbBrightnessRow" style="display:none">
+<div class="sound-ctl">
+<div class="sound-ctl-head">
+<label class="sound-ctl-label" for="rgbBrightness" id="rgbBrightnessLabel">RGB LED brightness</label>
+<span class="sound-ctl-pct" id="rgbBrightnessVal" aria-live="polite">25%</span>
+</div>
+<input type="range" id="rgbBrightness" name="rgb_brightness" min="0" max="100" step="1" value="25" aria-valuemin="0" aria-valuemax="100" aria-labelledby="rgbBrightnessLabel"/>
+</div>
+</div>
+<div id="buzzerVolumeRow" style="display:none">
+<div class="sound-ctl">
+<div class="sound-ctl-head">
+<label class="sound-ctl-label" for="buzzerVolume" id="buzzerVolumeLabel">Buzzer volume</label>
+<span class="sound-ctl-pct" id="buzzerVolumeVal" aria-live="polite">25%</span>
+</div>
+<input type="range" id="buzzerVolume" name="buzzer_volume" min="0" max="100" step="1" value="25" aria-valuemin="0" aria-valuemax="100" aria-labelledby="buzzerVolumeLabel"/>
+<p class="hint sound-ctl-hint">0% is mute. The scale is curved so you get useful steps in the middle, not only near 0. Save to persist.</p>
+</div>
+</div>
+</div>
+
 <div class="card">
 <div class="hd">Device</div>
 <p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
@@ -274,6 +321,26 @@ const $=id=>document.getElementById(id);
 function setMsg(t,cls){const m=$('msg');m.textContent=t||'';m.className=cls||''}
 function setToggle(id,on){$(id).classList.toggle('on',on)}
 const uiTouched={udp:false,mdns:false,hatire:false};
+function updateSoundLightCard(j){
+  const card=$('cardSoundLight'),hint=$('soundLightHint');
+  const rr=$('rgbBrightnessRow'),br=$('buzzerVolumeRow');
+  if(!card)return;
+  const hasRgb=!!j.has_rgb,hasBz=!!j.has_buzzer;
+  const show=hasRgb||hasBz;
+  card.style.display=show?'block':'none';
+  if(hint)hint.style.display=show?'block':'none';
+  if(rr)rr.style.display=hasRgb?'block':'none';
+  if(br){
+    br.style.display=hasBz?'block':'none';
+    br.classList.toggle('only-buzzer',hasBz&&!hasRgb);
+  }
+}
+function syncRangeLabels(){
+  const rb=$('rgbBrightness'),rv=$('rgbBrightnessVal');
+  const bb=$('buzzerVolume'),bv=$('buzzerVolumeVal');
+  if(rb&&rv)rv.textContent=rb.value+'%';
+  if(bb&&bv)bv.textContent=bb.value+'%';
+}
 function applyShell(j){
   const ap=!!j.setup_ap;
   $('setupBanner').style.display=ap?'block':'none';
@@ -306,6 +373,7 @@ function applyShell(j){
   if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
   if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
   if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
+  updateSoundLightCard(j);
   let showClientIp=false;
   const box=$('clientIpBox'),val=$('clientIpVal');
   if(box&&val){
@@ -360,7 +428,7 @@ function collectOtAxes(){
 }
 function nudgeInputPaint(){
   requestAnimationFrame(()=>{
-    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','powerProfile','imuPeriod','wifiTx'].forEach(id=>{
+    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','powerProfile','imuPeriod','wifiTx','rgbBrightness','buzzerVolume'].forEach(id=>{
       const el=$(id);
       if(!el)return;
       el.style.transform='translateZ(1px)';
@@ -380,6 +448,18 @@ async function hydrateForm(){
   $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
   $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
   $('powerProfile').value=([0,1,2].includes(j.power_profile))?String(j.power_profile):'1';
+  const rb=$('rgbBrightness'),bv=$('buzzerVolume');
+  if(rb){
+    const x=j.rgb_brightness;
+    rb.value=(x!=null&&x>=0&&x<=100)?String(x):'25';
+    rb.setAttribute('aria-valuenow',rb.value);
+  }
+  if(bv){
+    const x=j.buzzer_volume;
+    bv.value=(x!=null&&x>=0&&x<=100)?String(x):'25';
+    bv.setAttribute('aria-valuenow',bv.value);
+  }
+  syncRangeLabels();
   applyOtAxesFromStatus(j.ot_axes);
   uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
   applyShell(j);
@@ -392,6 +472,9 @@ $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpTogg
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
 $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
 [0,1,2].forEach(i=>{const id='otInv'+i;$(id).onclick=()=>setToggle(id,!$(id).classList.contains('on'));});
+const _rb=$('rgbBrightness'),_bv=$('buzzerVolume');
+if(_rb)_rb.addEventListener('input',syncRangeLabels);
+if(_bv)_bv.addEventListener('input',syncRangeLabels);
 $('btnUseClientIp').onclick=()=>{
   const v=$('clientIpVal')&&$('clientIpVal').textContent;
   if(v&&v!=='—'){fillInput($('otHost'),v)}
@@ -429,8 +512,12 @@ $('btnSave').onclick=async()=>{
     hostname:$('hostname').value.trim().toLowerCase(),
     power_profile:parseInt($('powerProfile').value,10),
     imu_period_ms:parseInt($('imuPeriod').value,10)||10,
-    wifi_tx:parseInt($('wifiTx').value,10)
+    wifi_tx:parseInt($('wifiTx').value,10),
+    rgb_brightness:parseInt($('rgbBrightness').value,10),
+    buzzer_volume:parseInt($('buzzerVolume').value,10)
   };
+  if(body.rgb_brightness<0||body.rgb_brightness>100||Number.isNaN(body.rgb_brightness))body.rgb_brightness=25;
+  if(body.buzzer_volume<0||body.buzzer_volume>100||Number.isNaN(body.buzzer_volume))body.buzzer_volume=25;
   if(![0,1,2].includes(body.power_profile))body.power_profile=1;
   if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
   const pw=$('pass').value;

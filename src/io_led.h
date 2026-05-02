@@ -22,4 +22,7 @@ RgbPreset rgbPreset();
 void setManualRgb(uint8_t r, uint8_t g, uint8_t b);
 void clearManualRgb();
 
+/** Scale RGB output 0–100% (default 25). No-op on boards without RGB. */
+void setBrightnessPercent(uint8_t percent);
+
 }  // namespace azimuth_io_led

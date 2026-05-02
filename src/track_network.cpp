@@ -32,6 +32,8 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #include "portal_html.h"
 #include "board_config.h"
 #include "battery_monitor.h"
+#include "io_buzzer.h"
+#include "io_led.h"
 #include "power_policy.h"
 #include "secrets.h"
 
@@ -249,6 +251,27 @@ uint16_t mergedOtPort() {
 }
 
 bool mergedUdpOn() { return gPrefs.getBool("udp_on", true); }
+
+uint8_t mergedRgbBrightness() {
+  const uint32_t v = gPrefs.getUInt("rgb_brightness", 25);
+  if (v > 100) {
+    return 100;
+  }
+  return static_cast<uint8_t>(v);
+}
+
+uint8_t mergedBuzzerVolume() {
+  const uint32_t v = gPrefs.getUInt("buzzer_volume", 25);
+  if (v > 100) {
+    return 100;
+  }
+  return static_cast<uint8_t>(v);
+}
+
+void applyIoLevelsFromPrefs() {
+  azimuth_io_led::setBrightnessPercent(mergedRgbBrightness());
+  azimuth_io_buzzer::setVolumePercent(mergedBuzzerVolume());
+}
 
 OtAxisMapConfig mergedOtAxisMap() {
   OtAxisMapConfig c;
@@ -543,6 +566,13 @@ void handleStatus(WebServer& http) {
   doc["wifi_tx"] = mergedWifiTxProfile();
   doc["power_profile"] = azimuth_power::toStoredValue(gPowerProfileRuntime);
   appendOtAxesToJson(doc);
+  doc["rgb_brightness"] = mergedRgbBrightness();
+  doc["buzzer_volume"] = mergedBuzzerVolume();
+  {
+    const auto caps = azimuth_board::capabilities();
+    doc["has_rgb"] = caps.hasRgb;
+    doc["has_buzzer"] = caps.hasBuzzer;
+  }
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -681,6 +711,24 @@ void handleConfigPost(WebServer& http) {
     }
   }
 
+  if (!errMsg && !body["rgb_brightness"].isNull()) {
+    const int b = body["rgb_brightness"].as<int>();
+    if (b < 0 || b > 100) {
+      errMsg = "rgb_brightness must be 0–100";
+    } else {
+      gPrefs.putUInt("rgb_brightness", static_cast<uint32_t>(b));
+    }
+  }
+
+  if (!errMsg && !body["buzzer_volume"].isNull()) {
+    const int b = body["buzzer_volume"].as<int>();
+    if (b < 0 || b > 100) {
+      errMsg = "buzzer_volume must be 0–100";
+    } else {
+      gPrefs.putUInt("buzzer_volume", static_cast<uint32_t>(b));
+    }
+  }
+
   if (!errMsg && !body["mdns_on"].isNull()) {
     if (!body["mdns_on"].is<bool>()) {
       errMsg = "mdns_on must be boolean";
@@ -754,6 +802,7 @@ void handleConfigPost(WebServer& http) {
   gUdpSendEnabled = mergedUdpOn();
   applyOtTarget();
   refreshRuntimeFromPrefs();
+  applyIoLevelsFromPrefs();
   applyStaWifiTxPower();
 
   const bool restarting = wifiCredChanged || needReboot;
@@ -976,6 +1025,7 @@ void loadTrackingPrefs() {
     return;
   }
   refreshRuntimeFromPrefs();
+  applyIoLevelsFromPrefs();
 }
 
 uint16_t imuPeriodMsValue() { return gImuPeriodMsRuntime; }

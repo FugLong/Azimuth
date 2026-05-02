@@ -18,6 +18,7 @@ bool gStatusOn = false;
 uint8_t gR = 0;
 uint8_t gG = 0;
 uint8_t gB = 0;
+uint8_t gBrightnessPct = 25;
 
 uint32_t gRainbowPhase = 0;
 uint32_t gLastRainbowMs = 0;
@@ -27,9 +28,12 @@ uint8_t scaleCap255(uint16_t v) {
 }
 
 void writeRgbBallastInverted(uint8_t r, uint8_t g, uint8_t b) {
-  const uint8_t pr = r;
-  const uint8_t pg = scaleCap255((static_cast<uint16_t>(g) * 68U) / 100U);
-  const uint8_t pb = scaleCap255((static_cast<uint16_t>(b) * 220U) / 100U);
+  const uint8_t pr0 = r;
+  const uint8_t pg0 = scaleCap255((static_cast<uint16_t>(g) * 68U) / 100U);
+  const uint8_t pb0 = scaleCap255((static_cast<uint16_t>(b) * 220U) / 100U);
+  const uint8_t pr = scaleCap255((static_cast<uint16_t>(pr0) * gBrightnessPct) / 100U);
+  const uint8_t pg = scaleCap255((static_cast<uint16_t>(pg0) * gBrightnessPct) / 100U);
+  const uint8_t pb = scaleCap255((static_cast<uint16_t>(pb0) * gBrightnessPct) / 100U);
   analogWrite(azimuth_hw::kPinRgbR, 255 - pr);
   analogWrite(azimuth_hw::kPinRgbG, 255 - pg);
   analogWrite(azimuth_hw::kPinRgbB, 255 - pb);
@@ -192,6 +196,17 @@ void setManualRgb(uint8_t r, uint8_t g, uint8_t b) {
 void clearManualRgb() {
   gManualHold = false;
   setRgbPreset(RgbPreset::Status);
+}
+
+void setBrightnessPercent(uint8_t percent) {
+  if (percent > 100) {
+    percent = 100;
+  }
+  gBrightnessPct = percent;
+  if (!gHasRgb) {
+    return;
+  }
+  writeRgbBallastInverted(gR, gG, gB);
 }
 
 }  // namespace azimuth_io_led

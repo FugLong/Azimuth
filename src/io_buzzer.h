@@ -10,4 +10,7 @@ void chirp(uint16_t frequencyHz, uint16_t durationMs);
 void playFuncButtonTune();
 void tick();
 
+/** 0 = mute; 1–100 is UI level (firmware applies a curve to PWM duty). */
+void setVolumePercent(uint8_t percent);
+
 }  // namespace azimuth_io_buzzer

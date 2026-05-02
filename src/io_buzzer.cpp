@@ -1,21 +1,31 @@
 #include "io_buzzer.h"
 
 #include <Arduino.h>
+#include <math.h>
+#include <esp32-hal-ledc.h>
 
 #include "azimuth_hw.h"
 #include "board_config.h"
 
 namespace azimuth_io_buzzer {
 namespace {
+
 bool gEnabled = false;
 uint32_t gToneUntilMs = 0;
+uint8_t gVolumePct = 25;
+
+/**
+ * LEDC channel for the buzzer only. Must not share an LEDC timer with RGB PWM:
+ * analogWrite on R/G/B takes channels 7,6,5 first; ch 4 shares timer 2 with ch 5 (blue) — using 4
+ * corrupts RGB. Channel 0 uses timer 0, independent of 5–7.
+ */
+constexpr uint8_t kLedcChannel = 0;
 
 struct MelodyNote {
   uint16_t freq_hz;
   uint16_t dur_ms;
 };
 
-// Tiny ascending "ding" — C5 E5 G5 C6
 static const MelodyNote kFuncTune[] = {
     {523, 55},
     {659, 55},
@@ -26,6 +36,48 @@ static const MelodyNote kFuncTune[] = {
 static bool gMelodyActive = false;
 static uint8_t gMelodyIndex = 0;
 static uint32_t gMelodyNoteEndMs = 0;
+
+void stopBuzz() {
+  if (!gEnabled) {
+    return;
+  }
+  ledcWrite(kLedcChannel, 0);
+  ledcDetachPin(azimuth_hw::kPinBuzzer);
+}
+
+/** Map portal 0–100 to PWM duty; gamma > 1 spreads perceived change across the slider (piezo is loud at mid duty). */
+uint8_t dutyPercentFromUiVolume(uint8_t uiPct) {
+  if (uiPct == 0) {
+    return 0;
+  }
+  constexpr float kGamma = 2.35f;
+  const float n = powf(static_cast<float>(uiPct) / 100.0f, kGamma);
+  float eff = n * 100.0f;
+  if (eff < 1.0f) {
+    return 1;
+  }
+  if (eff > 100.0f) {
+    return 100;
+  }
+  return static_cast<uint8_t>(eff + 0.5f);
+}
+
+/** Square-wave frequency + duty for volume. Do not use Arduino tone() here (same channel pool). */
+void applyToneHz(uint16_t freqHz) {
+  if (!gEnabled || freqHz == 0 || gVolumePct == 0) {
+    return;
+  }
+  ledcAttachPin(azimuth_hw::kPinBuzzer, kLedcChannel);
+  ledcWriteTone(kLedcChannel, freqHz);
+  constexpr uint32_t kBaseDuty = 511;
+  const uint8_t dutyPct = dutyPercentFromUiVolume(gVolumePct);
+  uint32_t d = (kBaseDuty * static_cast<uint32_t>(dutyPct)) / 100U;
+  if (d < 1U && dutyPct > 0U) {
+    d = 1U;
+  }
+  ledcWrite(kLedcChannel, d);
+}
+
 }  // namespace
 
 void init() {
@@ -37,25 +89,32 @@ void init() {
   digitalWrite(azimuth_hw::kPinBuzzer, LOW);
 }
 
+void setVolumePercent(uint8_t percent) {
+  if (percent > 100) {
+    percent = 100;
+  }
+  gVolumePct = percent;
+}
+
 void chirp(uint16_t frequencyHz, uint16_t durationMs) {
-  if (!gEnabled) {
+  if (!gEnabled || gVolumePct == 0) {
     return;
   }
   gMelodyActive = false;
-  tone(azimuth_hw::kPinBuzzer, frequencyHz, durationMs);
+  applyToneHz(frequencyHz);
   gToneUntilMs = millis() + durationMs;
 }
 
 void playFuncButtonTune() {
-  if (!gEnabled) {
+  if (!gEnabled || gVolumePct == 0) {
     return;
   }
-  noTone(azimuth_hw::kPinBuzzer);
+  stopBuzz();
   gMelodyActive = true;
   gMelodyIndex = 0;
   gToneUntilMs = 0;
   const MelodyNote& n = kFuncTune[0];
-  tone(azimuth_hw::kPinBuzzer, n.freq_hz);
+  applyToneHz(n.freq_hz);
   gMelodyNoteEndMs = millis() + n.dur_ms;
 }
 
@@ -69,14 +128,14 @@ void tick() {
     if (now < gMelodyNoteEndMs) {
       return;
     }
-    noTone(azimuth_hw::kPinBuzzer);
+    stopBuzz();
     gMelodyIndex++;
     if (gMelodyIndex >= sizeof(kFuncTune) / sizeof(kFuncTune[0])) {
       gMelodyActive = false;
       return;
     }
     const MelodyNote& n = kFuncTune[gMelodyIndex];
-    tone(azimuth_hw::kPinBuzzer, n.freq_hz);
+    applyToneHz(n.freq_hz);
     gMelodyNoteEndMs = now + n.dur_ms;
     return;
   }
@@ -85,7 +144,7 @@ void tick() {
     return;
   }
   if (millis() >= gToneUntilMs) {
-    noTone(azimuth_hw::kPinBuzzer);
+    stopBuzz();
     gToneUntilMs = 0;
   }
 }
