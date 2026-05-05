@@ -2,10 +2,11 @@
 
 namespace azimuth_io_button {
 
-using ButtonPressCallback = void (*)();
+using TapCallback = void (*)();
 
 void init();
-void setPressCallback(ButtonPressCallback cb);
+/** Single tap on release; double tap = second release within ~400 ms of the first. Either cb may be null. */
+void setTapCallbacks(TapCallback singleTap, TapCallback doubleTap);
 bool isPressed();
 void tick();
 

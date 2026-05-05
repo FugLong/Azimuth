@@ -14,8 +14,19 @@ void trackNetworkInit() {}
 void trackNetworkLoop() {}
 void trackNetworkSendOpentrackUdp(float, float, float) {}
 
+azimuth_power::PowerProfile trackNetworkPowerProfile() {
+  return azimuth_power::PowerProfile::Balanced;
+}
+
+void trackNetworkApplyThermalEmergency() {}
+
+bool trackNetworkThermalHoldActive() {
+  return false;
+}
+
 #else
 
+#include <Arduino.h>
 #include <ArduinoJson.h>
 #include <DNSServer.h>
 #include <ESPmDNS.h>
@@ -25,6 +36,7 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 
@@ -36,6 +48,7 @@ void trackNetworkSendOpentrackUdp(float, float, float) {}
 #include "io_led.h"
 #include "power_policy.h"
 #include "secrets.h"
+#include "thermal_monitor.h"
 
 #ifndef OPENTRACK_UDP_PORT
 #define OPENTRACK_UDP_PORT 4242
@@ -94,6 +107,8 @@ uint32_t gLastPortalActivityMs = 0;
 uint32_t gLastNetworkServiceMs = 0;
 uint32_t gLastBackgroundTickMs = 0;
 bool gWifiSleepEnabled = false;
+/** SoC thermal protection: Wi‑Fi stack disabled until reboot after cooling. */
+bool gThermalHoldActive = false;
 
 bool ensurePrefsOpen() {
   if (gPrefsOpened) {
@@ -573,6 +588,16 @@ void handleStatus(WebServer& http) {
     doc["has_rgb"] = caps.hasRgb;
     doc["has_buzzer"] = caps.hasBuzzer;
   }
+  {
+    const float tc = azimuth_thermal::lastChipTempC();
+    if (!std::isnan(tc)) {
+      doc["chip_temp_c"] = tc;
+    } else {
+      doc["chip_temp_c"] = nullptr;
+    }
+  }
+  doc["thermal_state"] = azimuth_thermal::stateJsonString();
+  doc["thermal_hold"] = gThermalHoldActive;
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -884,6 +909,30 @@ void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
   }
 }
 
+void applyThermalEmergency() {
+  if (gThermalHoldActive) {
+    return;
+  }
+  gThermalHoldActive = true;
+  gUdpSocketOk = false;
+  gFwUpdateCheckDone = true;
+  MDNS.end();
+  if (gStaWebActive) {
+    gWebSta.stop();
+    gStaWebActive = false;
+  }
+  if (gApPortalActive) {
+    gDnsCaptive.stop();
+    gWebAp.stop();
+    gApPortalActive = false;
+  }
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  gSetupApMode = false;
+  gWifiSleepEnabled = false;
+  azimuth_thermal::notifyThermalHoldEntered();
+}
+
 /** Open **Azimuth-Setup**, DNS captive hijack, HTTP :80 (OS sign-in sheet), same UI as STA :8080. */
 void startProvisioningPortal() {
   gSetupApMode = true;
@@ -963,6 +1012,9 @@ void networkInit() {
 }
 
 void networkLoop() {
+  if (gThermalHoldActive) {
+    return;
+  }
   const uint32_t now = millis();
   const uint16_t serviceInterval = azimuth_power::networkServiceIntervalMs(gPowerProfileRuntime);
   if (now - gLastNetworkServiceMs >= serviceInterval) {
@@ -1062,6 +1114,18 @@ void trackNetworkLoop() {
 
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   azimuth_net::sendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
+}
+
+azimuth_power::PowerProfile trackNetworkPowerProfile() {
+  return azimuth_net::gPowerProfileRuntime;
+}
+
+void trackNetworkApplyThermalEmergency() {
+  azimuth_net::applyThermalEmergency();
+}
+
+bool trackNetworkThermalHoldActive() {
+  return azimuth_net::gThermalHoldActive;
 }
 
 #endif  // !IMU_DEBUG_MODE

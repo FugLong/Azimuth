@@ -20,6 +20,7 @@
 #include "io_button.h"
 #include "io_buzzer.h"
 #include "io_led.h"
+#include "thermal_monitor.h"
 #include "SparkFun_BNO08x_Arduino_Library.h"
 
 #ifndef IMU_DEBUG_MODE
@@ -60,8 +61,12 @@ BNO08x imu;
 uint32_t gLastPrintMs = 0;
 #endif
 
-void onFuncButtonPress() {
-  azimuth_io_buzzer::playFuncButtonTune();
+void onFuncButtonSingleTap() {
+  azimuth_io_buzzer::playThermalWarnTune();
+}
+
+void onFuncButtonDoubleTap() {
+  azimuth_io_buzzer::playThermalCriticalTune();
 }
 
 #if !IMU_DEBUG_MODE
@@ -133,8 +138,9 @@ void setup() {
   azimuth_io_led::init();
   azimuth_io_buzzer::init();
   azimuth_io_button::init();
-  azimuth_io_button::setPressCallback(onFuncButtonPress);
+  azimuth_io_button::setTapCallbacks(onFuncButtonSingleTap, onFuncButtonDoubleTap);
   azimuth_battery::init();
+  azimuth_thermal::init();
   azimuth_io_led::setStatus(true);
 
 #if IMU_DEBUG_MODE
@@ -180,6 +186,7 @@ void setup() {
 }
 
 void loop() {
+  azimuth_thermal::tick(millis());
   azimuth_io_button::tick();
   azimuth_io_buzzer::tick();
   azimuth_io_led::tick();

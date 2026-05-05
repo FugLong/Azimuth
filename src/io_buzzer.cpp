@@ -33,6 +33,26 @@ static const MelodyNote kFuncTune[] = {
     {1047, 90},
 };
 
+/** Rising minor pattern — “heads up” without panic. */
+static const MelodyNote kThermalWarnTune[] = {
+    {587, 70},
+    {622, 70},
+    {659, 90},
+    {622, 55},
+};
+
+/** Fast alternating fifths — unmistakable alarm. */
+static const MelodyNote kThermalCriticalTune[] = {
+    {784, 85},
+    {523, 85},
+    {784, 85},
+    {523, 85},
+    {392, 140},
+};
+
+static const MelodyNote* gMelodyNotes = nullptr;
+static uint8_t gMelodyNoteCount = 0;
+
 static bool gMelodyActive = false;
 static uint8_t gMelodyIndex = 0;
 static uint32_t gMelodyNoteEndMs = 0;
@@ -78,6 +98,20 @@ void applyToneHz(uint16_t freqHz) {
   ledcWrite(kLedcChannel, d);
 }
 
+void startMelody(const MelodyNote* notes, uint8_t count) {
+  if (!gEnabled || gVolumePct == 0 || notes == nullptr || count == 0) {
+    return;
+  }
+  stopBuzz();
+  gMelodyNotes = notes;
+  gMelodyNoteCount = count;
+  gMelodyActive = true;
+  gMelodyIndex = 0;
+  gToneUntilMs = 0;
+  applyToneHz(notes[0].freq_hz);
+  gMelodyNoteEndMs = millis() + notes[0].dur_ms;
+}
+
 }  // namespace
 
 void init() {
@@ -101,21 +135,23 @@ void chirp(uint16_t frequencyHz, uint16_t durationMs) {
     return;
   }
   gMelodyActive = false;
+  gMelodyNotes = nullptr;
+  gMelodyNoteCount = 0;
   applyToneHz(frequencyHz);
   gToneUntilMs = millis() + durationMs;
 }
 
 void playFuncButtonTune() {
-  if (!gEnabled || gVolumePct == 0) {
-    return;
-  }
-  stopBuzz();
-  gMelodyActive = true;
-  gMelodyIndex = 0;
-  gToneUntilMs = 0;
-  const MelodyNote& n = kFuncTune[0];
-  applyToneHz(n.freq_hz);
-  gMelodyNoteEndMs = millis() + n.dur_ms;
+  startMelody(kFuncTune, sizeof(kFuncTune) / sizeof(kFuncTune[0]));
+}
+
+void playThermalWarnTune() {
+  startMelody(kThermalWarnTune, sizeof(kThermalWarnTune) / sizeof(kThermalWarnTune[0]));
+}
+
+void playThermalCriticalTune() {
+  startMelody(kThermalCriticalTune,
+              sizeof(kThermalCriticalTune) / sizeof(kThermalCriticalTune[0]));
 }
 
 void tick() {
@@ -123,18 +159,20 @@ void tick() {
     return;
   }
 
-  if (gMelodyActive) {
+  if (gMelodyActive && gMelodyNotes != nullptr && gMelodyNoteCount > 0) {
     const uint32_t now = millis();
     if (now < gMelodyNoteEndMs) {
       return;
     }
     stopBuzz();
     gMelodyIndex++;
-    if (gMelodyIndex >= sizeof(kFuncTune) / sizeof(kFuncTune[0])) {
+    if (gMelodyIndex >= gMelodyNoteCount) {
       gMelodyActive = false;
+      gMelodyNotes = nullptr;
+      gMelodyNoteCount = 0;
       return;
     }
-    const MelodyNote& n = kFuncTune[gMelodyIndex];
+    const MelodyNote& n = gMelodyNotes[gMelodyIndex];
     applyToneHz(n.freq_hz);
     gMelodyNoteEndMs = now + n.dur_ms;
     return;

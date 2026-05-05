@@ -25,6 +25,18 @@ uint16_t networkServiceIntervalMs(PowerProfile profile) {
   }
 }
 
+uint32_t thermalSamplePeriodMs(PowerProfile profile) {
+  switch (profile) {
+    case PowerProfile::PerformanceTracking:
+      return 15000;
+    case PowerProfile::BatterySaver:
+      return 45000;
+    case PowerProfile::Balanced:
+    default:
+      return 15000;
+  }
+}
+
 uint32_t wifiSleepIdleDelayMs(PowerProfile profile) {
   switch (profile) {
     case PowerProfile::PerformanceTracking:
