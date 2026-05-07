@@ -69,7 +69,7 @@ pio run -e azimuth_main_pcb
 
 | What | Where |
 |------|--------|
-| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** (web-flasher artifacts under **`ci-artifacts/firmware/`**) and compiles **`azimuth_main_pcb`** so the PCB environment cannot rot. **`secrets.h`** is copied from the example. |
+| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** (web-flasher artifacts), compiles **`azimuth_debug_diy`** + **`azimuth_main_pcb`**, and runs host-side C++ tests via `scripts/run_host_tests.sh` (config validation + semver parsing). **`secrets.h`** is copied from the example for firmware jobs. |
 | **GitHub Pages USB flasher** | **`.github/workflows/github-pages-flasher.yml`** builds **`azimuth_main_diy`** + **`azimuth_main_pcb`**, runs **`prepare_web_flasher_firmware.sh`** for both targets, syncs **`manifest.json`** + **`manifest-pcb.json`**, deploys **`web-flasher/`** with [esp-web-tools](https://github.com/esphome/esp-web-tools). Repo: **Settings → Pages → Source: GitHub Actions**; environment **`azimuth-flasher`**. |
 
 Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.github.io/Azimuth/manifest.json`**, flasher **`https://fuglong.github.io/Azimuth/`**.

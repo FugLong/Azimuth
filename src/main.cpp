@@ -125,13 +125,13 @@ void hatireInitPacket() {
   gHat.End = static_cast<int16_t>(0x5555);
 }
 
-void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
+bool sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
   // ESP32 USB CDC: writing with no host (or full TX) can block forever — skip/drop instead.
   if (!Serial) {
-    return;
+    return false;
   }
   if (Serial.availableForWrite() < static_cast<int>(sizeof(gHat))) {
-    return;
+    return false;
   }
 
   opentrackMapEulerToRot(yawDeg, pitchDeg, rollDeg, trackNetworkOtAxisMap(), gHat.gyro);
@@ -142,6 +142,7 @@ void sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
   if (gHat.Cpt > 999) {
     gHat.Cpt = 0;
   }
+  return true;
 }
 
 #endif  // !IMU_DEBUG_MODE
@@ -348,10 +349,13 @@ void loop() {
 #else
   // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
   // after a rotation-vector report (network work is internally time-sliced).
+  bool hatireSentThisFrame = false;
   if (trackNetworkHatireUsbEnabled() && !trackNetworkStasisActive()) {
-    sendHatirePacket(yawDeg, pitchDeg, rollDeg);
+    hatireSentThisFrame = sendHatirePacket(yawDeg, pitchDeg, rollDeg);
   }
-  trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
+  if (!hatireSentThisFrame) {
+    trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
+  }
   trackNetworkLoop();
   azimuth_io_led_policy::tick(nowMs, true);
 #endif

@@ -42,3 +42,21 @@ build:azimuth_main_pcb:
     - pio run -e azimuth_main_pcb
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+
+build:azimuth_debug_diy:
+  extends: .platformio_base
+  script:
+    - pio run -e azimuth_debug_diy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+test:config_validation:
+  stage: build
+  image: python:3.12-slim
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq g++ && rm -rf /var/lib/apt/lists/*
+  script:
+    - chmod +x scripts/run_host_tests.sh
+    - ./scripts/run_host_tests.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"

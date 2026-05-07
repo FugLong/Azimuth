@@ -147,6 +147,23 @@ code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var
 .scan-list div:active{background:var(--acc-dim)}
 .scan-list div:last-child{border-bottom:none}
 .scan-list .rssi{color:var(--muted);font-size:.8125rem;white-space:nowrap}
+.btn.is-loading{
+  opacity:.85;
+  pointer-events:none;
+}
+.btn.is-loading::after{
+  content:'';
+  display:inline-block;
+  width:.9rem;
+  height:.9rem;
+  margin-left:.5rem;
+  border:2px solid rgba(238,244,250,.35);
+  border-top-color:var(--tx);
+  border-radius:50%;
+  vertical-align:-0.12rem;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem 0 0;line-height:1.55;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-word}
 .muted-hint{font-weight:400;color:var(--muted)}
 .callout{
@@ -775,6 +792,9 @@ $('btnUseClientIp').onclick=()=>{
   if(v&&v!=='—'){fillInput($('otHost'),v)}
 };
 $('btnScan').onclick=async()=>{
+  const btn=$('btnScan');
+  btn.classList.add('is-loading');
+  btn.disabled=true;
   setMsg('Scanning… (tracking may hitch briefly)','');
   $('scanList').style.display='none';
   try{
@@ -791,6 +811,10 @@ $('btnScan').onclick=async()=>{
     box.style.display='block';
     setMsg('','');
   }catch(e){setMsg('Scan failed','err')}
+  finally{
+    btn.classList.remove('is-loading');
+    btn.disabled=false;
+  }
 };
 $('btnSave').onclick=async()=>{
   setMsg('Saving…','');
