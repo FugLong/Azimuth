@@ -50,6 +50,19 @@ static const MelodyNote kThermalCriticalTune[] = {
     {392, 140},
 };
 
+static const MelodyNote kBatteryLowTune[] = {
+    {698, 90},
+    {659, 90},
+    {587, 120},
+};
+
+static const MelodyNote kBatteryCriticalTune[] = {
+    {988, 100},
+    {740, 100},
+    {988, 100},
+    {622, 150},
+};
+
 static const MelodyNote* gMelodyNotes = nullptr;
 static uint8_t gMelodyNoteCount = 0;
 
@@ -130,6 +143,13 @@ void setVolumePercent(uint8_t percent) {
   gVolumePct = percent;
 }
 
+bool isActive() {
+  if (!gEnabled) {
+    return false;
+  }
+  return gMelodyActive || gToneUntilMs != 0;
+}
+
 void chirp(uint16_t frequencyHz, uint16_t durationMs) {
   if (!gEnabled || gVolumePct == 0) {
     return;
@@ -152,6 +172,19 @@ void playThermalWarnTune() {
 void playThermalCriticalTune() {
   startMelody(kThermalCriticalTune,
               sizeof(kThermalCriticalTune) / sizeof(kThermalCriticalTune[0]));
+}
+
+void playBatteryLowTune() {
+  startMelody(kBatteryLowTune, sizeof(kBatteryLowTune) / sizeof(kBatteryLowTune[0]));
+}
+
+void playBatteryCriticalTune() {
+  startMelody(kBatteryCriticalTune,
+              sizeof(kBatteryCriticalTune) / sizeof(kBatteryCriticalTune[0]));
+}
+
+void playBatteryPanicPulse() {
+  chirp(1900, 140);
 }
 
 void tick() {

@@ -14,6 +14,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <cstring>
 
 #include "azimuth_hw.h"
 #include "battery_monitor.h"
@@ -60,6 +61,18 @@ BNO08x imu;
 #if IMU_DEBUG_MODE
 uint32_t gLastPrintMs = 0;
 #endif
+
+int32_t gPrevBatteryPercent = -1;
+bool gBatteryWarn25Latched = false;
+bool gBatteryWarn15Latched = false;
+bool gBatteryWarn10Latched = false;
+bool gBatteryWarn5Latched = false;
+bool gBatteryWarn4Latched = false;
+bool gBatteryWarn3Latched = false;
+bool gBatteryWarn2Latched = false;
+bool gBatteryWarn1Latched = false;
+bool gBatteryEmergencyWifiCut = false;
+uint32_t gBatteryEmergencyLastPulseMs = 0;
 
 void onFuncButtonSingleTap() {
   azimuth_io_buzzer::playThermalWarnTune();
@@ -131,6 +144,79 @@ void enableReports() {
   }
 }
 
+void maybePlayBatteryThresholdAlert(bool& latched, int32_t prevPct, int32_t nowPct,
+                                    int32_t thresholdPct, bool severe) {
+  if (!latched && prevPct > thresholdPct && nowPct <= thresholdPct) {
+    if (severe) {
+      azimuth_io_buzzer::playBatteryPanicPulse();
+    } else {
+      azimuth_io_buzzer::playBatteryLowTune();
+    }
+    latched = true;
+    return;
+  }
+  // Rearm with slight hysteresis to prevent chatter.
+  if (latched && nowPct > (thresholdPct + 1)) {
+    latched = false;
+  }
+}
+
+void tickBatteryAlerts(uint32_t nowMs) {
+  const auto batt = azimuth_battery::readStatus();
+  if (!batt.supported || batt.stub || batt.percent < 0 ||
+      strcmp(batt.chargeState, "absent") == 0) {
+    gPrevBatteryPercent = -1;
+    gBatteryWarn25Latched = false;
+    gBatteryWarn15Latched = false;
+    gBatteryWarn10Latched = false;
+    gBatteryWarn5Latched = false;
+    gBatteryWarn4Latched = false;
+    gBatteryWarn3Latched = false;
+    gBatteryWarn2Latched = false;
+    gBatteryWarn1Latched = false;
+    gBatteryEmergencyWifiCut = false;
+    gBatteryEmergencyLastPulseMs = 0;
+    return;
+  }
+
+  const int32_t pct = batt.percent;
+  int32_t prevPct = gPrevBatteryPercent;
+  if (prevPct < 0) {
+    prevPct = pct + 1;
+  }
+
+  maybePlayBatteryThresholdAlert(gBatteryWarn25Latched, prevPct, pct, 25, false);
+  maybePlayBatteryThresholdAlert(gBatteryWarn15Latched, prevPct, pct, 15, false);
+  if (!gBatteryWarn10Latched && prevPct > 10 && pct <= 10) {
+    azimuth_io_buzzer::playBatteryCriticalTune();
+    gBatteryWarn10Latched = true;
+  } else if (gBatteryWarn10Latched && pct > 11) {
+    gBatteryWarn10Latched = false;
+  }
+  maybePlayBatteryThresholdAlert(gBatteryWarn5Latched, prevPct, pct, 5, true);
+  maybePlayBatteryThresholdAlert(gBatteryWarn4Latched, prevPct, pct, 4, true);
+  maybePlayBatteryThresholdAlert(gBatteryWarn3Latched, prevPct, pct, 3, true);
+  maybePlayBatteryThresholdAlert(gBatteryWarn2Latched, prevPct, pct, 2, true);
+  maybePlayBatteryThresholdAlert(gBatteryWarn1Latched, prevPct, pct, 1, true);
+
+  if (pct <= 1) {
+    if (nowMs - gBatteryEmergencyLastPulseMs >= 550) {
+      azimuth_io_buzzer::playBatteryPanicPulse();
+      gBatteryEmergencyLastPulseMs = nowMs;
+    }
+#if !IMU_DEBUG_MODE
+    if (!gBatteryEmergencyWifiCut) {
+      trackNetworkApplyThermalEmergency();
+      gBatteryEmergencyWifiCut = true;
+    }
+#endif
+  } else {
+    gBatteryEmergencyLastPulseMs = 0;
+  }
+
+  gPrevBatteryPercent = pct;
+}
+
 }  // namespace
 
 void setup() {
@@ -186,12 +272,14 @@ void setup() {
 }
 
 void loop() {
-  azimuth_thermal::tick(millis());
+  const uint32_t nowMs = millis();
+  azimuth_battery::tick(nowMs);
+  tickBatteryAlerts(nowMs);
+  azimuth_thermal::tick(nowMs);
   azimuth_io_button::tick();
   azimuth_io_buzzer::tick();
   azimuth_io_led::tick();
 #if !IMU_DEBUG_MODE
-  trackNetworkLoop();
   const bool usbConnected = static_cast<bool>(Serial);
   if (usbConnected && !gHatireUsbWasConnected) {
     hatireInitPacket();
@@ -208,11 +296,18 @@ void loop() {
 
   if (!imu.getSensorEvent()) {
     azimuth_io_led::setStatus(false);
-    yield();  // avoid 100% CPU busy-spin between 100 Hz IMU reports (major heat / power)
+#if !IMU_DEBUG_MODE
+    trackNetworkLoop();
+#endif
+    yield();  // avoid 100% CPU busy-spin between IMU reports (major heat / power)
     return;
   }
 
   if (imu.getSensorEventID() != SENSOR_REPORTID_ROTATION_VECTOR) {
+#if !IMU_DEBUG_MODE
+    trackNetworkLoop();
+#endif
+    yield();
     return;
   }
 
@@ -236,9 +331,12 @@ void loop() {
   Serial.print(rollDeg, 1);
   Serial.println(F("°"));
 #else
+  // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
+  // after a rotation-vector report (network work is internally time-sliced).
   if (trackNetworkHatireUsbEnabled()) {
     sendHatirePacket(yawDeg, pitchDeg, rollDeg);
   }
   trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
+  trackNetworkLoop();
 #endif
 }

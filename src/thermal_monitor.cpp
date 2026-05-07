@@ -26,7 +26,7 @@ uint32_t sampleIntervalMs() {
   if (trackNetworkThermalHoldActive()) {
     return kHoldSampleMs;
   }
-  return azimuth_power::thermalSamplePeriodMs(trackNetworkPowerProfile());
+  return azimuth_power::thermalSamplePeriodMs();
 }
 
 }  // namespace

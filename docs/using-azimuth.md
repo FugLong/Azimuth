@@ -22,8 +22,8 @@ The UI is grouped roughly as follows:
 | **Wi‑Fi** | SSID / password, **Scan networks** (brief tracking pause). New credentials → **reboot**. |
 | **LAN & discovery** | mDNS on/off, **hostname** (letters, digits, hyphen; max 24). Changes → **reboot**. |
 | **OpenTrack (PC)** | USB Hatire on/off, UDP on/off, **UDP address** / **port**, **axis mapping** (which yaw/pitch/roll go to **Rot 0–2**, optional **invert**). Use **Fill address** when you open the portal on the PC running OpenTrack. **`something.local` from the ESP32** is unreliable—prefer a numeric LAN IP. |
-| **Tracking & radio** | **Power profile** (performance / balanced / battery saver), IMU report interval (5–40 ms), and **Wi‑Fi TX power** (low / balanced / high). IMU interval change → **reboot**. |
-| **Device** | Firmware **version**, battery state (currently **stub** until battery monitoring is wired), save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
+| **Tracking & radio** | **IMU report interval** (5–40 ms) and **Wi‑Fi TX power** (low / balanced / high). IMU interval change → **reboot**. |
+| **Device** | Firmware **version**, battery telemetry (pack mV, raw ADC mV, % estimate, inferred charge/discharge/idle trend), battery capacity + calibration offset settings, save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
 | **Advanced** | **Reset all settings** (clears stored config and reboots; may return to **Azimuth-Setup** if no home SSID remains). |
 
 Settings live in **flash (NVS)** on the device. If something is unset, the build can fall back to optional compile-time defaults in **`include/secrets.h`** (see [**development.md**](development.md)).
@@ -60,7 +60,7 @@ On home Wi‑Fi, firmware may do **one** check per boot against the published in
 
 ## Power, heat, and battery
 
-Expect the module to feel **warm when Wi‑Fi is on** — that is normal for a small ESP32‑C3. Tune **Tracking & radio** in the portal: **Power profile**, **Wi‑Fi TX power**, and **IMU report interval** (IMU interval affects tracking smoothness and load, not just “power”).
+Expect the module to feel **warm when Wi‑Fi is on** — that is normal for a small ESP32‑C3. Tune **Tracking & radio** in the portal: **Wi‑Fi TX power** and **IMU report interval** (IMU interval affects tracking smoothness and load, not just “power”).
 
 **Everything the firmware does to save power and heat** (modem sleep, network loop scheduling, portal polling, defaults): see [**power-and-thermal.md**](power-and-thermal.md). **Rough battery runtime guesses** and **which LiPo packs match the Azimuth PCB JST** are in that doc too, with full sourcing detail in [**parts-list**](parts-list.md#off-board-pack-azimuth-pcb-wireless).
 

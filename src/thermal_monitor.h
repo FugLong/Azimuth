@@ -5,7 +5,7 @@
 namespace azimuth_thermal {
 
 void init();
-/** Call from main loop; samples on a power-profile-based interval, independent of the web UI. */
+/** Call from main loop; samples on a fixed background interval, independent of the web UI. */
 void tick(uint32_t now_ms);
 /** Last on-die temperature (°C), or NaN if not yet sampled / invalid. */
 float lastChipTempC();

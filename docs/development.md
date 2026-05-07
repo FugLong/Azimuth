@@ -92,7 +92,7 @@ Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and option
 | **`VERSION`** | Semver line for **`azimuth_main_*`**, **`web-flasher/manifest.json`**, and **`web-flasher/manifest-pcb.json`**. |
 | **`web-flasher/`** | Static USB installer + manifest for GitHub Pages. |
 
-Planned work (board I/O, battery, enclosure, OTA, etc.) is tracked in [**roadmap.md**](roadmap.md).
+Planned work (board I/O, battery, enclosure, OTA, etc.) is tracked in [**roadmap.md**](roadmap.md). **Architecture / refactor strategy:** [**firmware-architecture-plan.md**](firmware-architecture-plan.md). **I/O, pause/stasis, future OTA:** [**io-led-buzzer-plan.md**](io-led-buzzer-plan.md). **Ordered implementation prompt for agents:** [**implementation-handoff-prompt.md**](implementation-handoff-prompt.md).
 
 ---
 

@@ -4,7 +4,7 @@ This is the **single place** for how firmware manages **power and thermal** beha
 
 Implementation code: mainly [`src/track_network.cpp`](../src/track_network.cpp), [`src/power_policy.cpp`](../src/power_policy.cpp), and [`src/portal_html.cpp`](../src/portal_html.cpp).
 
-**Portal knobs:** **Tracking & radio** — **Power profile**, **Wi‑Fi TX power**, **IMU report interval**.
+**Portal knobs:** **Tracking & radio** — **Wi‑Fi TX power**, **IMU report interval**. The web UI is for **settings, monitoring, and update links**, not a high‑refresh dashboard; non‑tracking paths use relaxed timings (see below). **Save** and **reboot** use normal HTTP — no extra artificial delay beyond the usual `handleClient` slice (tens of ms).
 
 ---
 
@@ -28,27 +28,17 @@ Power-related code does **not** insert a 200 ms (or similar) delay into sending 
 
 Previously, firmware could keep **`WiFi.setSleep(false)`** in station mode so the radio stayed maximally awake (helpful for mDNS responsiveness, at the cost of heat).
 
-**Now:** On a normal **home Wi‑Fi** connection, after the device has been **idle from portal activity** for a profile-dependent time, firmware enables **modem sleep** again (`WiFi.setSleep(true)`), which reduces average radio duty.
+**Now:** On a normal **home Wi‑Fi** connection, after the device has been **idle from portal activity** for a fixed time (see [`src/power_policy.cpp`](../src/power_policy.cpp), `wifiSleepIdleDelayMs()`), firmware enables **modem sleep** again (`WiFi.setSleep(true)`), which reduces average radio duty.
 
-**While idle is measured from:** any request that calls “portal activity” (e.g. loading the page, `/api/status`, `/api/config`, scan, etc.).
+**While idle is measured from:** interactive portal requests (e.g. loading the page, `/api/config`, scan, reboot, reset). Passive `/api/status` polling is intentionally excluded so always-open monitoring tabs do not keep modem sleep disabled.
 
 **Not sleeping:** **Azimuth‑Setup** AP / captive portal, or when **not** connected as STA — sleep stays off so setup and recovery stay reliable.
 
-Idle delay before sleep is defined in [`src/power_policy.cpp`](../src/power_policy.cpp) (`wifiSleepIdleDelayMs`): longer in **performance**, shorter in **battery saver**.
-
 ---
 
-## 2. Power profiles
+## 2. Fixed portal / network cadence (no “power profiles”)
 
-Stored in NVS as `power_profile` (default **balanced** = `1`). They tune **how aggressively** the firmware saves power vs responsiveness:
-
-| Value | Name | Effect (high level) |
-|------:|------|----------------------|
-| `0` | Performance tracking | Faster portal servicing; modem sleep only after **long** portal idle. |
-| `1` | Balanced | Default compromise. |
-| `2` | Battery saver | Slower portal servicing; modem sleep **sooner** after idle; **skips** the HTTPS “new firmware” check (see below). |
-
-Concrete numbers (may change in code): **HTTP `handleClient` interval** (`networkServiceIntervalMs`) and **modem-sleep idle delay** (`wifiSleepIdleDelayMs`) — see [`src/power_policy.cpp`](../src/power_policy.cpp).
+HTTP servicing interval (~**25 ms**), background housekeeping (~**500 ms**), thermal sampling (when not in thermal hold), and modem-sleep idle delay are **single fixed values** in [`src/power_policy.cpp`](../src/power_policy.cpp). **Pose latency** is governed by **IMU interval** and [`loop()` in `main.cpp`](../src/main.cpp): each new rotation-vector report is converted and sent over USB/UDP **before** throttled portal work runs that iteration.
 
 ---
 
@@ -56,8 +46,8 @@ Concrete numbers (may change in code): **HTTP `handleClient` interval** (`networ
 
 The main loop calls `trackNetworkLoop()` often (driven by IMU / idle), but **work inside it is split**:
 
-- **Portal HTTP** (`handleClient` for STA and AP, plus captive DNS on AP) runs on a **timer** (milliseconds, from power profile) — not on every single loop iteration.
-- **Heavier “background” tasks** (OpenTrack hostname refresh cadence, UDP socket open, applying adaptive modem sleep) run on a **~200 ms** cadence so DNS / sleep policy are not re-evaluated thousands of times per second.
+- **Portal HTTP** (`handleClient` for STA and AP, plus captive DNS on AP) runs on a **timer** — not on every single loop iteration.
+- **Heavier “background” tasks** (OpenTrack hostname refresh cadence, UDP socket open, applying adaptive modem sleep) run on a **~500 ms** cadence (see `networkBackgroundPeriodMs()` in [`src/power_policy.cpp`](../src/power_policy.cpp)) so DNS / sleep policy are not re-evaluated thousands of times per second.
 
 This cuts **CPU + Wi‑Fi stack** churn when the portal is open or the loop runs fast; it does **not** batch UDP pose packets.
 
@@ -71,9 +61,7 @@ If NVS has no `wifi_tx` value yet, firmware defaults to **low** TX (~2 dBm) to f
 
 ## 5. Firmware update check (HTTPS)
 
-On STA, after the link is stable, firmware may perform **one** HTTPS `GET` to the published manifest to decide if the portal should show an “update available” banner. **Timeouts are short** so a slow CDN does not hold the device in a long active session.
-
-In **battery saver** profile, this check is **skipped** to avoid that HTTPS transaction entirely.
+On STA, **once per boot**, shortly after the device has **associated** and had a short stack settle (~300 ms), firmware performs **one** HTTPS `GET` to the published manifest to decide if the portal should show an “update available” banner. **Timeouts are short** so a slow CDN does not hold the device in a long active session.
 
 Updates are still **USB-only**; this is only a **notification** path.
 
@@ -81,7 +69,7 @@ Updates are still **USB-only**; this is only a **notification** path.
 
 ## 6. Portal page polling (browser)
 
-The settings page is mostly static. After the first load (which calls `/api/status` to fill the form), the script **polls `/api/status` every 15 seconds** while the tab is **visible** — only to refresh the **stats line**, banners, and toggle sync. Polling **pauses** when the tab is hidden (`document.hidden`).
+The settings page is mostly static. After the first load (which calls `/api/status` to fill the form), the script **polls `/api/status` every 25 seconds** while the tab is **visible** — only to refresh the **stats line**, banners, and toggle sync. Polling **pauses** when the tab is hidden (`document.hidden`).
 
 That rate is **much slower** than once per second; it is **not** the tracking rate.
 
@@ -92,11 +80,10 @@ That rate is **much slower** than once per second; it is **not** the tracking ra
 | Mechanism | Saves power / heat by… | Affects tracking pose rate? |
 |-----------|-------------------------|-----------------------------|
 | Modem sleep after portal idle | Lower average Wi‑Fi duty | No |
-| Power profile | Tunable servicing + sleep timing | No |
 | Sliced `trackNetworkLoop` | Less HTTP/DNS/sleep work per second | No |
 | Default low `wifi_tx` | Less TX current | No (may affect Wi‑Fi range) |
-| Shorter / skipped update check | Less HTTPS + radio active time | No |
-| 15 s portal poll, hidden tab pause | Less HTTP when UI open | No |
+| Short update check after associate | One bounded HTTPS session per boot | No |
+| ~25 s portal poll, hidden tab pause | Less HTTP when UI open | No |
 | IMU interval (user setting) | Fewer reports → less USB/Wi‑Fi **traffic** from poses | **Yes** — this is the main tracking “refresh” control |
 
 ---

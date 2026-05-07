@@ -63,6 +63,9 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
 | [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md) | Wi‑Fi power saving, portal polling, defaults; battery runtime / PCB pack polarity |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
+| [**Firmware architecture plan**](docs/firmware-architecture-plan.md) | Maintainers — module splits, CI breadth, refactor phases |
+| [**I/O experience plan**](docs/io-led-buzzer-plan.md) | LED / buzzer / FUNC — pause/stasis, layered overrides, future OTA |
+| [**Implementation handoff**](docs/implementation-handoff-prompt.md) | Copy-paste prompt + ordered tasks for agents / new contributors |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |
 

@@ -46,7 +46,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via **NVS portal** and optional **`secrets.h`**).
 - [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md), [using-azimuth.md](using-azimuth.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [x] **Updates (USB)** — GitHub Pages **esp-web-tools** flasher + repo **`VERSION`** / **`manifest.json`**; portal banner compares to hosted manifest (no OTA).
-- [ ] **Updates (OTA)** — Optional later; not required for current posture.
+- [ ] **Updates (OTA)** — **Planned:** ESP32 OTA partitions + HTTP(S) update path; **FUNC long-press** to enter update mode (see [io-led-buzzer-plan.md](io-led-buzzer-plan.md)). USB flasher remains recovery.
 - [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered. **Design started** (2026-05); not published in-repo yet.
 - [ ] **User-facing docs** — Build, flash, OpenTrack connection (USB + wireless), troubleshooting.
 
@@ -59,8 +59,8 @@ Use this as a checklist; tighten or relax before tagging V1.
 | Task | Status |
 |------|--------|
 | Pin map / config header (single source of truth vs [wiring.md](wiring.md)) | In progress: **`include/azimuth_hw.h`** + [hardware-profiles.md](hardware-profiles.md); add alternate defines only if a PCB GPIO map diverges |
-| LED: patterns for status (boot, tracking, error, low battery) | 🟨 (PCB: RGB demo / status hints; full patterns ⬜) |
-| Buttons: recenter / func; interrupts or polled + debounce | 🟨 (FUNC debounced; **recenter** / UX ⬜) |
+| LED: patterns for status, **stasis (pause)**, setup, battery, thermal | 🟨 demo / status · **policy stack + stasis ⬜** |
+| Buttons: **FUNC = pause/stasis** (UDP off + low power + cues); long-press **OTA later** | 🟨 debounce ✅ · **pause UX / power ⬜** · long-hold OTA ⬜ |
 | Buzzer: tones for feedback (optional minimal set for V1) | 🟨 (FUNC chime on PCB; wider set ⬜) |
 | ADC: battery voltage, calibration constants, filtering | ⬜ |
 | Power / charging behavior documented (what XIAO handles vs firmware) | ⬜ |

@@ -2,55 +2,24 @@
 
 namespace azimuth_power {
 
-PowerProfile fromStoredValue(uint8_t value) {
-  if (value > static_cast<uint8_t>(PowerProfile::BatterySaver)) {
-    return PowerProfile::Balanced;
-  }
-  return static_cast<PowerProfile>(value);
-}
+namespace {
 
-uint8_t toStoredValue(PowerProfile profile) {
-  return static_cast<uint8_t>(profile);
-}
+// Single policy: tracking path untouched; these only affect portal + light network housekeeping.
+// Portal is for settings, updates, and status — not a high‑refresh UI — so relaxed cadence saves CPU + radio.
+constexpr uint16_t kNetworkServiceIntervalMs = 25;
+// OpenTrack DNS refresh is 45 s; UDP bind is one-shot; modem-sleep idle is 30 s — no need for 200 Hz polls.
+constexpr uint32_t kNetworkBackgroundPeriodMs = 500;
+constexpr uint32_t kThermalSamplePeriodMs = 15000;
+constexpr uint32_t kWifiSleepIdleDelayMs = 30000;
 
-uint16_t networkServiceIntervalMs(PowerProfile profile) {
-  switch (profile) {
-    case PowerProfile::PerformanceTracking:
-      return 8;
-    case PowerProfile::BatterySaver:
-      return 30;
-    case PowerProfile::Balanced:
-    default:
-      return 15;
-  }
-}
+}  // namespace
 
-uint32_t thermalSamplePeriodMs(PowerProfile profile) {
-  switch (profile) {
-    case PowerProfile::PerformanceTracking:
-      return 15000;
-    case PowerProfile::BatterySaver:
-      return 45000;
-    case PowerProfile::Balanced:
-    default:
-      return 15000;
-  }
-}
+uint16_t networkServiceIntervalMs() { return kNetworkServiceIntervalMs; }
 
-uint32_t wifiSleepIdleDelayMs(PowerProfile profile) {
-  switch (profile) {
-    case PowerProfile::PerformanceTracking:
-      return 120000;
-    case PowerProfile::BatterySaver:
-      return 12000;
-    case PowerProfile::Balanced:
-    default:
-      return 30000;
-  }
-}
+uint32_t networkBackgroundPeriodMs() { return kNetworkBackgroundPeriodMs; }
 
-bool runFirmwareUpdateCheck(PowerProfile profile) {
-  return profile != PowerProfile::BatterySaver;
-}
+uint32_t thermalSamplePeriodMs() { return kThermalSamplePeriodMs; }
+
+uint32_t wifiSleepIdleDelayMs() { return kWifiSleepIdleDelayMs; }
 
 }  // namespace azimuth_power

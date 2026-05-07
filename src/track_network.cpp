@@ -14,10 +14,6 @@ void trackNetworkInit() {}
 void trackNetworkLoop() {}
 void trackNetworkSendOpentrackUdp(float, float, float) {}
 
-azimuth_power::PowerProfile trackNetworkPowerProfile() {
-  return azimuth_power::PowerProfile::Balanced;
-}
-
 void trackNetworkApplyThermalEmergency() {}
 
 bool trackNetworkThermalHoldActive() {
@@ -68,10 +64,14 @@ bool trackNetworkThermalHoldActive() {
 namespace azimuth_net {
 
 OtAxisMapConfig mergedOtAxisMap();
+uint16_t mergedBatteryCapacityMah();
+int32_t mergedBatteryCalOffsetMv();
 
 constexpr uint16_t kWebPortSta = 8080;
 constexpr uint16_t kWebPortAp = 80;
 constexpr const char* kPrefsNs = "azimuth";
+constexpr const char* kPrefsKeyBatteryCapacityMah = "bat_cap";
+constexpr const char* kPrefsKeyBatteryCalOffsetMv = "bat_cal";
 constexpr uint32_t kWifiConnectTimeoutMs = 12000;
 constexpr const char* kSetupApSsid = "Azimuth-Setup";
 
@@ -102,7 +102,6 @@ bool gPrefsOpened = false;
 uint16_t gImuPeriodMsRuntime = 10;
 bool gHatireUsbRuntime = true;
 OtAxisMapConfig gOtAxisMapRuntime{};
-azimuth_power::PowerProfile gPowerProfileRuntime = azimuth_power::PowerProfile::Balanced;
 uint32_t gLastPortalActivityMs = 0;
 uint32_t gLastNetworkServiceMs = 0;
 uint32_t gLastBackgroundTickMs = 0;
@@ -135,11 +134,6 @@ uint8_t mergedWifiTxProfile() {
     return 0;
   }
   return static_cast<uint8_t>(v);
-}
-
-azimuth_power::PowerProfile mergedPowerProfile() {
-  const uint32_t v = gPrefs.getUInt("power_profile", 1);
-  return azimuth_power::fromStoredValue(static_cast<uint8_t>(v));
 }
 
 uint16_t mergedImuPeriodMs() {
@@ -177,7 +171,8 @@ void refreshRuntimeFromPrefs() {
   gImuPeriodMsRuntime = mergedImuPeriodMs();
   gHatireUsbRuntime = mergedHatireUsb();
   gOtAxisMapRuntime = mergedOtAxisMap();
-  gPowerProfileRuntime = mergedPowerProfile();
+  azimuth_battery::setCapacityMah(mergedBatteryCapacityMah());
+  azimuth_battery::setCalibrationOffsetMv(mergedBatteryCalOffsetMv());
 }
 
 void applyStaWifiTxPower() {
@@ -201,7 +196,7 @@ void applyAdaptiveWifiSleep() {
 
   const uint32_t idleForMs = millis() - gLastPortalActivityMs;
   const bool shouldSleep =
-      idleForMs >= azimuth_power::wifiSleepIdleDelayMs(gPowerProfileRuntime);
+      idleForMs >= azimuth_power::wifiSleepIdleDelayMs();
   if (shouldSleep == gWifiSleepEnabled) {
     return;
   }
@@ -281,6 +276,22 @@ uint8_t mergedBuzzerVolume() {
     return 100;
   }
   return static_cast<uint8_t>(v);
+}
+
+uint16_t mergedBatteryCapacityMah() {
+  const uint32_t v = gPrefs.getUInt(kPrefsKeyBatteryCapacityMah, 800);
+  if (v < 100 || v > 5000) {
+    return 800;
+  }
+  return static_cast<uint16_t>(v);
+}
+
+int32_t mergedBatteryCalOffsetMv() {
+  const int32_t v = gPrefs.getInt(kPrefsKeyBatteryCalOffsetMv, 0);
+  if (v < -1200 || v > 1200) {
+    return 0;
+  }
+  return v;
 }
 
 void applyIoLevelsFromPrefs() {
@@ -472,8 +483,8 @@ static bool semverLess(const SemVer& a, const SemVer& b) {
   return a.pa < b.pa;
 }
 
-/** Once per STA session, after Wi‑Fi is up — compares VERSION-derived build to hosted manifest.
- *  Short timeouts: this runs synchronously inside loop(); long stalls would delay IMU + tracking. */
+/** Once per boot after STA associates — compares VERSION-derived build to hosted manifest.
+ *  Short timeouts: runs synchronously inside loop(); long stalls would delay IMU + tracking. */
 static void performFirmwareUpdateCheckOnce() {
   gFwUpdateCheckDone = true;
   WiFiClientSecure client;
@@ -531,7 +542,7 @@ void handleRoot(WebServer& http) {
 }
 
 void handleStatus(WebServer& http) {
-  markPortalActivity();
+  // Passive status reads should not keep STA modem sleep disabled.
   JsonDocument doc;
   doc["setup_ap"] = gSetupApMode;
   doc["wifi_connected"] = (WiFi.status() == WL_CONNECTED);
@@ -564,7 +575,33 @@ void handleStatus(WebServer& http) {
   } else {
     doc["battery_mv"] = nullptr;
   }
-  doc["battery_state"] = batt.stub ? "stub" : "active";
+  if (batt.rawMillivolts >= 0) {
+    doc["battery_raw_mv"] = batt.rawMillivolts;
+  } else {
+    doc["battery_raw_mv"] = nullptr;
+  }
+  if (batt.percent >= 0) {
+    doc["battery_percent"] = batt.percent;
+  } else {
+    doc["battery_percent"] = nullptr;
+  }
+  if (batt.remainingMah >= 0) {
+    doc["battery_remaining_mah"] = batt.remainingMah;
+  } else {
+    doc["battery_remaining_mah"] = nullptr;
+  }
+  doc["battery_capacity_mah"] = mergedBatteryCapacityMah();
+  doc["battery_cal_offset_mv"] = mergedBatteryCalOffsetMv();
+  doc["battery_charge_state"] = batt.chargeState;
+  if (!batt.supported) {
+    doc["battery_state"] = "unsupported";
+  } else if (strcmp(batt.chargeState, "absent") == 0) {
+    doc["battery_state"] = "absent";
+  } else if (batt.stub) {
+    doc["battery_state"] = "stub";
+  } else {
+    doc["battery_state"] = "active";
+  }
   doc["board"] = azimuth_board::boardName();
   doc["fw_version"] = AZIMUTH_FW_VERSION;
   doc["fw_update_available"] = gFwUpdateAvailable;
@@ -579,7 +616,6 @@ void handleStatus(WebServer& http) {
   doc["hostname"] = mergedHostname();
   doc["mdns_on"] = mergedMdnsOn();
   doc["wifi_tx"] = mergedWifiTxProfile();
-  doc["power_profile"] = azimuth_power::toStoredValue(gPowerProfileRuntime);
   appendOtAxesToJson(doc);
   doc["rgb_brightness"] = mergedRgbBrightness();
   doc["buzzer_volume"] = mergedBuzzerVolume();
@@ -649,7 +685,12 @@ void handleConfigPost(WebServer& http) {
 
   bool wifiCredChanged = false;
   bool needReboot = false;
+  bool didBatteryCal = false;
+  int32_t batteryCalOffsetMv = 0;
+  int32_t batteryCalRawMv = 0;
   const char* errMsg = nullptr;
+  int32_t pendingBatteryOffsetMv = mergedBatteryCalOffsetMv();
+  uint16_t pendingBatteryCapacityMah = mergedBatteryCapacityMah();
 
   if (!body["ssid"].isNull()) {
     if (!body["ssid"].is<const char*>()) {
@@ -727,15 +768,6 @@ void handleConfigPost(WebServer& http) {
     }
   }
 
-  if (!errMsg && !body["power_profile"].isNull()) {
-    const int p = body["power_profile"].as<int>();
-    if (p < 0 || p > 2) {
-      errMsg = "power_profile must be 0, 1, or 2";
-    } else {
-      gPrefs.putUInt("power_profile", static_cast<uint32_t>(p));
-    }
-  }
-
   if (!errMsg && !body["rgb_brightness"].isNull()) {
     const int b = body["rgb_brightness"].as<int>();
     if (b < 0 || b > 100) {
@@ -751,6 +783,40 @@ void handleConfigPost(WebServer& http) {
       errMsg = "buzzer_volume must be 0–100";
     } else {
       gPrefs.putUInt("buzzer_volume", static_cast<uint32_t>(b));
+    }
+  }
+
+  if (!errMsg && !body["battery_capacity_mah"].isNull()) {
+    const int cap = body["battery_capacity_mah"].as<int>();
+    if (cap < 100 || cap > 5000) {
+      errMsg = "battery_capacity_mah must be 100..5000";
+    } else {
+      gPrefs.putUInt(kPrefsKeyBatteryCapacityMah, static_cast<uint32_t>(cap));
+      pendingBatteryCapacityMah = static_cast<uint16_t>(cap);
+    }
+  }
+
+  if (!errMsg && !body["battery_cal_offset_mv"].isNull()) {
+    const int off = body["battery_cal_offset_mv"].as<int>();
+    if (off < -1200 || off > 1200) {
+      errMsg = "battery_cal_offset_mv must be -1200..1200";
+    } else {
+      gPrefs.putInt(kPrefsKeyBatteryCalOffsetMv, static_cast<int32_t>(off));
+      pendingBatteryOffsetMv = static_cast<int32_t>(off);
+    }
+  }
+
+  if (!errMsg && body["battery_calibrate_4v2"].as<bool>()) {
+    int32_t off = 0;
+    int32_t avgRaw = 0;
+    if (!azimuth_battery::calibrateAgainstKnownPackMv(4200, 3000, &off, &avgRaw)) {
+      errMsg = "battery_calibrate_4v2 failed (no stable battery sample)";
+    } else {
+      gPrefs.putInt(kPrefsKeyBatteryCalOffsetMv, off);
+      pendingBatteryOffsetMv = off;
+      didBatteryCal = true;
+      batteryCalOffsetMv = off;
+      batteryCalRawMv = avgRaw;
     }
   }
 
@@ -827,6 +893,8 @@ void handleConfigPost(WebServer& http) {
   gUdpSendEnabled = mergedUdpOn();
   applyOtTarget();
   refreshRuntimeFromPrefs();
+  azimuth_battery::setCapacityMah(pendingBatteryCapacityMah);
+  azimuth_battery::setCalibrationOffsetMv(pendingBatteryOffsetMv);
   applyIoLevelsFromPrefs();
   applyStaWifiTxPower();
 
@@ -835,6 +903,11 @@ void handleConfigPost(WebServer& http) {
   JsonDocument ok;
   ok["ok"] = true;
   ok["restarting"] = restarting;
+  if (didBatteryCal) {
+    ok["battery_calibrated"] = true;
+    ok["battery_cal_offset_mv"] = batteryCalOffsetMv;
+    ok["battery_cal_raw_mv"] = batteryCalRawMv;
+  }
 
   if (restarting) {
     String out;
@@ -1016,7 +1089,7 @@ void networkLoop() {
     return;
   }
   const uint32_t now = millis();
-  const uint16_t serviceInterval = azimuth_power::networkServiceIntervalMs(gPowerProfileRuntime);
+  const uint16_t serviceInterval = azimuth_power::networkServiceIntervalMs();
   if (now - gLastNetworkServiceMs >= serviceInterval) {
     gLastNetworkServiceMs = now;
     if (gApPortalActive) {
@@ -1028,7 +1101,7 @@ void networkLoop() {
     }
   }
 
-  if (now - gLastBackgroundTickMs >= 200) {
+  if (now - gLastBackgroundTickMs >= azimuth_power::networkBackgroundPeriodMs()) {
     gLastBackgroundTickMs = now;
     if (WiFi.status() == WL_CONNECTED) {
       tryOpenUdpSocket();
@@ -1037,13 +1110,19 @@ void networkLoop() {
     applyAdaptiveWifiSleep();
   }
 
-  if (gStaWebActive && WiFi.status() == WL_CONNECTED && !gFwUpdateCheckDone &&
-      azimuth_power::runFirmwareUpdateCheck(gPowerProfileRuntime)) {
-    static uint32_t sStaStableMs = 0;
-    if (sStaStableMs == 0) {
-      sStaStableMs = now;
-    }
-    if (now - sStaStableMs >= 8000) {
+  // One HTTPS manifest check per boot, shortly after STA has IP (not multi‑second defer).
+  static uint32_t sFwStaReadyMs = 0;
+  const bool staOk =
+      !gSetupApMode && (WiFi.status() == WL_CONNECTED) && !gFwUpdateCheckDone;
+  if (!staOk) {
+    sFwStaReadyMs = 0;
+  } else if (sFwStaReadyMs == 0) {
+    sFwStaReadyMs = now;
+  }
+  if (staOk && sFwStaReadyMs != 0 && (now - sFwStaReadyMs >= 300)) {
+    // Avoid blocking HTTP manifest check while a tune is still playing;
+    // otherwise buzzer tick timing can stretch note durations.
+    if (!azimuth_io_buzzer::isActive()) {
       performFirmwareUpdateCheckOnce();
     }
   }
@@ -1114,10 +1193,6 @@ void trackNetworkLoop() {
 
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   azimuth_net::sendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
-}
-
-azimuth_power::PowerProfile trackNetworkPowerProfile() {
-  return azimuth_net::gPowerProfileRuntime;
 }
 
 void trackNetworkApplyThermalEmergency() {
