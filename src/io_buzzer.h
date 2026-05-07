@@ -18,6 +18,10 @@ void playBatteryLowTune();
 void playBatteryCriticalTune();
 /** Short harsh pulse used for 5%..1% battery alerts. */
 void playBatteryPanicPulse();
+/** Pause/stasis (FUNC) — entering low-power tracking hold. */
+void playStasisEnterTune();
+/** Resume from stasis. */
+void playStasisExitTune();
 void tick();
 
 /** 0 = mute; 1–100 is UI level (firmware applies a curve to PWM duty). */

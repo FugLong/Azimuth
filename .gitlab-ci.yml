@@ -1,9 +1,9 @@
-# PlatformIO: build release firmware on main (artifacts = web-flashable .bin set).
+# PlatformIO: build release firmware on main (artifacts = web-flashable .bin set for DIY).
+# Also build azimuth_main_pcb so the PCB profile cannot drift silently.
 # CI copies secrets.h.example → secrets.h so the build does not require a committed secrets.h.
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  AZIMUTH_PIO_ENV: azimuth_main_diy
 
 cache:
   key: "${CI_COMMIT_REF_SLUG}-pip"
@@ -13,7 +13,7 @@ cache:
 stages:
   - build
 
-.build_azimuth_main_diy:
+.platformio_base:
   stage: build
   image: python:3.12-slim
   before_script:
@@ -21,17 +21,24 @@ stages:
     - pip install --upgrade pip
     - pip install "platformio>=6.1"
     - cp include/secrets.h.example include/secrets.h
+
+build:azimuth_main_diy:
+  extends: .platformio_base
   script:
-    - pio run -e "$AZIMUTH_PIO_ENV"
+    - pio run -e azimuth_main_diy
     - chmod +x scripts/prepare_web_flasher_firmware.sh
-    - ./scripts/prepare_web_flasher_firmware.sh "$AZIMUTH_PIO_ENV" ci-artifacts/firmware
+    - ./scripts/prepare_web_flasher_firmware.sh azimuth_main_diy ci-artifacts/firmware
   artifacts:
     name: "azimuth-main-diy-$CI_COMMIT_SHORT_SHA"
     expire_in: 30 days
     paths:
       - ci-artifacts/firmware/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
 
-build:azimuth_main_diy:
-  extends: .build_azimuth_main_diy
+build:azimuth_main_pcb:
+  extends: .platformio_base
+  script:
+    - pio run -e azimuth_main_pcb
   rules:
     - if: $CI_COMMIT_BRANCH == "main"

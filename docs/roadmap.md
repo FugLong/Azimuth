@@ -59,8 +59,8 @@ Use this as a checklist; tighten or relax before tagging V1.
 | Task | Status |
 |------|--------|
 | Pin map / config header (single source of truth vs [wiring.md](wiring.md)) | In progress: **`include/azimuth_hw.h`** + [hardware-profiles.md](hardware-profiles.md); add alternate defines only if a PCB GPIO map diverges |
-| LED: patterns for status, **stasis (pause)**, setup, battery, thermal | 🟨 demo / status · **policy stack + stasis ⬜** |
-| Buttons: **FUNC = pause/stasis** (UDP off + low power + cues); long-press **OTA later** | 🟨 debounce ✅ · **pause UX / power ⬜** · long-hold OTA ⬜ |
+| LED: patterns for status, **stasis (pause)**, setup, battery, thermal | 🟩 **`io_led_policy`** + NVS **`led_mode`** · thermal/battery/setup/stasis layered |
+| Buttons: **FUNC = pause/stasis** (UDP off + low power + cues); long-press **OTA later** | 🟩 single-tap pause · double reserved · long-hold OTA ⬜ |
 | Buzzer: tones for feedback (optional minimal set for V1) | 🟨 (FUNC chime on PCB; wider set ⬜) |
 | ADC: battery voltage, calibration constants, filtering | ⬜ |
 | Power / charging behavior documented (what XIAO handles vs firmware) | ⬜ |

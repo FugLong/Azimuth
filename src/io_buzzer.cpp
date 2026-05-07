@@ -63,6 +63,22 @@ static const MelodyNote kBatteryCriticalTune[] = {
     {622, 150},
 };
 
+/** Soft descending — “resting”. */
+static const MelodyNote kStasisEnterTune[] = {
+    {784, 45},
+    {698, 45},
+    {587, 55},
+    {523, 70},
+};
+
+/** Ascending wake — “live again”. */
+static const MelodyNote kStasisExitTune[] = {
+    {523, 40},
+    {659, 40},
+    {784, 55},
+    {988, 75},
+};
+
 static const MelodyNote* gMelodyNotes = nullptr;
 static uint8_t gMelodyNoteCount = 0;
 
@@ -185,6 +201,14 @@ void playBatteryCriticalTune() {
 
 void playBatteryPanicPulse() {
   chirp(1900, 140);
+}
+
+void playStasisEnterTune() {
+  startMelody(kStasisEnterTune, sizeof(kStasisEnterTune) / sizeof(kStasisEnterTune[0]));
+}
+
+void playStasisExitTune() {
+  startMelody(kStasisExitTune, sizeof(kStasisExitTune) / sizeof(kStasisExitTune[0]));
 }
 
 void tick() {

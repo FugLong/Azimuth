@@ -69,7 +69,7 @@ pio run -e azimuth_main_pcb
 
 | What | Where |
 |------|--------|
-| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** with **`secrets.h`** copied from the example. Artifacts under **`ci-artifacts/firmware/`**. |
+| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** (web-flasher artifacts under **`ci-artifacts/firmware/`**) and compiles **`azimuth_main_pcb`** so the PCB environment cannot rot. **`secrets.h`** is copied from the example. |
 | **GitHub Pages USB flasher** | **`.github/workflows/github-pages-flasher.yml`** builds **`azimuth_main_diy`** + **`azimuth_main_pcb`**, runs **`prepare_web_flasher_firmware.sh`** for both targets, syncs **`manifest.json`** + **`manifest-pcb.json`**, deploys **`web-flasher/`** with [esp-web-tools](https://github.com/esphome/esp-web-tools). Repo: **Settings → Pages → Source: GitHub Actions**; environment **`azimuth-flasher`**. |
 
 Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.github.io/Azimuth/manifest.json`**, flasher **`https://fuglong.github.io/Azimuth/`**.
@@ -86,7 +86,8 @@ Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and option
 |------|------|
 | **`src/main.cpp`** | IMU bring-up, rotation vector, Hatire + optional OpenTrack UDP; pins from **`include/azimuth_hw.h`** ([**wiring.md**](wiring.md)). |
 | **`include/opentrack_pose.h`** | Fusion Euler → Hatire / UDP **Rot 0–2** with NVS axis map + per-slot invert. |
-| **`src/track_network.cpp`** | Wi‑Fi, portal, UDP in **`azimuth_main_*`**; stubs in **`azimuth_debug_*`**. |
+| **`src/track_network.cpp`** | Wi‑Fi, portal, UDP, stasis, NVS in **`azimuth_main_*`**; stubs in **`azimuth_debug_*`**. |
+| **`src/io_led_policy.cpp`** | LED priority: thermal, battery, setup AP, pause, then ambient (`azimuth_main_*`). |
 | **`src/portal_html.cpp`** | Settings UI in PROGMEM (**`azimuth_main_*`** only; filtered out of debug build). |
 | **`platformio.ini`** | `espressif32`; **`azimuth_main_diy`** / **`azimuth_main_pcb`** (see [**hardware-profiles.md**](hardware-profiles.md)); SparkFun **BNO08x**; **`azimuth_main_*`** adds version script, **ArduinoJson**, default release URLs. |
 | **`VERSION`** | Semver line for **`azimuth_main_*`**, **`web-flasher/manifest.json`**, and **`web-flasher/manifest-pcb.json`**. |

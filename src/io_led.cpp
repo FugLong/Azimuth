@@ -15,6 +15,7 @@ bool gHasRgb = false;
 RgbPreset gPreset = RgbPreset::Status;
 bool gManualHold = false;
 bool gStatusOn = false;
+PolicyOverride gPolicy = PolicyOverride::None;
 uint8_t gR = 0;
 uint8_t gG = 0;
 uint8_t gB = 0;
@@ -25,6 +26,23 @@ uint32_t gLastRainbowMs = 0;
 
 uint8_t scaleCap255(uint16_t v) {
   return static_cast<uint8_t>(v > 255 ? 255 : v);
+}
+
+uint8_t trianglePulse(uint32_t t, uint32_t periodMs) {
+  if (periodMs < 4) {
+    return 255;
+  }
+  const uint32_t p = t % periodMs;
+  const uint32_t half = periodMs / 2;
+  if (half == 0) {
+    return 255;
+  }
+  if (p < half) {
+    return static_cast<uint8_t>((p * 255U) / half);
+  }
+  const uint32_t down = periodMs - p;
+  const uint32_t span = periodMs - half;
+  return span > 0 ? static_cast<uint8_t>((down * 255U) / span) : 0;
 }
 
 void writeRgbBallastInverted(uint8_t r, uint8_t g, uint8_t b) {
@@ -104,6 +122,83 @@ bool rainbowActive() {
   return gPreset == RgbPreset::Rainbow || gPreset == RgbPreset::RainbowSlow;
 }
 
+bool applyPolicyVisual() {
+  if (gPolicy == PolicyOverride::None) {
+    return false;
+  }
+  const uint32_t t = millis();
+  if (!gHasRgb) {
+    uint32_t period = 500;
+    switch (gPolicy) {
+      case PolicyOverride::ThermalHold:
+        period = 600;
+        break;
+      case PolicyOverride::ThermalWarn:
+        period = 300;
+        break;
+      case PolicyOverride::BatteryCritical:
+        period = 120;
+        break;
+      case PolicyOverride::SetupAp:
+        period = 400;
+        break;
+      case PolicyOverride::Stasis:
+        period = 700;
+        break;
+      default:
+        break;
+    }
+    const bool on = (t / period) % 2U == 0U;
+    digitalWrite(azimuth_hw::kPinStatusLed, on ? HIGH : LOW);
+    return true;
+  }
+
+  uint8_t r = 0;
+  uint8_t g = 0;
+  uint8_t b = 0;
+  switch (gPolicy) {
+    case PolicyOverride::ThermalHold: {
+      const uint8_t v = trianglePulse(t, 1000U);
+      r = v;
+      g = 0;
+      b = 0;
+      break;
+    }
+    case PolicyOverride::ThermalWarn: {
+      const uint8_t v = trianglePulse(t, 500U);
+      r = v;
+      g = static_cast<uint8_t>(v / 4U);
+      b = 0;
+      break;
+    }
+    case PolicyOverride::BatteryCritical: {
+      const uint8_t v = trianglePulse(t, 260U);
+      r = v;
+      g = 0;
+      b = static_cast<uint8_t>(v / 8U);
+      break;
+    }
+    case PolicyOverride::SetupAp: {
+      const uint8_t v = trianglePulse(t, 1400U);
+      r = 0;
+      g = static_cast<uint8_t>((static_cast<uint16_t>(v) * 3U) / 4U);
+      b = v;
+      break;
+    }
+    case PolicyOverride::Stasis: {
+      const uint8_t v = trianglePulse(t, 1100U);
+      r = 0;
+      g = static_cast<uint8_t>(v / 3U);
+      b = static_cast<uint8_t>((static_cast<uint16_t>(v) * 2U) / 3U);
+      break;
+    }
+    default:
+      break;
+  }
+  writeRgbBallastInverted(r, g, b);
+  return true;
+}
+
 }  // namespace
 
 void init() {
@@ -124,6 +219,7 @@ void init() {
     pinMode(azimuth_hw::kPinStatusLed, OUTPUT);
     digitalWrite(azimuth_hw::kPinStatusLed, LOW);
   }
+  gPolicy = PolicyOverride::None;
 }
 
 void setRgb(uint8_t r, uint8_t g, uint8_t b) {
@@ -138,6 +234,9 @@ void setRgb(uint8_t r, uint8_t g, uint8_t b) {
 
 void setStatus(bool active) {
   gStatusOn = active;
+  if (gPolicy != PolicyOverride::None) {
+    return;
+  }
   if (!gHasRgb) {
     digitalWrite(azimuth_hw::kPinStatusLed, active ? HIGH : LOW);
     return;
@@ -152,6 +251,9 @@ void setStatus(bool active) {
 }
 
 void tick() {
+  if (applyPolicyVisual()) {
+    return;
+  }
   if (!gHasRgb) {
     return;
   }
@@ -207,6 +309,10 @@ void setBrightnessPercent(uint8_t percent) {
     return;
   }
   writeRgbBallastInverted(gR, gG, gB);
+}
+
+void setPolicyOverride(PolicyOverride layer) {
+  gPolicy = layer;
 }
 
 }  // namespace azimuth_io_led

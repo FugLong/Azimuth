@@ -20,6 +20,16 @@ bool trackNetworkThermalHoldActive() {
   return false;
 }
 
+bool trackNetworkSetupApActive() {
+  return false;
+}
+
+void trackNetworkSetStasis(bool) {}
+
+bool trackNetworkStasisActive() {
+  return false;
+}
+
 #else
 
 #include <Arduino.h>
@@ -72,6 +82,9 @@ constexpr uint16_t kWebPortAp = 80;
 constexpr const char* kPrefsNs = "azimuth";
 constexpr const char* kPrefsKeyBatteryCapacityMah = "bat_cap";
 constexpr const char* kPrefsKeyBatteryCalOffsetMv = "bat_cal";
+constexpr const char* kPrefsKeyLedR = "led_r";
+constexpr const char* kPrefsKeyLedG = "led_g";
+constexpr const char* kPrefsKeyLedB = "led_b";
 constexpr uint32_t kWifiConnectTimeoutMs = 12000;
 constexpr const char* kSetupApSsid = "Azimuth-Setup";
 
@@ -108,6 +121,8 @@ uint32_t gLastBackgroundTickMs = 0;
 bool gWifiSleepEnabled = false;
 /** SoC thermal protection: Wi‑Fi stack disabled until reboot after cooling. */
 bool gThermalHoldActive = false;
+/** Pause/stasis (FUNC): gates UDP/Hatire from main; does not persist. */
+bool gStasisActive = false;
 
 bool ensurePrefsOpen() {
   if (gPrefsOpened) {
@@ -194,6 +209,14 @@ void applyAdaptiveWifiSleep() {
     return;
   }
 
+  if (gStasisActive) {
+    if (!gWifiSleepEnabled) {
+      WiFi.setSleep(true);
+      gWifiSleepEnabled = true;
+    }
+    return;
+  }
+
   const uint32_t idleForMs = millis() - gLastPortalActivityMs;
   const bool shouldSleep =
       idleForMs >= azimuth_power::wifiSleepIdleDelayMs();
@@ -270,6 +293,36 @@ uint8_t mergedRgbBrightness() {
   return static_cast<uint8_t>(v);
 }
 
+/** NVS `led_mode`: matches `azimuth_io_led::RgbPreset` (0..3). */
+uint8_t mergedLedMode() {
+  const uint32_t v = gPrefs.getUInt("led_mode", 0);
+  if (v > 3) {
+    return 0;
+  }
+  return static_cast<uint8_t>(v);
+}
+
+uint8_t mergedLedR() {
+  if (!gPrefsOpened) {
+    return 80;
+  }
+  return gPrefs.getUChar(kPrefsKeyLedR, 80);
+}
+
+uint8_t mergedLedG() {
+  if (!gPrefsOpened) {
+    return 140;
+  }
+  return gPrefs.getUChar(kPrefsKeyLedG, 140);
+}
+
+uint8_t mergedLedB() {
+  if (!gPrefsOpened) {
+    return 255;
+  }
+  return gPrefs.getUChar(kPrefsKeyLedB, 255);
+}
+
 uint8_t mergedBuzzerVolume() {
   const uint32_t v = gPrefs.getUInt("buzzer_volume", 25);
   if (v > 100) {
@@ -296,6 +349,12 @@ int32_t mergedBatteryCalOffsetMv() {
 
 void applyIoLevelsFromPrefs() {
   azimuth_io_led::setBrightnessPercent(mergedRgbBrightness());
+  const uint8_t mode = mergedLedMode();
+  if (mode == 3) {
+    azimuth_io_led::setManualRgb(mergedLedR(), mergedLedG(), mergedLedB());
+  } else {
+    azimuth_io_led::setRgbPreset(static_cast<azimuth_io_led::RgbPreset>(mode));
+  }
   azimuth_io_buzzer::setVolumePercent(mergedBuzzerVolume());
 }
 
@@ -634,6 +693,11 @@ void handleStatus(WebServer& http) {
   }
   doc["thermal_state"] = azimuth_thermal::stateJsonString();
   doc["thermal_hold"] = gThermalHoldActive;
+  doc["stasis"] = gStasisActive;
+  doc["led_mode"] = mergedLedMode();
+  doc["led_r"] = mergedLedR();
+  doc["led_g"] = mergedLedG();
+  doc["led_b"] = mergedLedB();
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -775,6 +839,40 @@ void handleConfigPost(WebServer& http) {
     } else {
       gPrefs.putUInt("rgb_brightness", static_cast<uint32_t>(b));
     }
+  }
+
+  if (!errMsg && !body["led_mode"].isNull()) {
+    const int m = body["led_mode"].as<int>();
+    if (m < 0 || m > 3) {
+      errMsg = "led_mode must be 0–3 (RgbPreset)";
+    } else {
+      gPrefs.putUInt("led_mode", static_cast<uint32_t>(m));
+    }
+  }
+
+  auto putLedChannel = [&](const char* nvsKey, const char* jsonKey) {
+    if (errMsg || body[jsonKey].isNull()) {
+      return;
+    }
+    if (!body[jsonKey].is<int>()) {
+      errMsg = "led_r, led_g, led_b must be integers 0–255";
+      return;
+    }
+    const int v = body[jsonKey].as<int>();
+    if (v < 0 || v > 255) {
+      errMsg = "led_r, led_g, led_b must be 0–255";
+      return;
+    }
+    gPrefs.putUChar(nvsKey, static_cast<uint8_t>(v));
+  };
+  if (!errMsg) {
+    putLedChannel(kPrefsKeyLedR, "led_r");
+  }
+  if (!errMsg) {
+    putLedChannel(kPrefsKeyLedG, "led_g");
+  }
+  if (!errMsg) {
+    putLedChannel(kPrefsKeyLedB, "led_b");
   }
 
   if (!errMsg && !body["buzzer_volume"].isNull()) {
@@ -986,6 +1084,7 @@ void applyThermalEmergency() {
   if (gThermalHoldActive) {
     return;
   }
+  gStasisActive = false;
   gThermalHoldActive = true;
   gUdpSocketOk = false;
   gFwUpdateCheckDone = true;
@@ -1129,7 +1228,8 @@ void networkLoop() {
 }
 
 void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
-  if (!gUdpSocketOk || !gUdpSendEnabled || WiFi.status() != WL_CONNECTED || !otTargetOk()) {
+  if (!gUdpSocketOk || !gUdpSendEnabled || gStasisActive ||
+      WiFi.status() != WL_CONNECTED || !otTargetOk()) {
     return;
   }
 
@@ -1164,6 +1264,14 @@ uint16_t imuPeriodMsValue() { return gImuPeriodMsRuntime; }
 bool hatireUsbValue() { return gHatireUsbRuntime; }
 
 const OtAxisMapConfig& otAxisMapValue() { return gOtAxisMapRuntime; }
+
+void setStasis(bool active) {
+  if (gThermalHoldActive) {
+    return;
+  }
+  gStasisActive = active;
+  applyAdaptiveWifiSleep();
+}
 
 }  // namespace azimuth_net
 
@@ -1201,6 +1309,18 @@ void trackNetworkApplyThermalEmergency() {
 
 bool trackNetworkThermalHoldActive() {
   return azimuth_net::gThermalHoldActive;
+}
+
+bool trackNetworkSetupApActive() {
+  return azimuth_net::gSetupApMode;
+}
+
+void trackNetworkSetStasis(bool active) {
+  azimuth_net::setStasis(active);
+}
+
+bool trackNetworkStasisActive() {
+  return azimuth_net::gStasisActive;
 }
 
 #endif  // !IMU_DEBUG_MODE

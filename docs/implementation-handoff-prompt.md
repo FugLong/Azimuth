@@ -58,6 +58,12 @@ Constraints:
 Deliver work in small commits/PRs: CI first, then pause feature + docs, then LED policy, then track_network split.
 
 When done, update docs and this handoff file if the actual order or APIs differ from what was planned.
+
+---
+
+## Status (maintenance)
+
+**Last implementation pass:** CI builds **`azimuth_main_diy`** (artifacts) + **`azimuth_main_pcb`** (compile-only) on `main`. **Pause/stasis:** `trackNetworkSetStasis` / `trackNetworkStasisActive`, UDP + Hatire gated in firmware, modem sleep forced in stasis, FUNC double-tap idle, thermal emergency clears stasis. **LED:** `io_led_policy` priority stack + `PolicyOverride` in `io_led`; **`led_mode`** in NVS + portal + `/api/status`. **`track_network.cpp` split** not done yet — next refactor PR.
 ```
 
 ---

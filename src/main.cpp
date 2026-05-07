@@ -21,6 +21,7 @@
 #include "io_button.h"
 #include "io_buzzer.h"
 #include "io_led.h"
+#include "io_led_policy.h"
 #include "thermal_monitor.h"
 #include "SparkFun_BNO08x_Arduino_Library.h"
 
@@ -75,12 +76,26 @@ bool gBatteryEmergencyWifiCut = false;
 uint32_t gBatteryEmergencyLastPulseMs = 0;
 
 void onFuncButtonSingleTap() {
-  azimuth_io_buzzer::playThermalWarnTune();
+#if !IMU_DEBUG_MODE
+  if (trackNetworkThermalHoldActive()) {
+    return;
+  }
+  const auto batt = azimuth_battery::readStatus();
+  if (batt.supported && !batt.stub && batt.percent >= 0 && batt.percent <= 1 &&
+      strcmp(batt.chargeState, "absent") != 0) {
+    return;
+  }
+  const bool next = !trackNetworkStasisActive();
+  trackNetworkSetStasis(next);
+  if (next) {
+    azimuth_io_buzzer::playStasisEnterTune();
+  } else {
+    azimuth_io_buzzer::playStasisExitTune();
+  }
+#endif
 }
 
-void onFuncButtonDoubleTap() {
-  azimuth_io_buzzer::playThermalCriticalTune();
-}
+void onFuncButtonDoubleTap() {}
 
 #if !IMU_DEBUG_MODE
 /**
@@ -278,7 +293,6 @@ void loop() {
   azimuth_thermal::tick(nowMs);
   azimuth_io_button::tick();
   azimuth_io_buzzer::tick();
-  azimuth_io_led::tick();
 #if !IMU_DEBUG_MODE
   const bool usbConnected = static_cast<bool>(Serial);
   if (usbConnected && !gHatireUsbWasConnected) {
@@ -295,7 +309,7 @@ void loop() {
   }
 
   if (!imu.getSensorEvent()) {
-    azimuth_io_led::setStatus(false);
+    azimuth_io_led_policy::tick(nowMs, false);
 #if !IMU_DEBUG_MODE
     trackNetworkLoop();
 #endif
@@ -304,6 +318,7 @@ void loop() {
   }
 
   if (imu.getSensorEventID() != SENSOR_REPORTID_ROTATION_VECTOR) {
+    azimuth_io_led_policy::tick(nowMs, false);
 #if !IMU_DEBUG_MODE
     trackNetworkLoop();
 #endif
@@ -314,10 +329,10 @@ void loop() {
   const float yawDeg = imu.getYaw() * kRadToDeg;
   const float pitchDeg = imu.getPitch() * kRadToDeg;
   const float rollDeg = imu.getRoll() * kRadToDeg;
-  azimuth_io_led::setStatus(true);
 
 #if IMU_DEBUG_MODE
   const uint32_t now = millis();
+  azimuth_io_led_policy::tick(nowMs, true);
   if (now - gLastPrintMs < kPrintIntervalMs) {
     return;
   }
@@ -333,10 +348,11 @@ void loop() {
 #else
   // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
   // after a rotation-vector report (network work is internally time-sliced).
-  if (trackNetworkHatireUsbEnabled()) {
+  if (trackNetworkHatireUsbEnabled() && !trackNetworkStasisActive()) {
     sendHatirePacket(yawDeg, pitchDeg, rollDeg);
   }
   trackNetworkSendOpentrackUdp(yawDeg, pitchDeg, rollDeg);
   trackNetworkLoop();
+  azimuth_io_led_policy::tick(nowMs, true);
 #endif
 }

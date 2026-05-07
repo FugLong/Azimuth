@@ -24,6 +24,7 @@ The UI is grouped roughly as follows:
 | **OpenTrack (PC)** | USB Hatire on/off, UDP on/off, **UDP address** / **port**, **axis mapping** (which yaw/pitch/roll go to **Rot 0–2**, optional **invert**). Use **Fill address** when you open the portal on the PC running OpenTrack. **`something.local` from the ESP32** is unreliable—prefer a numeric LAN IP. |
 | **Tracking & radio** | **IMU report interval** (5–40 ms) and **Wi‑Fi TX power** (low / balanced / high). IMU interval change → **reboot**. |
 | **Device** | Firmware **version**, battery telemetry (pack mV, raw ADC mV, % estimate, inferred charge/discharge/idle trend), battery capacity + calibration offset settings, save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
+| **Sound & light** (RGB / buzzer boards) | **RGB brightness**, **buzzer volume**, **LED mode** (rainbow, slow rainbow, status, **manual RGB** with 0–255 sliders + quick presets + live preview), and stored **`led_r` / `led_g` / `led_b`** in flash. System warnings (thermal, very low battery, setup AP, **pause**) can override the ambient LED until the condition clears. |
 | **Advanced** | **Reset all settings** (clears stored config and reboots; may return to **Azimuth-Setup** if no home SSID remains). |
 
 Settings live in **flash (NVS)** on the device. If something is unset, the build can fall back to optional compile-time defaults in **`include/secrets.h`** (see [**development.md**](development.md)).
@@ -34,7 +35,17 @@ Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that netw
 
 On **`azimuth_main_pcb`**, the Azimuth board’s **common-anode** RGB uses **inverted** PWM on **IO0** (green, **R8**), **IO1** (red, **R7**), **IO3** (blue, **R6**), with simple ballast scaling in firmware vs those resistors (DIY builds without that LED layout keep a simple GPIO3 status line instead).
 
-**FUNC** (**IO7**, pull-up, switch to GND) triggers a **short four-note chime** on the buzzer (**IO21** → FET on the PCB). This is for feedback and bring-up; behavior may be extended later (e.g. recenter, menu).
+**FUNC** (**IO7**, pull-up, switch to GND): **single tap** toggles **Pause** (see below). **Double-tap** is reserved (no action). A **long press** may be used later for **wireless update mode** (OTA — not in current firmware).
+
+## Pause (FUNC single tap)
+
+**Pause** puts the tracker in **stasis**: it **stops sending OpenTrack UDP** and **USB Hatire** pose packets for as long as pause is on, plays a **short sound** on enter and a **different sound** on exit, forces **aggressive Wi‑Fi modem sleep** on STA when idle, and shows a **distinct LED pattern** (slow blink on DIY; cyan‑ish pulse on RGB) so you can leave the device powered without streaming to the PC.
+
+- **Not saved in NVS** — pause is session-only. Your portal **UDP enabled** / **Hatire** preferences apply again after you resume.
+- **USB serial** is unchanged (you can still flash or use a serial monitor; pause only affects the Hatire packet stream used by OpenTrack).
+- **Safety** — you cannot enter pause while the pack is at **~1%** (critical) or after **thermal hold** has cut Wi‑Fi; an overheating event **clears** pause automatically because the network path is torn down.
+
+Press **FUNC** once to pause, once again to resume.
 
 ## OpenTrack on the PC
 

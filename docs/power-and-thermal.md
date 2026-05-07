@@ -30,6 +30,8 @@ Previously, firmware could keep **`WiFi.setSleep(false)`** in station mode so th
 
 **Now:** On a normal **home Wi‑Fi** connection, after the device has been **idle from portal activity** for a fixed time (see [`src/power_policy.cpp`](../src/power_policy.cpp), `wifiSleepIdleDelayMs()`), firmware enables **modem sleep** again (`WiFi.setSleep(true)`), which reduces average radio duty.
 
+**Pause / stasis** (FUNC single tap, see [**using-azimuth.md**](using-azimuth.md)) forces modem sleep on STA while connected — independent of portal idle timing — so the radio stays in a low-duty posture until you resume. Thermal emergency / battery cut still override networking regardless of pause.
+
 **While idle is measured from:** interactive portal requests (e.g. loading the page, `/api/config`, scan, reboot, reset). Passive `/api/status` polling is intentionally excluded so always-open monitoring tabs do not keep modem sleep disabled.
 
 **Not sleeping:** **Azimuth‑Setup** AP / captive portal, or when **not** connected as STA — sleep stays off so setup and recovery stay reliable.

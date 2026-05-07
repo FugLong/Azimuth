@@ -84,6 +84,15 @@ input[type=range]::-webkit-slider-thumb{
 }
 .sound-ctl input[type=range]{margin:.15rem 0 0;width:100%}
 .sound-ctl-hint{margin:.55rem 0 0;font-size:.75rem;line-height:1.45;color:var(--muted)}
+#ledManualRow{margin-top:.85rem}
+.led-swatch{
+  width:100%;height:2.75rem;border-radius:10px;border:1px solid var(--bd);
+  background:#1e2a3a;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)
+}
+.led-quick{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin:.65rem 0 0}
+.led-quick span{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:.2rem}
+.led-quick .btn{min-height:40px;padding:.45rem .7rem;font-size:.8125rem;font-weight:600}
+.led-chan-val{font-variant-numeric:tabular-nums;color:var(--acc);font-weight:700}
 #buzzerVolumeRow{margin-top:1.15rem}
 .hint{font-size:.75rem;color:var(--muted);margin:-.25rem 0 .85rem;line-height:1.45}
 .battery-cal-meta{
@@ -335,6 +344,50 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <input type="range" id="rgbBrightness" name="rgb_brightness" min="0" max="100" step="1" value="25" aria-valuemin="0" aria-valuemax="100" aria-labelledby="rgbBrightnessLabel"/>
 </div>
 </div>
+<div id="ledModeRow" style="display:none">
+<label for="ledMode" class="sound-ctl-label">LED mode</label>
+<select id="ledMode" name="led_mode" aria-label="LED ambient mode">
+<option value="0">Rainbow</option>
+<option value="1">Rainbow (slow)</option>
+<option value="2">Status (tracks IMU — green when OK)</option>
+<option value="3">Manual RGB</option>
+</select>
+<p class="hint" id="ledModeHint" style="margin-top:.45rem;margin-bottom:0">Overrides (thermal, low battery, setup Wi‑Fi, pause) still take priority on the device.</p>
+<div id="ledManualRow" style="display:none">
+<p class="hint" style="margin:.55rem 0 .45rem">Preview matches raw R/G/B before device brightness scaling. Save to apply on the board.</p>
+<div class="led-swatch" id="ledSwatch" title="RGB preview"></div>
+<div class="sound-ctl" style="margin-top:.75rem">
+<div class="sound-ctl-head">
+<label class="sound-ctl-label" for="ledR">Red</label>
+<span class="sound-ctl-pct led-chan-val" id="ledRVal" aria-live="polite">128</span>
+</div>
+<input type="range" id="ledR" min="0" max="255" step="1" value="80" aria-valuemin="0" aria-valuemax="255" aria-labelledby="ledR"/>
+</div>
+<div class="sound-ctl" style="margin-top:.65rem">
+<div class="sound-ctl-head">
+<label class="sound-ctl-label" for="ledG">Green</label>
+<span class="sound-ctl-pct led-chan-val" id="ledGVal" aria-live="polite">128</span>
+</div>
+<input type="range" id="ledG" min="0" max="255" step="1" value="140" aria-valuemin="0" aria-valuemax="255" aria-labelledby="ledG"/>
+</div>
+<div class="sound-ctl" style="margin-top:.65rem">
+<div class="sound-ctl-head">
+<label class="sound-ctl-label" for="ledB">Blue</label>
+<span class="sound-ctl-pct led-chan-val" id="ledBVal" aria-live="polite">128</span>
+</div>
+<input type="range" id="ledB" min="0" max="255" step="1" value="255" aria-valuemin="0" aria-valuemax="255" aria-labelledby="ledB"/>
+</div>
+<div class="led-quick">
+<span>Quick</span>
+<button type="button" class="btn btn-sec" data-led-rgb="0,0,0" aria-label="Preset LED off">Off</button>
+<button type="button" class="btn btn-sec" data-led-rgb="255,255,255" aria-label="Preset white">White</button>
+<button type="button" class="btn btn-sec" data-led-rgb="255,80,64" aria-label="Preset warm">Warm</button>
+<button type="button" class="btn btn-sec" data-led-rgb="64,180,255" aria-label="Preset cool">Cool</button>
+<button type="button" class="btn btn-sec" data-led-rgb="80,255,120" aria-label="Preset green">Green</button>
+<button type="button" class="btn btn-sec" data-led-rgb="180,64,255" aria-label="Preset purple">Purple</button>
+</div>
+</div>
+</div>
 <div id="buzzerVolumeRow" style="display:none">
 <div class="sound-ctl">
 <div class="sound-ctl-head">
@@ -381,13 +434,14 @@ function setToggle(id,on){$(id).classList.toggle('on',on)}
 const uiTouched={udp:false,mdns:false,hatire:false};
 function updateSoundLightCard(j){
   const card=$('cardSoundLight'),hint=$('soundLightHint');
-  const rr=$('rgbBrightnessRow'),br=$('buzzerVolumeRow');
+  const rr=$('rgbBrightnessRow'),br=$('buzzerVolumeRow'),lm=$('ledModeRow');
   if(!card)return;
   const hasRgb=!!j.has_rgb,hasBz=!!j.has_buzzer;
   const show=hasRgb||hasBz;
   card.style.display=show?'block':'none';
   if(hint)hint.style.display=show?'block':'none';
   if(rr)rr.style.display=hasRgb?'block':'none';
+  if(lm)lm.style.display=hasRgb?'block':'none';
   if(br)br.style.display=hasBz?'block':'none';
 }
 function syncRangeLabels(){
@@ -395,6 +449,38 @@ function syncRangeLabels(){
   const bb=$('buzzerVolume'),bv=$('buzzerVolumeVal');
   if(rb&&rv)rv.textContent=rb.value+'%';
   if(bb&&bv)bv.textContent=bb.value+'%';
+}
+function clamp255(x){
+  const n=Math.round(Number(x));
+  if(!Number.isFinite(n))return 0;
+  return Math.max(0,Math.min(255,n));
+}
+function setLedRgb(r,g,b){
+  const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
+  if(er)er.value=String(clamp255(r));
+  if(eg)eg.value=String(clamp255(g));
+  if(eb)eb.value=String(clamp255(b));
+  syncLedManualUi();
+}
+function syncLedManualUi(){
+  const row=$('ledManualRow'),lm=$('ledMode'),hint=$('ledModeHint');
+  const sw=$('ledSwatch'),rv=$('ledRVal'),gv=$('ledGVal'),bv=$('ledBVal');
+  const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
+  if(!lm)return;
+  const mode=parseInt(lm.value,10);
+  const manual=mode===3;
+  if(row)row.style.display=manual?'block':'none';
+  const r=er?clamp255(er.value):0,g=eg?clamp255(eg.value):0,b=eb?clamp255(eb.value):0;
+  if(rv)rv.textContent=String(r);
+  if(gv)gv.textContent=String(g);
+  if(bv)bv.textContent=String(b);
+  if(sw)sw.style.background='rgb('+r+','+g+','+b+')';
+  if(hint){
+    if(mode===0)hint.textContent='Smooth rainbow. Overrides (thermal, low battery, setup Wi‑Fi, pause) still win on the device.';
+    else if(mode===1)hint.textContent='Slower rainbow. Same override rules as other modes.';
+    else if(mode===2)hint.textContent='Green accent while the IMU reports OK; dim when waiting for data.';
+    else hint.textContent='Solid color from the sliders below (after Save). RGB brightness above still scales output. System warnings override this LED.';
+  }
 }
 function heroWifiTier(rssi){
   if(rssi==null)return 0;
@@ -486,6 +572,9 @@ function applyHero(j){
     if(j.thermal_hold){
       htr.textContent='Wi‑Fi off';
       if(htrk)htrk.textContent='Cooling — USB tracking may still run';
+    }else if(j.stasis){
+      htr.textContent='Paused';
+      if(htrk)htrk.textContent='No UDP / USB pose · low power';
     }else{
       const im=j.imu_period_ms;
       const hz=im?Math.round(1000/im):'—';
@@ -516,6 +605,7 @@ function applyShell(j){
   const line1=ap?('AP · board '+ (j.ip||'—')):('LAN · board '+(j.ip||'—')+' · RSSI '+rssi);
   const line1b=' · up '+Math.round(j.uptime_ms/1000)+'s · heap '+j.heap_free;
   let udpSummary=j.udp_enabled===false?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending');
+  if(j.stasis)udpSummary='Paused · '+udpSummary;
   if(j.ot_target_ok&&j.ot_resolved_ip)udpSummary+=' → '+j.ot_resolved_ip;
   const line2='FW '+(j.fw_version||'?')+' · ~'+hz+' Hz · '+ (j.hostname||'azimuth')+' · '+udpSummary+' · STA '+(j.wifi_connected?'on':'off');
   const bmv=(j.battery_mv!=null)?(j.battery_mv+' mV'):'—';
@@ -602,7 +692,7 @@ function collectOtAxes(){
 }
 function nudgeInputPaint(){
   requestAnimationFrame(()=>{
-    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx','rgbBrightness','buzzerVolume','batteryCapacity'].forEach(id=>{
+    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx','rgbBrightness','ledMode','ledR','ledG','ledB','buzzerVolume','batteryCapacity'].forEach(id=>{
       const el=$(id);
       if(!el)return;
       el.style.transform='translateZ(1px)';
@@ -637,7 +727,21 @@ async function hydrateForm(){
     bv.value=(x!=null&&x>=0&&x<=100)?String(x):'25';
     bv.setAttribute('aria-valuenow',bv.value);
   }
+  const lm=$('ledMode');
+  if(lm){
+    const m=j.led_mode;
+    lm.value=([0,1,2,3].includes(Number(m)))?String(m):'0';
+  }
+  const lr=$('ledR'),lg=$('ledG'),lb=$('ledB');
+  if(lr){
+    const rv=(x)=>(x!=null&&x>=0&&x<=255)?clamp255(x):null;
+    const r=rv(j.led_r),g=rv(j.led_g),b=rv(j.led_b);
+    if(r!=null)lr.value=String(r);
+    if(lg&&g!=null)lg.value=String(g);
+    if(lb&&b!=null)lb.value=String(b);
+  }
   syncRangeLabels();
+  syncLedManualUi();
   applyOtAxesFromStatus(j.ot_axes);
   uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
   applyShell(j);
@@ -653,6 +757,19 @@ $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$
 const _rb=$('rgbBrightness'),_bv=$('buzzerVolume');
 if(_rb)_rb.addEventListener('input',syncRangeLabels);
 if(_bv)_bv.addEventListener('input',syncRangeLabels);
+['ledR','ledG','ledB'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',syncLedManualUi);});
+const _lm=$('ledMode');
+if(_lm)_lm.addEventListener('change',syncLedManualUi);
+document.querySelectorAll('[data-led-rgb]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const raw=btn.getAttribute('data-led-rgb')||'';
+    const p=raw.split(',').map(x=>clamp255(x.trim()));
+    if(p.length!==3)return;
+    const lm=$('ledMode');
+    if(lm)lm.value='3';
+    setLedRgb(p[0],p[1],p[2]);
+  });
+});
 $('btnUseClientIp').onclick=()=>{
   const v=$('clientIpVal')&&$('clientIpVal').textContent;
   if(v&&v!=='—'){fillInput($('otHost'),v)}
@@ -698,6 +815,17 @@ $('btnSave').onclick=async()=>{
   if(body.buzzer_volume<0||body.buzzer_volume>100||Number.isNaN(body.buzzer_volume))body.buzzer_volume=25;
   if(body.battery_capacity_mah<100||body.battery_capacity_mah>5000||Number.isNaN(body.battery_capacity_mah))body.battery_capacity_mah=800;
   if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
+  const lmEl=$('ledMode');
+  if(lmEl){
+    body.led_mode=parseInt(lmEl.value,10);
+    if(![0,1,2,3].includes(body.led_mode))body.led_mode=0;
+  }
+  const lrEl=$('ledR'),lgEl=$('ledG'),lbEl=$('ledB');
+  if(lrEl&&lgEl&&lbEl){
+    body.led_r=clamp255(lrEl.value);
+    body.led_g=clamp255(lgEl.value);
+    body.led_b=clamp255(lbEl.value);
+  }
   const pw=$('pass').value;
   if(pw.length)body.password=pw;
   try{
