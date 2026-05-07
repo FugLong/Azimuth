@@ -9,9 +9,9 @@ All **`azimuth_main_*`** builds share the same **portal**, **Hatire**, and **UDP
 | Situation | Open in your browser |
 |-----------|----------------------|
 | Board already on your **home Wi‑Fi** | **`http://azimuth.local:8080`** or **`http://<device-ip>:8080`** (default hostname is **`azimuth`**) |
-| **First setup** or recovery — you joined **Azimuth-Setup** | **`http://192.168.4.1/`** on port **80** (captive portal may open this for you) |
+| **Offline Mode** (first setup, recovery, or off-grid use) — you joined **Azimuth-Tracker** | **`http://192.168.4.1/`** on port **80** (captive portal may open this for you) |
 
-**`azimuth.local` does not work** on the setup access point—only after the device joins your LAN as a client. If **`.local`** fails on Windows, install **Bonjour** (e.g. Apple Bonjour Print Services) or use the device **IP** from your router. Guest or isolated Wi‑Fi often blocks discovery; use the IP.
+**`azimuth.local` does not work** in **Offline Mode** AP—only after the device joins your LAN as a client. If **`.local`** fails on Windows, install **Bonjour** (e.g. Apple Bonjour Print Services) or use the device **IP** from your router. Guest or isolated Wi‑Fi often blocks discovery; use the IP.
 
 ## Portal sections (what you can change)
 
@@ -25,11 +25,11 @@ The UI is grouped roughly as follows:
 | **Tracking & radio** | **IMU report interval** (5–40 ms) and **Wi‑Fi TX power** (low / balanced / high). IMU interval change → **reboot**. |
 | **Device** | Firmware **version**, battery telemetry (pack mV, raw ADC mV, % estimate, inferred charge/discharge/idle trend), battery capacity + calibration offset settings, save / reboot, status. On Wi‑Fi, a banner may link to the **USB web installer** if a newer build is published. |
 | **Sound & light** (RGB / buzzer boards) | **RGB brightness**, **buzzer volume**, **LED mode** (rainbow, slow rainbow, status, **manual RGB** with 0–255 sliders + quick presets + live preview), and stored **`led_r` / `led_g` / `led_b`** in flash. System warnings (thermal, very low battery, setup AP, **pause**) can override the ambient LED until the condition clears. |
-| **Advanced** | **Reset all settings** (clears stored config and reboots; may return to **Azimuth-Setup** if no home SSID remains). |
+| **Advanced** | **Reset all settings** (clears stored config and reboots; may return to **Azimuth-Tracker** Offline Mode if no home SSID remains). |
 
 Settings live in **flash (NVS)** on the device. If something is unset, the build can fall back to optional compile-time defaults in **`include/secrets.h`** (see [**development.md**](development.md)).
 
-Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that network, it falls back to **Azimuth-Setup** so you can fix SSID/password without reflashing.
+Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that network, it falls back to **Azimuth-Tracker** Offline Mode so you can fix SSID/password without reflashing.
 
 ## Integrated PCB: RGB, FUNC, buzzer
 

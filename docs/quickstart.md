@@ -6,14 +6,14 @@ Assumes firmware is already installed (web flasher supports both hardware target
 
 ## 1. Join your home Wi‑Fi (first setup)
 
-1. Power the board on. On your phone or computer, connect to the **Azimuth-Setup** Wi‑Fi network.
+1. Power the board on. On your phone or computer, connect to the **Azimuth-Tracker** Wi‑Fi network (**Offline Mode**).
 2. A setup page should open automatically, or open **`http://192.168.4.1/`** in a browser.
 3. Enter your **home Wi‑Fi name** and **password**.
 4. **Scroll to the bottom** of the page and **save** (apply). The board will connect to your network and restart.
 
 ## 2. Tell the tracker where OpenTrack runs
 
-Do this on the **same computer** where you use **OpenTrack**, on your **home Wi‑Fi** (not on Azimuth-Setup).
+Do this on the **same computer** where you use **OpenTrack**, on your **home Wi‑Fi** (not on **Azimuth-Tracker** Offline Mode).
 
 1. Open **`http://azimuth.local:8080/`** in a browser.  
    If that fails, use **`http://<device-ip>:8080`** (find the device in your router’s list). The address must end in **`:8080`**.

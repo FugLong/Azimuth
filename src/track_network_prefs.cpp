@@ -35,9 +35,9 @@ wifi_power_t wifiTxFromProfile(uint8_t profile) {
 }
 
 uint8_t mergedWifiTxProfile() {
-  const uint32_t v = gRuntime.prefs.getUInt("wifi_tx", 0);
+  const uint32_t v = gRuntime.prefs.getUInt("wifi_tx", 1);
   if (v > 2) {
-    return 0;
+    return 1;
   }
   return static_cast<uint8_t>(v);
 }
@@ -92,7 +92,7 @@ void markPortalActivity() {
 }
 
 void applyAdaptiveWifiSleep() {
-  if (gRuntime.setupApMode || WiFi.status() != WL_CONNECTED) {
+  if (gRuntime.offlineApMode || WiFi.status() != WL_CONNECTED) {
     if (gRuntime.wifiSleepEnabled) {
       WiFi.setSleep(false);
       gRuntime.wifiSleepEnabled = false;
@@ -253,50 +253,6 @@ OtAxisMapConfig mergedOtAxisMap() {
     otAxisMapSetDefault(&c);
   }
   return c;
-}
-
-bool applyOtAxesFromJson(const JsonArray& arr, const char** errOut) {
-  if (arr.size() != 3) {
-    *errOut = "ot_axes must be an array of 3 objects";
-    return false;
-  }
-  OtAxisMapConfig c;
-  otAxisMapSetDefault(&c);
-  for (size_t i = 0; i < 3; ++i) {
-    JsonObjectConst o = arr[i].as<JsonObjectConst>();
-    if (o.isNull()) {
-      *errOut = "ot_axes[i] must be object";
-      return false;
-    }
-    if (!o["src"].is<int>()) {
-      *errOut = "ot_axes[].src must be integer 0–2";
-      return false;
-    }
-    const int src = o["src"].as<int>();
-    if (src < 0 || src > 2) {
-      *errOut = "ot_axes[].src must be 0–2";
-      return false;
-    }
-    c.srcForRot[i] = static_cast<uint8_t>(src);
-    if (!o["inv"].isNull() && !o["inv"].is<bool>()) {
-      *errOut = "ot_axes[].inv must be boolean";
-      return false;
-    }
-    c.invertRot[i] = o["inv"].is<bool>() ? o["inv"].as<bool>() : false;
-  }
-  if (!otAxisMapValid(c)) {
-    *errOut = "ot_axes must use yaw, pitch, and roll each exactly once";
-    return false;
-  }
-  for (int i = 0; i < 3; ++i) {
-    char ksrc[8];
-    char kinv[8];
-    snprintf(ksrc, sizeof(ksrc), "ot_s%d", i);
-    snprintf(kinv, sizeof(kinv), "ot_i%d", i);
-    (void)gRuntime.prefs.putUChar(ksrc, c.srcForRot[i]);
-    (void)gRuntime.prefs.putBool(kinv, c.invertRot[i]);
-  }
-  return true;
 }
 
 void appendOtAxesToJson(JsonDocument& doc) {

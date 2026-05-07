@@ -27,7 +27,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | | |
 |:---|:---|
 | **Install or update firmware (USB)** | [**Azimuth web flasher**](https://fuglong.github.io/Azimuth/) — use **Chrome** or **Edge** and a **data** USB cable. |
-| **Settings (Wi‑Fi, OpenTrack, device)** | [**http://azimuth.local:8080**](http://azimuth.local:8080) — only after the board is on your home network. First time? Connect to **Azimuth-Setup** and follow the [**quick start**](docs/quickstart.md). |
+| **Settings (Wi‑Fi, OpenTrack, device)** | [**http://azimuth.local:8080**](http://azimuth.local:8080) — only after the board is on your home network. First time? Connect to **Azimuth-Tracker** (**Offline Mode**) and follow the [**quick start**](docs/quickstart.md). |
 | **Step-by-step: Wi‑Fi → OpenTrack** | [**docs/quickstart.md**](docs/quickstart.md) |
 
 ---
@@ -51,7 +51,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 ## Need to know
 
 - **Flashing** — Browser install needs **Chrome** or **Edge** (Web Serial). If the installer offers **erase flash**, use it for a clean device (same effect as a full settings reset).
-- **First Wi‑Fi setup** — Join **Azimuth-Setup**, open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md).
+- **First Wi‑Fi setup** — Join **Azimuth-Tracker** (**Offline Mode**), open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md).
 - **OpenTrack** — Use **either** UDP **or** Hatire as the input, not both at once. Defaults and axis mapping: [**Using Azimuth**](docs/using-azimuth.md#opentrack-on-the-pc).
 - **Power, heat, tuning** — Normal for Wi‑Fi on a small module; portal **Tracking & radio** settings; full behavior + battery notes: [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md).
 

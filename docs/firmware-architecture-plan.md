@@ -49,9 +49,9 @@ GitLab CI currently builds **`azimuth_main_diy`** only. The PCB environment (`az
 
 ### 4. Automated verification
 
-There are no host-side unit tests today. Pure logic (axis mapping, JSON merge rules, preset enums) would benefit from extract-and-test without hardware.
+**Host-side tests:** `scripts/run_host_tests.sh` compiles and runs native harnesses for config validation, config planning (Wi‑Fi / OpenTrack apply rules), and semver parsing (`tests/*.cpp`). Outputs land under `.tmp-host-tests/` (ignored by git).
 
-**Recommendation:** When extracting helpers from `track_network`, add **small tests** (even compile-only or a trivial native harness) only where the logic is worth guarding.
+**Recommendation:** When adding pure logic (e.g. more helpers split from `track_network`), extend those harnesses or add a small new test file rather than relying on hardware-only checks.
 
 ### 5. `main.cpp` battery threshold ladder
 

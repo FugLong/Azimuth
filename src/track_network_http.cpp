@@ -24,6 +24,54 @@ namespace azimuth_net {
 String portalHttpUrl() { return String("http://") + WiFi.softAPIP().toString() + "/"; }
 
 namespace {
+constexpr const char* kApiGuardHeader = "X-Azimuth-Request";
+constexpr const char* kApiGuardValue = "1";
+// Default trust anchor for GitHub Pages TLS (Let's Encrypt ISRG Root X1).
+constexpr const char kDefaultManifestCaCert[] PROGMEM = R"PEM(
+-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
+B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
+B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
+KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
+OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
+jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
+qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
+rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----
+)PEM";
+
+bool validateMutatingRequest(WebServer& http) {
+  const String guard = http.header(kApiGuardHeader);
+  if (guard != kApiGuardValue) {
+    JsonDocument err;
+    err["error"] = "forbidden";
+    sendJson(http, 403, err);
+    return false;
+  }
+  return true;
+}
+
 void sendCaptiveRedirect(WebServer& http) {
   const String url = portalHttpUrl();
   http.sendHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -38,9 +86,9 @@ void handleRoot(WebServer& http) {
 }
 
 void appendStatusWifi(JsonDocument& doc, WebServer& http) {
-  doc["setup_ap"] = gRuntime.setupApMode;
+  doc["setup_ap"] = gRuntime.offlineApMode;
   doc["wifi_connected"] = (WiFi.status() == WL_CONNECTED);
-  if (gRuntime.setupApMode) {
+  if (gRuntime.offlineApMode) {
     doc["ip"] = WiFi.softAPIP().toString();
     doc["portal_url"] = portalHttpUrl();
     doc["rssi"] = 0;
@@ -59,8 +107,9 @@ void appendStatusTracking(JsonDocument& doc) {
   doc["ot_host"] = mergedOtHost();
   doc["ot_port"] = mergedOtPort();
   doc["udp_enabled"] = gRuntime.udpSendEnabled;
-  doc["ot_target_ok"] = otTargetOk();
-  if (otTargetOk()) {
+  const bool targetOk = otTargetOk();
+  doc["ot_target_ok"] = targetOk;
+  if (targetOk) {
     doc["ot_resolved_ip"] = gRuntime.otIp.toString();
   } else {
     doc["ot_resolved_ip"] = nullptr;
@@ -259,7 +308,7 @@ void parseOtAxesField(const JsonDocument& body, azimuth_cfg::OtAxesField& out) {
 
 azimuth_cfg::ConfigPlanInput parseConfigPlanInput(const JsonDocument& body) {
   azimuth_cfg::ConfigPlanInput in;
-  in.setupApMode = gRuntime.setupApMode;
+  in.offlineApMode = gRuntime.offlineApMode;
   in.prevImuPeriodMs = mergedImuPeriodMs();
   in.prevMdnsOn = mergedMdnsOn();
   in.prevHostname = mergedHostname().c_str();
@@ -340,6 +389,9 @@ void sendJsonError(WebServer& http, int code, const char* msg) {
 
 void handleConfigPost(WebServer& http) {
   markPortalActivity();
+  if (!validateMutatingRequest(http)) {
+    return;
+  }
   if (!ensurePrefsOpen()) {
     sendJsonError(http, 500, "storage unavailable");
     return;
@@ -422,6 +474,9 @@ void handleConfigPost(WebServer& http) {
 
 void handleRebootPost(WebServer& http) {
   markPortalActivity();
+  if (!validateMutatingRequest(http)) {
+    return;
+  }
   http.send(200, "application/json", "{\"ok\":true}");
   http.client().stop();
   delay(200);
@@ -430,10 +485,11 @@ void handleRebootPost(WebServer& http) {
 
 void handleFactoryResetPost(WebServer& http) {
   markPortalActivity();
+  if (!validateMutatingRequest(http)) {
+    return;
+  }
   if (!ensurePrefsOpen()) {
-    JsonDocument err;
-    err["error"] = "prefs";
-    sendJson(http, 500, err);
+    sendJsonError(http, 500, "prefs");
     return;
   }
   http.send(200, "application/json", "{\"ok\":true}");
@@ -454,11 +510,15 @@ void sendJson(WebServer& http, int code, const JsonDocument& doc) {
 
 void performFirmwareUpdateCheckOnce() {
   gRuntime.fwUpdateCheckDone = true;
+  const char* caCert = AZIMUTH_RELEASE_MANIFEST_CA_CERT;
+  if (!caCert || !caCert[0]) {
+    caCert = kDefaultManifestCaCert;
+  }
   WiFiClientSecure client;
-  client.setTimeout(2500);
-  client.setInsecure();
+  client.setTimeout(1200);
+  client.setCACert(caCert);
   HTTPClient http;
-  http.setTimeout(2500);
+  http.setTimeout(1200);
   if (!http.begin(client, AZIMUTH_RELEASE_MANIFEST_URL)) {
     return;
   }
@@ -491,21 +551,14 @@ void performFirmwareUpdateCheckOnce() {
 }
 
 void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
+  const char* hdrs[] = {kApiGuardHeader};
+  http.collectHeaders(hdrs, 1);
   http.on("/", HTTP_GET, [&http]() { handleRoot(http); });
   http.on("/api/status", HTTP_GET, [&http]() { handleStatus(http); });
   http.on("/api/scan", HTTP_GET, [&http]() { handleScan(http); });
-  http.on("/api/config", HTTP_POST, [&http]() {
-    http.sendHeader("Access-Control-Allow-Origin", "*");
-    handleConfigPost(http);
-  });
-  http.on("/api/reboot", HTTP_POST, [&http]() {
-    http.sendHeader("Access-Control-Allow-Origin", "*");
-    handleRebootPost(http);
-  });
-  http.on("/api/factory_reset", HTTP_POST, [&http]() {
-    http.sendHeader("Access-Control-Allow-Origin", "*");
-    handleFactoryResetPost(http);
-  });
+  http.on("/api/config", HTTP_POST, [&http]() { handleConfigPost(http); });
+  http.on("/api/reboot", HTTP_POST, [&http]() { handleRebootPost(http); });
+  http.on("/api/factory_reset", HTTP_POST, [&http]() { handleFactoryResetPost(http); });
   if (captiveProbeRedirect) {
     http.onNotFound([&http]() {
       const HTTPMethod m = http.method();

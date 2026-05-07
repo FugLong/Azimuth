@@ -89,7 +89,7 @@ These complement today’s `RgbPreset` enum; names may stay as enum cases or col
 
 | Condition | LED idea | Buzzer |
 |-----------|-----------|--------|
-| **Azimuth-Setup AP** | Unique animation — provisioning | Optional short chirp on entering setup (once) |
+| **Azimuth-Tracker Offline Mode AP** | Unique animation — provisioning/off-grid | Optional short chirp on entering offline mode (once) |
 | **Battery warning bands** | Amber / red pulse | Already partially integrated |
 | **Thermal warn / emergency** | Red/orange patterns | Existing tunes; align with LED |
 | **Save / cal success** | Brief green flash | Short positive beep (optional “quiet mode”) |

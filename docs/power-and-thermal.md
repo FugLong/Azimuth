@@ -57,7 +57,7 @@ This cuts **CPU + Wi‑Fi stack** churn when the portal is open or the loop runs
 
 ## 4. Default Wi‑Fi transmit power
 
-If NVS has no `wifi_tx` value yet, firmware defaults to **low** TX (~2 dBm) to favor **cooler / lower current** when the access point is close. Users can raise **balanced** or **high** in the portal for weak links.
+If NVS has no `wifi_tx` value yet, firmware defaults to **balanced** TX so tracking/OpenTrack links stay reliable. Users can choose **low** for cooler/calm links or **high** for weak RF in the portal.
 
 ---
 
@@ -83,7 +83,7 @@ That rate is **much slower** than once per second; it is **not** the tracking ra
 |-----------|-------------------------|-----------------------------|
 | Modem sleep after portal idle | Lower average Wi‑Fi duty | No |
 | Sliced `trackNetworkLoop` | Less HTTP/DNS/sleep work per second | No |
-| Default low `wifi_tx` | Less TX current | No (may affect Wi‑Fi range) |
+| Adjustable `wifi_tx` (default balanced) | Less TX current on **low** | No (may affect Wi‑Fi range) |
 | Short update check after associate | One bounded HTTPS session per boot | No |
 | ~25 s portal poll, hidden tab pause | Less HTTP when UI open | No |
 | IMU interval (user setting) | Fewer reports → less USB/Wi‑Fi **traffic** from poses | **Yes** — this is the main tracking “refresh” control |

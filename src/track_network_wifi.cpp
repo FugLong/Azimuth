@@ -10,6 +10,32 @@
 #include "thermal_monitor.h"
 
 namespace azimuth_net {
+namespace {
+constexpr uint16_t kApPortalServiceIntervalMs = 80;
+constexpr uint32_t kFwCheckUdpIdleMs = 5000;
+constexpr uint32_t kFwCheckMinStaUptimeMs = 300;
+
+void maybePerformFirmwareUpdateCheck(uint32_t now) {
+  static uint32_t staReadyMs = 0;
+  const bool staOk =
+      !gRuntime.offlineApMode && (WiFi.status() == WL_CONNECTED) && !gRuntime.fwUpdateCheckDone;
+  if (!staOk) {
+    staReadyMs = 0;
+    return;
+  }
+  if (staReadyMs == 0) {
+    staReadyMs = now;
+  }
+  if (now - staReadyMs < kFwCheckMinStaUptimeMs) {
+    return;
+  }
+  const bool udpLikelyActive = gRuntime.udpSendEnabled && !gRuntime.stasisActive &&
+                               (now - gRuntime.lastUdpTxMs < kFwCheckUdpIdleMs);
+  if (!azimuth_io_buzzer::isActive() && !udpLikelyActive) {
+    performFirmwareUpdateCheckOnce();
+  }
+}
+}  // namespace
 
 void applyThermalEmergency() {
   if (gRuntime.thermalHoldActive) {
@@ -31,20 +57,22 @@ void applyThermalEmergency() {
   }
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
-  gRuntime.setupApMode = false;
+  gRuntime.offlineApMode = false;
   gRuntime.wifiSleepEnabled = false;
   azimuth_thermal::notifyThermalHoldEntered();
 }
 
-void startProvisioningPortal() {
-  gRuntime.setupApMode = true;
+void startOfflineApPortal() {
+  gRuntime.offlineApMode = true;
   gRuntime.staWebActive = false;
   gRuntime.dnsCaptive.stop();
   WiFi.disconnect(true);
   delay(100);
   WiFi.persistent(false);
-  WiFi.mode(WIFI_AP_STA);
-  (void)WiFi.softAP(kSetupApSsid, nullptr, 1, 0, 4);
+  WiFi.mode(WIFI_AP);
+  // Offline Mode AP is provisioning/off-grid access: keep TX very low to reduce thermal load.
+  WiFi.setTxPower(WIFI_POWER_2dBm);
+  (void)WiFi.softAP(kOfflineApSsid, nullptr, 1, 0, 1);
   const IPAddress apIp = WiFi.softAPIP();
 
   gRuntime.dnsCaptive.setErrorReplyCode(DNSReplyCode::NoError);
@@ -60,6 +88,8 @@ void startProvisioningPortal() {
 
 void networkInit() {
   if (!ensurePrefsOpen()) {
+    WiFi.persistent(false);
+    startOfflineApPortal();
     return;
   }
 
@@ -70,11 +100,11 @@ void networkInit() {
   const String ssid = mergedSsid();
   if (ssid.length() == 0) {
     WiFi.persistent(false);
-    startProvisioningPortal();
+    startOfflineApPortal();
     return;
   }
 
-  gRuntime.setupApMode = false;
+  gRuntime.offlineApMode = false;
   WiFi.persistent(false);
   WiFi.setHostname(mergedHostname().c_str());
   WiFi.mode(WIFI_STA);
@@ -86,7 +116,7 @@ void networkInit() {
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    startProvisioningPortal();
+    startOfflineApPortal();
     return;
   }
 
@@ -114,7 +144,8 @@ void networkLoop() {
     return;
   }
   const uint32_t now = millis();
-  const uint16_t serviceInterval = azimuth_power::networkServiceIntervalMs();
+  const uint16_t serviceInterval =
+      gRuntime.apPortalActive ? kApPortalServiceIntervalMs : azimuth_power::networkServiceIntervalMs();
   if (now - gRuntime.lastNetworkServiceMs >= serviceInterval) {
     gRuntime.lastNetworkServiceMs = now;
     if (gRuntime.apPortalActive) {
@@ -133,20 +164,7 @@ void networkLoop() {
       maybeRefreshOtHostname();
     }
     applyAdaptiveWifiSleep();
-  }
-
-  static uint32_t sFwStaReadyMs = 0;
-  const bool staOk =
-      !gRuntime.setupApMode && (WiFi.status() == WL_CONNECTED) && !gRuntime.fwUpdateCheckDone;
-  if (!staOk) {
-    sFwStaReadyMs = 0;
-  } else if (sFwStaReadyMs == 0) {
-    sFwStaReadyMs = now;
-  }
-  if (staOk && sFwStaReadyMs != 0 && (now - sFwStaReadyMs >= 300)) {
-    if (!azimuth_io_buzzer::isActive()) {
-      performFirmwareUpdateCheckOnce();
-    }
+    maybePerformFirmwareUpdateCheck(now);
   }
 }
 

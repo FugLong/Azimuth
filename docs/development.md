@@ -62,14 +62,14 @@ pio run -e azimuth_main_pcb
 - **`scripts/pio_set_version.py`** injects it as **`AZIMUTH_FW_VERSION`** into **`azimuth_main_diy`** / **`azimuth_main_pcb`** builds.
 - **`web-flasher/manifest.json`** and **`web-flasher/manifest-pcb.json`** fields **`version`** are synced by **`scripts/sync_manifest_version.py`** (via **`prepare_web_flasher_firmware.sh`** and the GitHub Pages workflow) so the USB installer and running firmware agree.
 - **Intended scheme:** align with board generations—e.g. board **0.2** ships **0.2.0**, then patch bumps until a **1.0** board ships **1.0.0**, etc.
-- **Update hint on device:** After STA is up, firmware may fetch the published **`manifest.json`** once per boot (default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner linking to the USB installer. **No OTA install**—users still flash from the browser. Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. That HTTPS client uses **certificate validation off** for this single read-only check.
+- **Update hint on device:** After STA is up, firmware may fetch the published **`manifest.json`** once per boot (default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner linking to the USB installer. **No OTA install**—users still flash from the browser. Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. That HTTPS fetch validates TLS against a pinned root CA (with optional **`AZIMUTH_RELEASE_MANIFEST_CA_CERT`** override).
 - **esp-web-tools / Improv:** The web installer can show live firmware info when the device implements **Improv Serial** and a non-zero **`new_install_improv_wait_time`**. Azimuth does **not** implement Improv yet (**wait time 0**), so the page does not auto-compare the connected board to the hosted build—use the portal **Device** line and the update banner on Wi‑Fi.
 
 ## CI and browser flasher
 
 | What | Where |
 |------|--------|
-| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** (web-flasher artifacts), compiles **`azimuth_debug_diy`** + **`azimuth_main_pcb`**, and runs host-side C++ tests via `scripts/run_host_tests.sh` (config validation + semver parsing). **`secrets.h`** is copied from the example for firmware jobs. |
+| **GitLab pipeline** | Pushes to **`main`** run **`.gitlab-ci.yml`**: builds **`azimuth_main_diy`** (web-flasher artifacts), compiles **`azimuth_debug_diy`** + **`azimuth_main_pcb`**, and runs host-side C++ tests via `scripts/run_host_tests.sh` (config validation, config apply planning, semver parsing). **`secrets.h`** is copied from the example for firmware jobs. |
 | **GitHub Pages USB flasher** | **`.github/workflows/github-pages-flasher.yml`** builds **`azimuth_main_diy`** + **`azimuth_main_pcb`**, runs **`prepare_web_flasher_firmware.sh`** for both targets, syncs **`manifest.json`** + **`manifest-pcb.json`**, deploys **`web-flasher/`** with [esp-web-tools](https://github.com/esphome/esp-web-tools). Repo: **Settings → Pages → Source: GitHub Actions**; environment **`azimuth-flasher`**. |
 
 Default published URLs (see **`platformio.ini`**): manifest **`https://fuglong.github.io/Azimuth/manifest.json`**, flasher **`https://fuglong.github.io/Azimuth/`**.
@@ -94,6 +94,16 @@ Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and option
 | **`web-flasher/`** | Static USB installer + manifest for GitHub Pages. |
 
 Planned work (board I/O, battery, enclosure, OTA, etc.) is tracked in [**roadmap.md**](roadmap.md). **Architecture / refactor strategy:** [**firmware-architecture-plan.md**](firmware-architecture-plan.md). **I/O, pause/stasis, future OTA:** [**io-led-buzzer-plan.md**](io-led-buzzer-plan.md). **Ordered implementation prompt for agents:** [**implementation-handoff-prompt.md**](implementation-handoff-prompt.md).
+
+## Portal source/codegen workflow
+
+Portal firmware content is embedded in **`src/portal_html.cpp`**, but source-first editing is supported via:
+
+```bash
+python3 scripts/portal_codegen.py --generate  # regenerate src/portal_html.cpp from web/index.html
+```
+
+`web/index.html` is the source entry point and references `web/styles.css` + `web/app/*`.
 
 ---
 

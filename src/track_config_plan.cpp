@@ -205,24 +205,24 @@ ConfigApplyPlan buildConfigApplyPlan(const ConfigPlanInput& in) {
     }
   }
 
-  // Setup AP phase.
+  // Offline AP mode phase.
   std::string effectiveSsid = in.prevSsid;
-  if (in.ssid.present && !in.ssid.value.empty()) {
+  if (in.ssid.present) {
     effectiveSsid = in.ssid.value;
   }
-  if (in.setupApMode && effectiveSsid.empty()) {
+  if (in.offlineApMode && effectiveSsid.empty()) {
     fail(plan, "constraint.setup_ap.ssid",
          "Enter your home Wi-Fi network name (SSID), then save.");
     return plan;
   }
 
   // Accepted writes and side-effect decisions.
-  if (in.ssid.present && !in.ssid.value.empty()) {
+  if (in.ssid.present) {
     plan.writeSsid = true;
     plan.ssidValue = in.ssid.value;
     plan.wifiCredChanged = (in.ssid.value != in.prevSsid);
   }
-  if (in.password.present && !in.password.value.empty()) {
+  if (in.password.present) {
     plan.writePassword = true;
     plan.passwordValue = in.password.value;
     plan.wifiCredChanged = true;

@@ -4,6 +4,9 @@
 .vscode/launch.json
 .vscode/ipch
 
+# Host-side unit test binaries (see scripts/run_host_tests.sh)
+.tmp-host-tests/
+
 # Python / local tooling
 .venv/
 .venv*/

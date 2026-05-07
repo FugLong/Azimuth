@@ -11,7 +11,7 @@ const char kPortalIndexHtml[] PROGMEM = R"AZPORTAL(<!DOCTYPE html>
 <style>
 :root{
   --bg:#0a0e14;--bg2:#121a24;--card:rgba(26,35,50,.92);--bd:rgba(61,158,229,.22);
-  --tx:#eef4fa;--muted:#8b9cb3;--acc:#3d9ee5;--acc-dim:rgba(61,158,229,.15);
+  --tx:#eef4fa;--tx-soft:#d8e2ee;--muted:#8b9cb3;--acc:#3d9ee5;--acc-dim:rgba(61,158,229,.15);
   --ok:#4ade80;--shadow:0 8px 32px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
@@ -23,7 +23,7 @@ body{
   background:var(--bg);
   background-image:radial-gradient(ellipse 100% 60% at 50% -15%,#1a4a6e 0%,transparent 55%),radial-gradient(ellipse 80% 50% at 100% 100%,rgba(61,158,229,.08),transparent);
 }
-.wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 2.5rem}
+.wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 7.2rem}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:1.1rem}
 .logo-wrap{width:min(92vw,232px);margin:0 auto;color:#e8eef5;filter:drop-shadow(0 3px 20px rgba(61,158,229,.2))}
 .logo-wrap svg{display:block;width:100%;height:auto}
@@ -213,9 +213,82 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 }
 .hero-wifi-bars span.on{background:linear-gradient(180deg,#6ec9ff,var(--acc));border-color:transparent}
 .hero-wifi-bars .b1{height:6px}.hero-wifi-bars .b2{height:10px}.hero-wifi-bars .b3{height:14px}.hero-wifi-bars .b4{height:18px}
+.page-shell{
+  margin-bottom:1.15rem;
+  border:1px solid rgba(61,158,229,.28);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(10,16,24,.98),rgba(12,18,26,.94));
+  box-shadow:0 12px 28px rgba(0,0,0,.34);
+  overflow:hidden;
+}
+.page-shell-head{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.72rem .9rem;
+  min-height:2.55rem;
+  border-bottom:1px solid rgba(61,158,229,.25);
+  background:linear-gradient(180deg,rgba(25,48,72,.72),rgba(17,31,47,.82));
+}
+.page-shell-title{
+  font-size:.86rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9fd2f6
+}
+.section-shell-title{
+  color:#9fd2f6
+}
+.section-back{
+  border:1px solid rgba(61,158,229,.28);background:rgba(12,22,34,.9);color:#d8e6f6;padding:.3rem .62rem;margin:0;
+  border-radius:999px;font-size:.73rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1;cursor:pointer
+}
+.section-back:hover{background:rgba(27,48,72,.96)}
+.section-back:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+.page-shell-body{
+  padding:.85rem .8rem .5rem;
+}
+.section-page-body .section-card{
+  margin:0 0 .75rem;
+  background:rgba(18,27,38,.92);
+}
+.section-page-body .section-card:last-child{margin-bottom:0}
+.section-list{display:flex;flex-direction:column;gap:.55rem}
+.home-page-shell{border-color:rgba(61,158,229,.3)}
+.home-page-shell .hint{margin:0 0 .85rem}
+.section-item{
+  width:100%;text-align:left;background:rgba(18,27,38,.94);border:1px solid rgba(61,158,229,.2);border-radius:12px;
+  color:var(--tx);padding:.78rem .82rem;cursor:pointer;
+  transition:border-color .12s ease, background .12s ease, transform .12s ease
+}
+.section-item:hover{border-color:rgba(61,158,229,.35);background:rgba(21,33,47,.96)}
+.section-item:active{transform:translateY(1px)}
+.section-item.is-active{border-color:var(--acc);box-shadow:0 0 0 1px rgba(61,158,229,.35) inset}
+.section-item.is-disabled{opacity:.55;cursor:not-allowed}
+.section-item-inner{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.section-item-title{display:block;font-weight:650}
+.section-item small{display:block;margin-top:.2rem;color:var(--muted);font-size:.73rem;line-height:1.35}
+.section-item-arrow{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.35rem;height:1.35rem;border-radius:999px;
+  border:1px solid rgba(61,158,229,.26);
+  color:#9fd2f6;font-size:1.05rem;line-height:1;flex:0 0 auto;
+  background:rgba(17,30,44,.95)
+}
 @media(min-width:480px){
   .row-actions{flex-wrap:nowrap}
   .row-actions .btn{flex:1}
+}
+.action-bar-wrap{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  padding:.72rem .75rem calc(.28rem + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(10,14,20,0),rgba(10,14,20,.94) 35%);
+  backdrop-filter:saturate(120%) blur(2px);
+}
+.action-bar{
+  max-width:34rem;margin:0 auto;padding:.44rem .62rem .14rem;
+  border:1px solid rgba(61,158,229,.28);border-radius:14px;
+  background:rgba(12,18,26,.96);
+  box-shadow:0 10px 20px rgba(0,0,0,.35);
+}
+.action-bar #msg{
+  margin-top:.2rem;
+  min-height:.2rem;
 }
 </style>
 </head>
@@ -249,10 +322,36 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 </div>
 </section>
-<p class="banner" id="setupBanner">Join <strong>Azimuth‑Setup</strong> (open network). This page may open automatically; if not, use <strong id="portalUrl">http://192.168.4.1/</strong> on <strong>port 80</strong>. <strong>azimuth.local</strong> works only on your home Wi‑Fi after setup.</p>
+<p class="banner" id="setupBanner">Join <strong>Azimuth‑Tracker</strong> (Offline Mode AP). This page may open automatically; if not, use <strong id="portalUrl">http://192.168.4.1/</strong> on <strong>port 80</strong>. <strong>azimuth.local</strong> works only on your home Wi‑Fi after setup.</p>
 <p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<section class="page-shell home-page-shell" id="cardHomeNav">
+<div class="page-shell-head">
+<div class="page-shell-title">Settings</div>
+</div>
+<div class="page-shell-body">
+<p class="hint">Choose a category to adjust details.</p>
+<div class="section-list">
+<button type="button" class="section-item" data-section-nav="wifi"><span class="section-item-inner"><span><span class="section-item-title">Wi‑Fi</span><small id="sumWifi">Network and discovery</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<button type="button" class="section-item" data-section-nav="tracking"><span class="section-item-inner"><span><span class="section-item-title">Tracking output</span><small id="sumTracking">Hatire, UDP, axes, rate</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<button type="button" class="section-item" data-section-nav="device"><span class="section-item-inner"><span><span class="section-item-title">Device & battery</span><small id="sumDevice">Firmware, battery, save/reboot</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<button type="button" class="section-item" data-section-nav="sound"><span class="section-item-inner"><span><span class="section-item-title">Sound & light</span><small id="sumSound">Buzzer and RGB behavior</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<button type="button" class="section-item" data-section-nav="advanced"><span class="section-item-inner"><span><span class="section-item-title">Advanced</span><small id="sumAdvanced">Factory reset</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+</div>
+</div>
+</section>
+<div class="card" id="cardHomeStatus">
+<div class="hd">Device status</div>
+<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="homeFwVer">—</strong> · Battery: <strong id="homeBattState">—</strong>.</p>
+<pre class="stats" id="homeStats"></pre>
+</div>
+<section class="page-shell section-page" id="sectionPage" style="display:none" aria-live="polite">
+<div class="page-shell-head section-page-head" id="sectionShell">
+<button type="button" class="section-back" id="btnSectionBack" aria-label="Go back to settings">Back</button>
+<div class="page-shell-title section-shell-title" id="sectionTitle">Section</div>
+</div>
+<div class="page-shell-body section-page-body" id="sectionPageBody">
 
-<div class="card">
+<div class="card section-card" id="cardWifi" data-section="wifi">
 <div class="hd">Wi‑Fi</div>
 <p class="hint">Home network credentials. Saving a <strong>new</strong> SSID or password reboots the device.</p>
 <label for="ssid">Network name (SSID)</label>
@@ -265,7 +364,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <div class="scan-list" id="scanList"></div>
 </div>
 
-<div class="card">
+<div class="card section-card" id="cardLan" data-section="wifi">
 <div class="hd">LAN & discovery</div>
 <p class="hint">mDNS advertises <code>http://&lt;hostname&gt;.local:8080</code>. Changing hostname or mDNS requires a reboot.</p>
 <div class="row" style="margin-bottom:.75rem">
@@ -276,7 +375,26 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <input type="text" id="hostname" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="24" placeholder="azimuth"/>
 </div>
 
-<div class="card">
+<div class="card section-card" id="cardTrackRadio" data-section="tracking">
+<div class="hd">Tracking & radio</div>
+<p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. The portal is tuned for low steady load; saves and reboots still go through immediately.</p>
+<label for="imuPeriod">IMU report interval</label>
+<select id="imuPeriod" aria-label="IMU period">
+<option value="5">200 Hz (5 ms) — lowest latency</option>
+<option value="10" selected>100 Hz (10 ms) — default</option>
+<option value="20">50 Hz (20 ms)</option>
+<option value="40">25 Hz (40 ms) — cooler / lower power</option>
+</select>
+<label for="wifiTx">Wi‑Fi TX power</label>
+<select id="wifiTx" aria-label="WiFi TX power">
+<option value="0">Low (~2 dBm) — coolest</option>
+<option value="1" selected>Balanced (~8.5 dBm) — default</option>
+<option value="2">High (~19.5 dBm) — weak AP / long range</option>
+</select>
+<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
+</div>
+
+<div class="card section-card" id="cardTrackingOutput" data-section="tracking">
 <div class="hd">OpenTrack (PC)</div>
 <p class="hint">Your PC’s <strong>IPv4</strong> or a hostname your <strong>router’s DNS</strong> knows. <code>.local</code> / mDNS usually <strong>fail</strong> from the board—prefer an address or a DHCP hostname.</p>
 <div class="row" style="margin-bottom:.6rem">
@@ -330,26 +448,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 </div>
 
-<div class="card">
-<div class="hd">Tracking & radio</div>
-<p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. The portal is tuned for low steady load; saves and reboots still go through immediately.</p>
-<label for="imuPeriod">IMU report interval</label>
-<select id="imuPeriod" aria-label="IMU period">
-<option value="5">200 Hz (5 ms) — lowest latency</option>
-<option value="10" selected>100 Hz (10 ms) — default</option>
-<option value="20">50 Hz (20 ms)</option>
-<option value="40">25 Hz (40 ms) — cooler / lower power</option>
-</select>
-<label for="wifiTx">Wi‑Fi TX power</label>
-<select id="wifiTx" aria-label="WiFi TX power">
-<option value="0">Low (~2 dBm) — coolest</option>
-<option value="1" selected>Balanced (~8.5 dBm) — default</option>
-<option value="2">High (~19.5 dBm) — weak AP / long range</option>
-</select>
-<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
-</div>
-
-<div class="card" id="cardSoundLight" style="display:none">
+<div class="card section-card" id="cardSoundLight" style="display:none" data-section="sound">
 <div class="hd">Sound & light</div>
 <p class="hint" id="soundLightHint" style="display:none">Stored in flash — use <strong>Save</strong> with the rest of the page.</p>
 <div id="rgbBrightnessRow" style="display:none">
@@ -417,7 +516,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 </div>
 
-<div class="card">
+<div class="card section-card" id="cardDevice" data-section="device">
 <div class="hd">Device</div>
 <p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
 <label for="batteryCapacity">Battery capacity (mAh)</label>
@@ -425,15 +524,10 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <div class="row battery-cal-meta"><span>Battery cal offset</span><strong id="batteryCalOffsetVal">0 mV</strong></div>
 <div class="row battery-cal-actions"><button type="button" class="btn btn-sec" id="btnBatteryCal">Calibrate at 4.2V (USB charging)</button></div>
 <p class="hint battery-cal-hint">Runs a ~3 second averaging pass using raw ADC, then stores a single absolute offset.</p>
-<div class="row row-actions">
-<button type="button" class="btn btn-primary" id="btnSave">Save</button>
-<button type="button" class="btn btn-sec" id="btnReboot">Reboot</button>
-</div>
-<div id="msg"></div>
 <pre class="stats" id="stats"></pre>
 </div>
 
-<div class="card card-danger">
+<div class="card card-danger section-card" id="cardAdvanced" data-section="advanced">
 <div class="hd">Advanced</div>
 <details class="danger-details">
 <summary>Reset to factory defaults…</summary>
@@ -444,282 +538,691 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </details>
 </div>
 </div>
+</section>
+</div>
+<div class="action-bar-wrap" role="region" aria-label="Global actions">
+<div class="action-bar">
+<div class="row row-actions">
+<button type="button" class="btn btn-primary" id="btnSave">Save</button>
+<button type="button" class="btn btn-sec" id="btnReboot">Reboot</button>
+</div>
+<div id="msg"></div>
+</div>
+</div>
 <script>
-const $=id=>document.getElementById(id);
-function setMsg(t,cls){const m=$('msg');m.textContent=t||'';m.className=cls||''}
-function setToggle(id,on){$(id).classList.toggle('on',on)}
-const uiTouched={udp:false,mdns:false,hatire:false};
-function updateSoundLightCard(j){
-  const card=$('cardSoundLight'),hint=$('soundLightHint');
-  const rr=$('rgbBrightnessRow'),br=$('buzzerVolumeRow'),lm=$('ledModeRow');
-  if(!card)return;
-  const hasRgb=!!j.has_rgb,hasBz=!!j.has_buzzer;
-  const show=hasRgb||hasBz;
-  card.style.display=show?'block':'none';
-  if(hint)hint.style.display=show?'block':'none';
-  if(rr)rr.style.display=hasRgb?'block':'none';
-  if(lm)lm.style.display=hasRgb?'block':'none';
-  if(br)br.style.display=hasBz?'block':'none';
-}
-function syncRangeLabels(){
-  const rb=$('rgbBrightness'),rv=$('rgbBrightnessVal');
-  const bb=$('buzzerVolume'),bv=$('buzzerVolumeVal');
-  if(rb&&rv)rv.textContent=rb.value+'%';
-  if(bb&&bv)bv.textContent=bb.value+'%';
-}
-function clamp255(x){
-  const n=Math.round(Number(x));
-  if(!Number.isFinite(n))return 0;
-  return Math.max(0,Math.min(255,n));
-}
-function setLedRgb(r,g,b){
-  const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
-  if(er)er.value=String(clamp255(r));
-  if(eg)eg.value=String(clamp255(g));
-  if(eb)eb.value=String(clamp255(b));
-  syncLedManualUi();
-}
-function syncLedManualUi(){
-  const row=$('ledManualRow'),lm=$('ledMode'),hint=$('ledModeHint');
-  const sw=$('ledSwatch'),rv=$('ledRVal'),gv=$('ledGVal'),bv=$('ledBVal');
-  const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
-  if(!lm)return;
-  const mode=parseInt(lm.value,10);
-  const manual=mode===3;
-  if(row)row.style.display=manual?'block':'none';
-  const r=er?clamp255(er.value):0,g=eg?clamp255(eg.value):0,b=eb?clamp255(eb.value):0;
-  if(rv)rv.textContent=String(r);
-  if(gv)gv.textContent=String(g);
-  if(bv)bv.textContent=String(b);
-  if(sw)sw.style.background='rgb('+r+','+g+','+b+')';
-  if(hint){
-    if(mode===0)hint.textContent='Smooth rainbow. Overrides (thermal, low battery, setup Wi‑Fi, pause) still win on the device.';
-    else if(mode===1)hint.textContent='Slower rainbow. Same override rules as other modes.';
-    else if(mode===2)hint.textContent='Green accent while the IMU reports OK; dim when waiting for data.';
-    else hint.textContent='Solid color from the sliders below (after Save). RGB brightness above still scales output. System warnings override this LED.';
-  }
-}
-function heroWifiTier(rssi){
-  if(rssi==null)return 0;
-  const n=Number(rssi);
-  if(!Number.isFinite(n)||n===0)return 0;
-  if(n>=-50)return 4;
-  if(n>=-65)return 3;
-  if(n>=-75)return 2;
-  if(n>=-85)return 1;
-  return 0;
-}
-/** 0=low .. 2=high TX; blends with RSSI tier for hero bars (uplink headroom). */
-function wifiTxWeight(profile){
-  if(profile===0)return 0.74;
-  if(profile===2)return 1;
-  return 0.92;
-}
-function normalizedWifiTx(j){
-  const x=j.wifi_tx;
-  if(x===0||x===1||x===2)return x;
-  return 1;
-}
-function heroWifiTierWeighted(rssi,wifiTx){
-  const base=heroWifiTier(rssi);
-  const w=wifiTxWeight(wifiTx);
-  const t=Math.round(base*w);
-  return Math.max(0,Math.min(4,t));
-}
-function heroWifiLabel(tier,rssi,wifiTx){
-  const txLab=(wifiTx===0)?'low':(wifiTx===2)?'high':'balanced';
-  const tail=(rssi!=null?' · '+rssi+' dBm':'')+' · TX '+txLab;
-  if(tier<=0)return(rssi!=null&&Number(rssi)!==0)?('Weak'+tail):'No link';
-  const labels=['','Fair','Good','Very good','Excellent'];
-  return labels[tier]+tail;
-}
-function setHeroWifiBars(barEl,tier){
-  if(!barEl)return;
-  barEl.querySelectorAll('span').forEach((sp,i)=>{sp.classList.toggle('on',i<tier);});
-}
-function applyHero(j){
-  const ap=!!j.setup_ap;
-  const hb=$('heroBatt'),hts=$('heroBattSub'),htt=$('heroTemp'),htemps=$('heroTempSub');
-  const hwb=$('heroWifiBars'),hws=$('heroWifiSub'),htr=$('heroTrack'),htrk=$('heroTrackSub');
-  const bp=(j.battery_percent!=null)?Number(j.battery_percent):null;
-  const bm=(j.battery_mv!=null)?Number(j.battery_mv):null;
-  const bstate=(j.battery_charge_state||j.battery_state||'').toLowerCase();
-  if(hb){
-    if(bstate==='absent'||(bm!=null&&bm<2000)){
-      hb.textContent='—';
-      if(hts)hts.textContent='No battery / switch off';
-    }else if(bp!=null&&!Number.isNaN(bp)){
-      const p=Math.round(bp);
-      hb.textContent=(p>100)?'100+%':(p+'%');
-      if(hts){
-        hts.textContent=(bstate==='charging')?'Charging':'Battery';
-      }
-    }else if(bm!=null&&!Number.isNaN(bm)){
-      hb.textContent=Math.round(bm)+' mV';
-      if(hts)hts.textContent='Battery';
-    }else{
-      hb.textContent='—';
-      if(hts)hts.textContent='Battery unavailable';
+window.AppState=(function(){
+  return {
+    uiTouched:{udp:false,mdns:false,hatire:false},
+    power:{
+      lastUserActivityMs:Date.now(),
+      lastStatusOkMs:0,
+      pollTimer:0
     }
-  }
-  const tc=j.chip_temp_c;
-  if(htt){
-    if(tc!=null&&!Number.isNaN(Number(tc))){htt.textContent=Number(tc).toFixed(1)+' °C'}
-    else{htt.textContent='—'}
-    const ts=j.thermal_state||'ok';
-    const tile=$('heroTileTemp');
-    if(tile){
-      tile.classList.toggle('hero-tile-warn',ts==='warn');
-      tile.classList.toggle('hero-tile-err',ts==='emergency'||ts==='thermal_hold');
+  };
+})();
+</script>
+<script>
+window.AppConfig=(function(){
+  return {
+    api:{
+      mutationGuardHeader:'X-Azimuth-Request',
+      mutationGuardValue:'1'
+    },
+    monitor:{
+      idlePollActiveMs:25000,
+      idlePollHeartbeatMs:60000,
+      idleGraceMs:60000,
+      bootstrapRetryMs:3000,
+      activityRescheduleMinMs:1500,
+      staleUiAfterFailures:2
     }
-    if(htemps){
-      if(ts==='warn')htemps.textContent='Warm';
-      else if(ts==='emergency'||ts==='thermal_hold')htemps.textContent='Protection active';
-      else htemps.textContent='Normal';
+  };
+})();
+</script>
+<script>
+window.AppApi=(function(){
+  const cfg=(window.AppConfig&&window.AppConfig.api)||{};
+  const MUTATION_GUARD_HEADER=cfg.mutationGuardHeader||'X-Azimuth-Request';
+  const MUTATION_GUARD_VALUE=cfg.mutationGuardValue||'1';
+  const MUTATION_HEADERS={};
+  MUTATION_HEADERS[MUTATION_GUARD_HEADER]=MUTATION_GUARD_VALUE;
+
+  async function parseJsonResponse(r){
+    let j={};
+    try{
+      j=await r.json();
+    }catch(e){
+      j={error:r.ok?'Invalid JSON response':'Request failed'};
     }
+    return {response:r,json:j};
   }
-  const txProf=normalizedWifiTx(j);
-  const tier=ap?0:heroWifiTierWeighted(j.rssi,txProf);
-  setHeroWifiBars(hwb,tier);
-  if(hws){
-    if(ap)hws.textContent='Setup AP · provisioning';
-    else hws.textContent=heroWifiLabel(tier,j.rssi,txProf);
+
+  async function requestJson(url,opts){
+    const r=await fetch(url,opts);
+    return parseJsonResponse(r);
   }
-  if(htr){
-    if(j.thermal_hold){
-      htr.textContent='Wi‑Fi off';
-      if(htrk)htrk.textContent='Cooling — USB tracking may still run';
-    }else if(j.stasis){
-      htr.textContent='Paused';
-      if(htrk)htrk.textContent='No UDP / USB pose · low power';
-    }else{
-      const im=j.imu_period_ms;
-      const hz=im?Math.round(1000/im):'—';
-      htr.textContent='~'+hz+' Hz';
-      if(htrk)htrk.textContent=im?'Update rate':'';
-    }
+
+  async function getStatus(){
+    const {response:r,json:j}=await requestJson('/api/status');
+    if(!r.ok)throw new Error(j.error||('Status failed ('+r.status+')'));
+    return j;
   }
-}
-function applyShell(j){
-  const ap=!!j.setup_ap;
-  applyHero(j);
-  $('setupBanner').style.display=ap?'block':'none';
-  const ub=$('updateBanner');
-  if(ub){
-    if(!ap&&j.fw_update_available&&j.fw_latest_version){
-      ub.style.display='block';
-      $('updateBannerLatest').textContent=j.fw_latest_version;
-      $('updateBannerCur').textContent=j.fw_version||'—';
-      const lk=$('updateBannerLink');
-      if(lk&&j.fw_flasher_url){lk.href=j.fw_flasher_url}
-    }else{ub.style.display='none'}
+  async function scanNetworks(){
+    const {response:r,json:j}=await requestJson('/api/scan');
+    if(!r.ok)throw new Error(j.error||('Scan failed ('+r.status+')'));
+    return j;
   }
-  $('subLine').textContent=ap?'Provisioning · join your Wi‑Fi below':'On your network · idle until you use this page';
-  if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
-  const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-  const cip=j.http_client_ip;
-  const rssi=ap?'':(j.rssi!=null?j.rssi+' dBm':'—');
-  const line1=ap?('AP · board '+ (j.ip||'—')):('LAN · board '+(j.ip||'—')+' · RSSI '+rssi);
-  const line1b=' · up '+Math.round(j.uptime_ms/1000)+'s · heap '+j.heap_free;
-  let udpSummary=j.udp_enabled===false?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending');
-  if(j.stasis)udpSummary='Paused · '+udpSummary;
-  if(j.ot_target_ok&&j.ot_resolved_ip)udpSummary+=' → '+j.ot_resolved_ip;
-  const line2='FW '+(j.fw_version||'?')+' · ~'+hz+' Hz · '+ (j.hostname||'azimuth')+' · '+udpSummary+' · STA '+(j.wifi_connected?'on':'off');
-  const bmv=(j.battery_mv!=null)?(j.battery_mv+' mV'):'—';
-  const braw=(j.battery_raw_mv!=null)?(j.battery_raw_mv+' mV pin'):'—';
-  const bpct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';
-  const bmah=(j.battery_remaining_mah!=null)?(j.battery_remaining_mah+' mAh'):'—';
-  const bstate=j.battery_charge_state||j.battery_state||'—';
-  const line3='Batt '+bpct+' ('+bmv+', '+bmah+') · raw '+braw+' · '+bstate;
-  $('stats').textContent=line1+line1b+'\n'+line2+'\n'+line3;
-  if($('fwVer'))$('fwVer').textContent=j.fw_version||'—';
-  if($('battState')){
-    const st=(j.battery_charge_state||j.battery_state||'').toLowerCase();
-    if(st==='absent'){$('battState').textContent='No battery / switch off'}
-    else if(j.battery_percent!=null){
-      const pct=(Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%');
-      const s=(st==='charging')?' · charging':'';
-      $('battState').textContent=(pct+s);
-    }else if(j.battery_mv!=null){$('battState').textContent=(j.battery_mv+' mV')}
-    else{$('battState').textContent=(j.battery_state||'unavailable')}
-  }
-  const bc=$('batteryCapacity');
-  if(bc&&j.battery_capacity_mah!=null){bc.value=String(j.battery_capacity_mah)}
-  const bcv=$('batteryCalOffsetVal');
-  if(bcv){
-    const off=(j.battery_cal_offset_mv!=null)?Number(j.battery_cal_offset_mv):0;
-    const sign=off>0?'+':'';
-    bcv.textContent=sign+off+' mV';
-  }
-  if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
-  if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
-  if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
-  updateSoundLightCard(j);
-  let showClientIp=false;
-  const box=$('clientIpBox'),val=$('clientIpVal');
-  if(box&&val){
-    if(cip&&cip!=='0.0.0.0'){showClientIp=true;box.style.display='block';val.textContent=cip;}
-    else{box.style.display='none'}
-  }
-  const dh=$('otDynHint');
-  if(dh){
-    const hostSet=!!(j.ot_host&&String(j.ot_host).trim().length);
-    const hasRes=j.ot_resolved_ip&&String(j.ot_resolved_ip).length;
-    dh.style.display='none';
-    dh.textContent='';
-    dh.classList.remove('warn');
-    if(j.udp_enabled&&hostSet){
-      if(hasRes&&j.ot_target_ok&&j.ot_using_dns){
-        dh.style.display='block';
-        dh.textContent='→ '+j.ot_resolved_ip+' (DNS)';
-      }else if(!j.ot_target_ok||!hasRes){
-        dh.style.display='block';
-        dh.classList.add('warn');
-        dh.textContent=j.wifi_connected?'Cannot resolve this hostname. Check spelling; avoid .local unless your router supports it.':'Join Wi‑Fi before hostnames can resolve.';
-      }
-    }
-  }
-}
-function fillInput(el,v){
-  if(!el)return;
-  const s=v==null?'':String(v);
-  el.value=s;
-  el.setAttribute('value',s);
-  el.defaultValue=s;
-}
-function otAxesDefault(){
-  return[{src:0,inv:false},{src:2,inv:false},{src:1,inv:true}];
-}
-function applyOtAxesFromStatus(ax){
-  const d=Array.isArray(ax)&&ax.length===3?ax:otAxesDefault();
-  for(let i=0;i<3;i++){
-    const o=d[i]||{src:0,inv:false};
-    const s=([0,1,2].includes(o.src))?o.src:0;
-    $('otSrc'+i).value=String(s);
-    setToggle('otInv'+i,!!o.inv);
-  }
-}
-function collectOtAxes(){
-  const s=[0,1,2].map(i=>parseInt($('otSrc'+i).value,10));
-  if(new Set(s).size!==3){
-    setMsg('Use yaw, pitch, and roll exactly once across Rot 0–2.','err');
-    return null;
-  }
-  return s.map((src,i)=>({src,inv:$('otInv'+i).classList.contains('on')}));
-}
-function nudgeInputPaint(){
-  requestAnimationFrame(()=>{
-    ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx','rgbBrightness','ledMode','ledR','ledG','ledB','buzzerVolume','batteryCapacity'].forEach(id=>{
-      const el=$(id);
-      if(!el)return;
-      el.style.transform='translateZ(1px)';
-      void el.offsetHeight;
-      el.style.transform='';
+  async function postConfig(body){
+    return requestJson('/api/config',{
+      method:'POST',
+      headers:Object.assign({'Content-Type':'application/json'},MUTATION_HEADERS),
+      body:JSON.stringify(body)
     });
-  });
+  }
+  async function postReboot(){
+    return requestJson('/api/reboot',{method:'POST',headers:MUTATION_HEADERS});
+  }
+  async function postFactoryReset(){
+    return requestJson('/api/factory_reset',{method:'POST',headers:MUTATION_HEADERS});
+  }
+  return {getStatus,scanNetworks,postConfig,postReboot,postFactoryReset};
+})();
+</script>
+<script>
+window.AppUi=(function(){
+  const $=id=>document.getElementById(id);
+
+  function setMsg(t,cls){
+    const m=$('msg');
+    m.textContent=t||'';
+    m.className=cls||'';
+  }
+
+  function setToggle(id,on){
+    $(id).classList.toggle('on',on);
+  }
+
+  function updateSoundLightCard(j){
+    const card=$('cardSoundLight'),hint=$('soundLightHint');
+    const rr=$('rgbBrightnessRow'),br=$('buzzerVolumeRow'),lm=$('ledModeRow');
+    if(!card)return;
+    const hasRgb=!!j.has_rgb,hasBz=!!j.has_buzzer;
+    const show=hasRgb||hasBz;
+    const inSoundSection=window.AppSections&&typeof window.AppSections.currentSection==='function'
+      ?window.AppSections.currentSection()==='sound'
+      :true;
+    card.style.display=(show&&inSoundSection)?'block':'none';
+    if(hint)hint.style.display=show?'block':'none';
+    if(rr)rr.style.display=hasRgb?'block':'none';
+    if(lm)lm.style.display=hasRgb?'block':'none';
+    if(br)br.style.display=hasBz?'block':'none';
+  }
+
+  function syncRangeLabels(){
+    const rb=$('rgbBrightness'),rv=$('rgbBrightnessVal');
+    const bb=$('buzzerVolume'),bv=$('buzzerVolumeVal');
+    if(rb&&rv)rv.textContent=rb.value+'%';
+    if(bb&&bv)bv.textContent=bb.value+'%';
+  }
+
+  function clamp255(x){
+    const n=Math.round(Number(x));
+    if(!Number.isFinite(n))return 0;
+    return Math.max(0,Math.min(255,n));
+  }
+
+  function setLedRgb(r,g,b){
+    const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
+    if(er)er.value=String(clamp255(r));
+    if(eg)eg.value=String(clamp255(g));
+    if(eb)eb.value=String(clamp255(b));
+    syncLedManualUi();
+  }
+
+  function syncLedManualUi(){
+    const row=$('ledManualRow'),lm=$('ledMode'),hint=$('ledModeHint');
+    const sw=$('ledSwatch'),rv=$('ledRVal'),gv=$('ledGVal'),bv=$('ledBVal');
+    const er=$('ledR'),eg=$('ledG'),eb=$('ledB');
+    if(!lm)return;
+    const mode=parseInt(lm.value,10);
+    const manual=mode===3;
+    if(row)row.style.display=manual?'block':'none';
+    const r=er?clamp255(er.value):0,g=eg?clamp255(eg.value):0,b=eb?clamp255(eb.value):0;
+    if(rv)rv.textContent=String(r);
+    if(gv)gv.textContent=String(g);
+    if(bv)bv.textContent=String(b);
+    if(sw)sw.style.background='rgb('+r+','+g+','+b+')';
+    if(hint){
+      if(mode===0)hint.textContent='Smooth rainbow. Overrides (thermal, low battery, setup Wi‑Fi, pause) still win on the device.';
+      else if(mode===1)hint.textContent='Slower rainbow. Same override rules as other modes.';
+      else if(mode===2)hint.textContent='Green accent while the IMU reports OK; dim when waiting for data.';
+      else hint.textContent='Solid color from the sliders below (after Save). RGB brightness above still scales output. System warnings override this LED.';
+    }
+  }
+
+  function fillInput(el,v){
+    if(!el)return;
+    const s=v==null?'':String(v);
+    el.value=s;
+    el.setAttribute('value',s);
+    el.defaultValue=s;
+  }
+
+  function nudgeInputPaint(){
+    requestAnimationFrame(()=>{
+      ['ssid','hostname','otHost','otPort','otSrc0','otSrc1','otSrc2','imuPeriod','wifiTx','rgbBrightness','ledMode','ledR','ledG','ledB','buzzerVolume','batteryCapacity'].forEach(id=>{
+        const el=$(id);
+        if(!el)return;
+        el.style.transform='translateZ(1px)';
+        void el.offsetHeight;
+        el.style.transform='';
+      });
+    });
+  }
+
+  return {
+    $,
+    setMsg,
+    setToggle,
+    updateSoundLightCard,
+    syncRangeLabels,
+    clamp255,
+    setLedRgb,
+    syncLedManualUi,
+    fillInput,
+    nudgeInputPaint,
+  };
+})();
+</script>
+<script>
+window.AppStateFns=(function(){
+  const {$,setToggle,setMsg}=window.AppUi;
+
+  function otAxesDefault(){
+    return[{src:0,inv:false},{src:2,inv:false},{src:1,inv:true}];
+  }
+
+  function applyOtAxesFromStatus(ax){
+    const d=Array.isArray(ax)&&ax.length===3?ax:otAxesDefault();
+    for(let i=0;i<3;i++){
+      const o=d[i]||{src:0,inv:false};
+      const s=([0,1,2].includes(o.src))?o.src:0;
+      $('otSrc'+i).value=String(s);
+      setToggle('otInv'+i,!!o.inv);
+    }
+  }
+
+  function collectOtAxes(){
+    const s=[0,1,2].map(i=>parseInt($('otSrc'+i).value,10));
+    if(new Set(s).size!==3){
+      setMsg('Use yaw, pitch, and roll exactly once across Rot 0–2.','err');
+      return null;
+    }
+    return s.map((src,i)=>({src,inv:$('otInv'+i).classList.contains('on')}));
+  }
+
+  return {otAxesDefault,applyOtAxesFromStatus,collectOtAxes};
+})();
+</script>
+<script>
+window.AppSections=(function(){
+  const {$}=window.AppUi;
+
+  const titles={
+    home:'Settings',
+    wifi:'Wi‑Fi',
+    tracking:'Tracking output',
+    device:'Device & battery',
+    sound:'Sound & light',
+    advanced:'Advanced'
+  };
+
+  let current='home';
+  let soundSupported=true;
+
+  function sectionCards(){
+    return Array.from(document.querySelectorAll('.section-card'));
+  }
+
+  function cardSection(card){
+    return card.getAttribute('data-section')||'';
+  }
+
+  function sectionButtons(){
+    return Array.from(document.querySelectorAll('[data-section-nav]'));
+  }
+
+  function currentSection(){
+    return current;
+  }
+
+  function updateNavState(){
+    sectionButtons().forEach(btn=>{
+      const key=btn.getAttribute('data-section-nav')||'home';
+      btn.classList.toggle('is-active',current===key);
+      if(key==='sound'){
+        btn.style.display=soundSupported?'block':'none';
+        btn.classList.toggle('is-disabled',!soundSupported);
+        btn.setAttribute('aria-disabled',(!soundSupported)?'true':'false');
+      }
+    });
+  }
+
+  function setSection(next){
+    if(next==='sound'&&!soundSupported)next='home';
+    current=titles[next]?next:'home';
+    const sectionPage=$('sectionPage');
+    const title=$('sectionTitle');
+    const homeNav=$('cardHomeNav');
+    const homeStatus=$('cardHomeStatus');
+    if(title)title.textContent=titles[current]||titles.home;
+    if(sectionPage)sectionPage.style.display=(current==='home')?'none':'block';
+    if(homeNav)homeNav.style.display=(current==='home')?'block':'none';
+    if(homeStatus)homeStatus.style.display=(current==='home')?'block':'none';
+
+    sectionCards().forEach(card=>{
+      let show=(current==='home')?false:(cardSection(card)===current);
+      if(show&&cardSection(card)==='sound'&&!soundSupported){
+        show=false;
+      }
+      card.style.display=show?'block':'none';
+    });
+    updateNavState();
+  }
+
+  function applyStatus(j){
+    const sw=$('sumWifi'),st=$('sumTracking'),sd=$('sumDevice'),ss=$('sumSound'),sa=$('sumAdvanced');
+    if(sw){
+      if(j.setup_ap)sw.textContent='Offline mode (direct AP)';
+      else sw.textContent=(j.wifi_connected?'Connected':'Not connected')+(j.ip?(' · '+j.ip):'');
+    }
+    if(st){
+      const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
+      st.textContent=(j.stasis?'Paused':'~'+hz+' Hz')+' · '+((j.udp_enabled===false)?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending'));
+    }
+    if(sd){
+      const pct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';
+      sd.textContent='FW '+(j.fw_version||'—')+' · Batt '+pct;
+    }
+    if(ss){
+      soundSupported=!!(j.has_rgb||j.has_buzzer);
+      ss.textContent=soundSupported?'Board supports configurable I/O':'No configurable sound/light on this board';
+    }
+    if(sa){
+      sa.textContent='Factory reset and recovery options';
+    }
+    if(current==='sound'&&!soundSupported){
+      setSection('home');
+    }else{
+      updateNavState();
+    }
+  }
+
+  function init(){
+    const back=$('btnSectionBack');
+    if(back)back.onclick=()=>setSection('home');
+    document.querySelectorAll('[data-section-nav]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const next=btn.getAttribute('data-section-nav')||'home';
+        if(next==='sound'&&!soundSupported)return;
+        setSection(next);
+      });
+    });
+    setSection('home');
+  }
+
+  return {init,setSection,applyStatus,currentSection};
+})();
+</script>
+<script>
+window.AppViews=(function(){
+  const {$,setToggle,updateSoundLightCard}=window.AppUi;
+  const uiTouched=window.AppState.uiTouched;
+
+  function heroWifiTier(rssi){
+    if(rssi==null)return 0;
+    const n=Number(rssi);
+    if(!Number.isFinite(n)||n===0)return 0;
+    if(n>=-50)return 4;
+    if(n>=-65)return 3;
+    if(n>=-75)return 2;
+    if(n>=-85)return 1;
+    return 0;
+  }
+
+  function wifiTxWeight(profile){
+    if(profile===0)return 0.74;
+    if(profile===2)return 1;
+    return 0.92;
+  }
+
+  function normalizedWifiTx(j){
+    const x=j.wifi_tx;
+    if(x===0||x===1||x===2)return x;
+    return 1;
+  }
+
+  function heroWifiTierWeighted(rssi,wifiTx){
+    const base=heroWifiTier(rssi);
+    const w=wifiTxWeight(wifiTx);
+    const t=Math.round(base*w);
+    return Math.max(0,Math.min(4,t));
+  }
+
+  function heroWifiLabel(tier,rssi,wifiTx){
+    const tail=(rssi!=null?' · '+rssi+' dBm':'');
+    if(tier<=0)return(rssi!=null&&Number(rssi)!==0)?('Weak'+tail):'No link';
+    const labels=['','Fair','Good','Very good','Excellent'];
+    return labels[tier]+tail;
+  }
+
+  function setHeroWifiBars(barEl,tier){
+    if(!barEl)return;
+    barEl.querySelectorAll('span').forEach((sp,i)=>{sp.classList.toggle('on',i<tier);});
+  }
+
+  function applyHero(j){
+    const ap=!!j.setup_ap;
+    const hb=$('heroBatt'),hts=$('heroBattSub'),htt=$('heroTemp'),htemps=$('heroTempSub');
+    const hwb=$('heroWifiBars'),hws=$('heroWifiSub'),htr=$('heroTrack'),htrk=$('heroTrackSub');
+    const bp=(j.battery_percent!=null)?Number(j.battery_percent):null;
+    const bm=(j.battery_mv!=null)?Number(j.battery_mv):null;
+    const bstate=(j.battery_charge_state||j.battery_state||'').toLowerCase();
+    if(hb){
+      if(bstate==='absent'||(bm!=null&&bm<2000)){
+        hb.textContent='—';
+        if(hts)hts.textContent='No battery / switch off';
+      }else if(bp!=null&&!Number.isNaN(bp)){
+        const p=Math.round(bp);
+        hb.textContent=(p>100)?'100+%':(p+'%');
+        if(hts){
+          hts.textContent=(bstate==='charging')?'Charging':'Battery';
+        }
+      }else if(bm!=null&&!Number.isNaN(bm)){
+        hb.textContent=Math.round(bm)+' mV';
+        if(hts)hts.textContent='Battery';
+      }else{
+        hb.textContent='—';
+        if(hts)hts.textContent='Battery unavailable';
+      }
+    }
+    const tc=j.chip_temp_c;
+    if(htt){
+      if(tc!=null&&!Number.isNaN(Number(tc))){htt.textContent=Number(tc).toFixed(1)+' °C'}
+      else{htt.textContent='—'}
+      const ts=j.thermal_state||'ok';
+      const tile=$('heroTileTemp');
+      if(tile){
+        tile.classList.toggle('hero-tile-warn',ts==='warn');
+        tile.classList.toggle('hero-tile-err',ts==='emergency'||ts==='thermal_hold');
+      }
+      if(htemps){
+        if(ts==='warn')htemps.textContent='Warm';
+        else if(ts==='emergency'||ts==='thermal_hold')htemps.textContent='Protection active';
+        else htemps.textContent='Normal';
+      }
+    }
+    const txProf=normalizedWifiTx(j);
+    const tier=ap?0:heroWifiTierWeighted(j.rssi,txProf);
+    setHeroWifiBars(hwb,tier);
+    if(hws){
+      if(ap)hws.textContent='Offline mode · direct AP';
+      else hws.textContent=heroWifiLabel(tier,j.rssi,txProf);
+    }
+    if(htr){
+      if(j.thermal_hold){
+        htr.textContent='Wi‑Fi off';
+        if(htrk)htrk.textContent='Cooling — USB tracking may still run';
+      }else if(j.stasis){
+        htr.textContent='Paused';
+        if(htrk)htrk.textContent='No UDP / USB pose · low power';
+      }else{
+        const im=j.imu_period_ms;
+        const hz=im?Math.round(1000/im):'—';
+        htr.textContent='~'+hz+' Hz';
+        if(htrk)htrk.textContent=im?'Update rate':'';
+      }
+    }
+  }
+
+  function applyShell(j){
+    const ap=!!j.setup_ap;
+    applyHero(j);
+    $('setupBanner').style.display=ap?'block':'none';
+    const ub=$('updateBanner');
+    if(ub){
+      if(!ap&&j.fw_update_available&&j.fw_latest_version){
+        ub.style.display='block';
+        $('updateBannerLatest').textContent=j.fw_latest_version;
+        $('updateBannerCur').textContent=j.fw_version||'—';
+        const lk=$('updateBannerLink');
+        if(lk&&j.fw_flasher_url){lk.href=j.fw_flasher_url}
+      }else{ub.style.display='none'}
+    }
+    $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
+    if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
+    const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
+    const cip=j.http_client_ip;
+    const rssi=ap?'':(j.rssi!=null?j.rssi+' dBm':'—');
+    const line1=ap?('AP · board '+ (j.ip||'—')):('LAN · board '+(j.ip||'—')+' · RSSI '+rssi);
+    const line1b=' · up '+Math.round(j.uptime_ms/1000)+'s · heap '+j.heap_free;
+    let udpSummary=j.udp_enabled===false?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending');
+    if(j.stasis)udpSummary='Paused · '+udpSummary;
+    if(j.ot_target_ok&&j.ot_resolved_ip)udpSummary+=' → '+j.ot_resolved_ip;
+    const line2='FW '+(j.fw_version||'?')+' · ~'+hz+' Hz · '+ (j.hostname||'azimuth')+' · '+udpSummary+' · STA '+(j.wifi_connected?'on':'off');
+    const bmv=(j.battery_mv!=null)?(j.battery_mv+' mV'):'—';
+    const braw=(j.battery_raw_mv!=null)?(j.battery_raw_mv+' mV pin'):'—';
+    const bpct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';
+    const bmah=(j.battery_remaining_mah!=null)?(j.battery_remaining_mah+' mAh'):'—';
+    const bstate=j.battery_charge_state||j.battery_state||'—';
+    const line3='Batt '+bpct+' ('+bmv+', '+bmah+') · raw '+braw+' · '+bstate;
+    $('stats').textContent=line1+line1b+'\n'+line2+'\n'+line3;
+    if($('homeStats'))$('homeStats').textContent=line1+line1b+'\n'+line2+'\n'+line3;
+    if($('fwVer'))$('fwVer').textContent=j.fw_version||'—';
+    if($('homeFwVer'))$('homeFwVer').textContent=j.fw_version||'—';
+    if($('battState')){
+      const st=(j.battery_charge_state||j.battery_state||'').toLowerCase();
+      if(st==='absent'){$('battState').textContent='No battery / switch off'}
+      else if(j.battery_percent!=null){
+        const pct=(Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%');
+        const s=(st==='charging')?' · charging':'';
+        $('battState').textContent=(pct+s);
+      }else if(j.battery_mv!=null){$('battState').textContent=(j.battery_mv+' mV')}
+      else{$('battState').textContent=(j.battery_state||'unavailable')}
+    }
+    if($('homeBattState')){
+      const st=(j.battery_charge_state||j.battery_state||'').toLowerCase();
+      if(st==='absent'){$('homeBattState').textContent='No battery / switch off'}
+      else if(j.battery_percent!=null){
+        const pct=(Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%');
+        const s=(st==='charging')?' · charging':'';
+        $('homeBattState').textContent=(pct+s);
+      }else if(j.battery_mv!=null){$('homeBattState').textContent=(j.battery_mv+' mV')}
+      else{$('homeBattState').textContent=(j.battery_state||'unavailable')}
+    }
+    const bc=$('batteryCapacity');
+    if(bc&&j.battery_capacity_mah!=null){bc.value=String(j.battery_capacity_mah)}
+    const bcv=$('batteryCalOffsetVal');
+    if(bcv){
+      const off=(j.battery_cal_offset_mv!=null)?Number(j.battery_cal_offset_mv):0;
+      const sign=off>0?'+':'';
+      bcv.textContent=sign+off+' mV';
+    }
+    if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
+    if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
+    if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
+    updateSoundLightCard(j);
+    const box=$('clientIpBox'),val=$('clientIpVal');
+    if(box&&val){
+      if(cip&&cip!=='0.0.0.0'){box.style.display='block';val.textContent=cip;}
+      else{box.style.display='none'}
+    }
+    const dh=$('otDynHint');
+    if(dh){
+      const hostSet=!!(j.ot_host&&String(j.ot_host).trim().length);
+      const hasRes=j.ot_resolved_ip&&String(j.ot_resolved_ip).length;
+      dh.style.display='none';
+      dh.textContent='';
+      dh.classList.remove('warn');
+      if(j.udp_enabled&&hostSet){
+        if(hasRes&&j.ot_target_ok&&j.ot_using_dns){
+          dh.style.display='block';
+          dh.textContent='→ '+j.ot_resolved_ip+' (DNS)';
+        }else if(!j.ot_target_ok||!hasRes){
+          dh.style.display='block';
+          dh.classList.add('warn');
+          dh.textContent=j.wifi_connected?'Cannot resolve this hostname. Check spelling; avoid .local unless your router supports it.':'Join Wi‑Fi before hostnames can resolve.';
+        }
+      }
+    }
+    if(window.AppSections&&typeof window.AppSections.applyStatus==='function'){
+      window.AppSections.applyStatus(j);
+    }
+  }
+
+  return {applyShell};
+})();
+</script>
+<script>
+window.AppControllers=(function(){
+  const {$,setMsg,clamp255}=window.AppUi;
+  const {collectOtAxes}=window.AppStateFns;
+
+  function apiFailed(r,j,fallbackMsg){
+    if(r.ok)return false;
+    setMsg(j.error||fallbackMsg,'err');
+    return true;
+  }
+
+  async function onScan(){
+    const btn=$('btnScan');
+    btn.classList.add('is-loading');
+    btn.disabled=true;
+    setMsg('Scanning… (tracking may hitch briefly)','');
+    $('scanList').style.display='none';
+    try{
+      const j=await window.AppApi.scanNetworks();
+      const box=$('scanList');while(box.firstChild)box.removeChild(box.firstChild);
+      (j.networks||[]).forEach(n=>{
+        const d=document.createElement('div');
+        const t=document.createElement('span');t.textContent=n.ssid||'(hidden)';
+        const rssi=document.createElement('span');rssi.className='rssi';rssi.textContent=(n.rssi!=null?n.rssi+' dBm':'');
+        d.appendChild(t);d.appendChild(rssi);
+        d.onclick=()=>{$('ssid').value=n.ssid||'';box.style.display='none'};
+        box.appendChild(d);
+      });
+      box.style.display='block';
+      setMsg('','');
+    }catch(e){setMsg('Scan failed','err')}
+    finally{
+      btn.classList.remove('is-loading');
+      btn.disabled=false;
+    }
+  }
+
+  async function onSave(hydrateForm){
+    setMsg('Saving…','');
+    const otAxes=collectOtAxes();
+    if(!otAxes)return;
+    const body={
+      ssid:$('ssid').value.trim(),
+      ot_host:$('otHost').value.trim(),
+      ot_port:parseInt($('otPort').value,10)||4242,
+      ot_axes:otAxes,
+      udp_enabled:$('udpToggle').classList.contains('on'),
+      hatire_usb:$('hatireToggle').classList.contains('on'),
+      mdns_on:$('mdnsToggle').classList.contains('on'),
+      hostname:$('hostname').value.trim().toLowerCase(),
+      imu_period_ms:parseInt($('imuPeriod').value,10)||10,
+      wifi_tx:parseInt($('wifiTx').value,10),
+      battery_capacity_mah:parseInt($('batteryCapacity').value,10),
+      rgb_brightness:parseInt($('rgbBrightness').value,10),
+      buzzer_volume:parseInt($('buzzerVolume').value,10)
+    };
+    if(body.rgb_brightness<0||body.rgb_brightness>100||Number.isNaN(body.rgb_brightness))body.rgb_brightness=25;
+    if(body.buzzer_volume<0||body.buzzer_volume>100||Number.isNaN(body.buzzer_volume))body.buzzer_volume=25;
+    if(body.battery_capacity_mah<100||body.battery_capacity_mah>5000||Number.isNaN(body.battery_capacity_mah))body.battery_capacity_mah=800;
+    if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
+    const lmEl=$('ledMode');
+    if(lmEl){
+      body.led_mode=parseInt(lmEl.value,10);
+      if(![0,1,2,3].includes(body.led_mode))body.led_mode=0;
+    }
+    const lrEl=$('ledR'),lgEl=$('ledG'),lbEl=$('ledB');
+    if(lrEl&&lgEl&&lbEl){
+      body.led_r=clamp255(lrEl.value);
+      body.led_g=clamp255(lgEl.value);
+      body.led_b=clamp255(lbEl.value);
+    }
+    const pw=$('pass').value;
+    if(pw.length)body.password=pw;
+    try{
+      const {response:r,json:j}=await window.AppApi.postConfig(body);
+      if(apiFailed(r,j,'Save failed'))return;
+      setMsg(j.restarting?'Saved — rebooting…':'Saved.','ok');
+      if(!j.restarting)hydrateForm();
+    }catch(e){setMsg('Network error','err')}
+  }
+
+  async function onReboot(){
+    if(!confirm('Reboot device?'))return;
+    try{
+      const {response:r,json:j}=await window.AppApi.postReboot();
+      if(apiFailed(r,j,'Reboot failed'))return;
+      setMsg('Reboot sent…','ok');
+    }catch(e){setMsg('Network error','err')}
+  }
+
+  async function onBatteryCal(hydrateForm){
+    setMsg('Calibrating battery at 4.2V (about 3s)…','');
+    try{
+      const {response:r,json:j}=await window.AppApi.postConfig({battery_calibrate_4v2:true});
+      if(apiFailed(r,j,'Calibration failed'))return;
+      if(j.battery_calibrated){
+        const off=(j.battery_cal_offset_mv!=null)?j.battery_cal_offset_mv:0;
+        const sign=off>0?'+':'';
+        setMsg('Battery calibrated ('+sign+off+' mV offset).','ok');
+      }else{
+        setMsg('Battery calibrated.','ok');
+      }
+      hydrateForm();
+    }catch(e){setMsg('Network error','err')}
+  }
+
+  async function onFactoryReset(){
+    if(!confirm('Reset all settings to factory defaults and reboot? You’ll need Azimuth‑Tracker (Offline Mode) or a USB flash to configure Wi‑Fi again.'))return;
+    try{
+      const {response:r,json:j}=await window.AppApi.postFactoryReset();
+      if(apiFailed(r,j,'Factory reset failed'))return;
+      setMsg('Resetting…','ok');
+    }catch(e){setMsg('Request failed','err')}
+  }
+
+  return {onScan,onSave,onReboot,onBatteryCal,onFactoryReset};
+})();
+</script>
+<script>
+const {$,setToggle,syncRangeLabels,clamp255,setLedRgb,syncLedManualUi,fillInput,nudgeInputPaint}=window.AppUi;
+const {applyShell}=window.AppViews;
+const {applyOtAxesFromStatus}=window.AppStateFns;
+const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset}=window.AppControllers;
+const uiTouched=window.AppState.uiTouched;
+const monitorCfg=(window.AppConfig&&window.AppConfig.monitor)||{};
+const POWER_IDLE_POLL_ACTIVE_MS=monitorCfg.idlePollActiveMs||25000;
+const POWER_IDLE_POLL_HEARTBEAT_MS=monitorCfg.idlePollHeartbeatMs||60000;
+const POWER_IDLE_GRACE_MS=monitorCfg.idleGraceMs||60000;
+const POWER_BOOTSTRAP_RETRY_MS=monitorCfg.bootstrapRetryMs||3000;
+const ACTIVITY_RESCHEDULE_MIN_MS=monitorCfg.activityRescheduleMinMs||1500;
+const STALE_UI_AFTER_FAILURES=monitorCfg.staleUiAfterFailures||2;
+let hydrateOk=false;
+let pollFailCount=0;
+
+function applyLiveStatus(j){
+  applyShell(j);
 }
+
 async function hydrateForm(){
-  const r=await fetch('/api/status');const j=await r.json();
+  const j=await window.AppApi.getStatus();
   fillInput($('ssid'),j.ssid||'');
   fillInput($('pass'),'');
   fillInput($('hostname'),j.hostname||'');
@@ -761,11 +1264,83 @@ async function hydrateForm(){
   syncLedManualUi();
   applyOtAxesFromStatus(j.ot_axes);
   uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
-  applyShell(j);
+  applyLiveStatus(j);
   nudgeInputPaint();
+  hydrateOk=true;
+  window.AppState.power.lastStatusOkMs=Date.now();
+  clearBootstrapTimer();
 }
 async function pollOnly(){
-  try{const r=await fetch('/api/status');applyShell(await r.json());}catch(e){}
+  try{
+    applyLiveStatus(await window.AppApi.getStatus());
+    hydrateOk=true;
+    pollFailCount=0;
+    window.AppState.power.lastStatusOkMs=Date.now();
+    clearBootstrapTimer();
+  }catch(e){
+    pollFailCount++;
+    if(pollFailCount>=STALE_UI_AFTER_FAILURES){
+      const s=$('subLine');
+      if(s){
+        const msSinceOk=Date.now()-(window.AppState.power.lastStatusOkMs||0);
+        const age=(window.AppState.power.lastStatusOkMs>0)?Math.max(1,Math.round(msSinceOk/1000)):'?';
+        s.textContent='Connection lost — retrying (last update '+age+'s ago)…';
+      }
+    }
+  }
+}
+let bootstrapTimer=0;
+let lastUserActivityMs=window.AppState.power.lastUserActivityMs;
+let pollTimer=window.AppState.power.pollTimer;
+function markUserActivity(force){
+  const now=Date.now();
+  if(!force&&(now-lastUserActivityMs)<ACTIVITY_RESCHEDULE_MIN_MS)return;
+  lastUserActivityMs=now;
+  window.AppState.power.lastUserActivityMs=lastUserActivityMs;
+  schedulePowerAwarePoll();
+}
+function shouldPollNow(){
+  if(document.hidden)return false;
+  return true;
+}
+function pollDelayMs(){
+  if(!shouldPollNow())return 0;
+  return (Date.now()-lastUserActivityMs)<=POWER_IDLE_GRACE_MS
+    ?POWER_IDLE_POLL_ACTIVE_MS
+    :POWER_IDLE_POLL_HEARTBEAT_MS;
+}
+function clearPollTimer(){
+  if(pollTimer){
+    clearTimeout(pollTimer);
+    pollTimer=0;
+    window.AppState.power.pollTimer=0;
+  }
+}
+function clearBootstrapTimer(){
+  if(bootstrapTimer){
+    clearTimeout(bootstrapTimer);
+    bootstrapTimer=0;
+  }
+}
+function scheduleBootstrapRetry(){
+  clearBootstrapTimer();
+  if(hydrateOk||document.hidden)return;
+  bootstrapTimer=setTimeout(async()=>{
+    if(hydrateOk||document.hidden)return;
+    await pollOnly();
+    scheduleBootstrapRetry();
+  },POWER_BOOTSTRAP_RETRY_MS);
+}
+function schedulePowerAwarePoll(){
+  clearPollTimer();
+  const d=pollDelayMs();
+  if(!d)return;
+  pollTimer=setTimeout(async()=>{
+    pollTimer=0;
+    if(shouldPollNow())await pollOnly();
+    schedulePowerAwarePoll();
+  },d);
+  window.AppState.power.pollTimer=pollTimer;
 }
 $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
@@ -791,105 +1366,34 @@ $('btnUseClientIp').onclick=()=>{
   const v=$('clientIpVal')&&$('clientIpVal').textContent;
   if(v&&v!=='—'){fillInput($('otHost'),v)}
 };
-$('btnScan').onclick=async()=>{
-  const btn=$('btnScan');
-  btn.classList.add('is-loading');
-  btn.disabled=true;
-  setMsg('Scanning… (tracking may hitch briefly)','');
-  $('scanList').style.display='none';
-  try{
-    const r=await fetch('/api/scan');const j=await r.json();
-    const box=$('scanList');while(box.firstChild)box.removeChild(box.firstChild);
-    (j.networks||[]).forEach(n=>{
-      const d=document.createElement('div');
-      const t=document.createElement('span');t.textContent=n.ssid||'(hidden)';
-      const rssi=document.createElement('span');rssi.className='rssi';rssi.textContent=(n.rssi!=null?n.rssi+' dBm':'');
-      d.appendChild(t);d.appendChild(rssi);
-      d.onclick=()=>{$('ssid').value=n.ssid||'';box.style.display='none'};
-      box.appendChild(d);
-    });
-    box.style.display='block';
-    setMsg('','');
-  }catch(e){setMsg('Scan failed','err')}
-  finally{
-    btn.classList.remove('is-loading');
-    btn.disabled=false;
+$('btnScan').onclick=()=>onScan();
+$('btnSave').onclick=()=>onSave(hydrateForm);
+$('btnReboot').onclick=()=>onReboot();
+$('btnBatteryCal').onclick=()=>onBatteryCal(hydrateForm);
+$('btnFactory').onclick=()=>onFactoryReset();
+if(window.AppSections&&typeof window.AppSections.init==='function'){
+  window.AppSections.init();
+}
+hydrateForm().catch(()=>{
+  // Keep trying quickly until the first successful status arrives.
+  scheduleBootstrapRetry();
+});
+['pointerdown','pointermove','keydown','touchstart','scroll'].forEach(ev=>{
+  const force=(ev==='pointerdown'||ev==='keydown'||ev==='touchstart');
+  window.addEventListener(ev,()=>markUserActivity(force),{passive:true});
+});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){
+    markUserActivity(true);
+    pollOnly();
+    if(!hydrateOk)scheduleBootstrapRetry();
+  }else{
+    clearPollTimer();
+    clearBootstrapTimer();
   }
-};
-$('btnSave').onclick=async()=>{
-  setMsg('Saving…','');
-  const otAxes=collectOtAxes();
-  if(!otAxes)return;
-  const body={
-    ssid:$('ssid').value.trim(),
-    ot_host:$('otHost').value.trim(),
-    ot_port:parseInt($('otPort').value,10)||4242,
-    ot_axes:otAxes,
-    udp_enabled:$('udpToggle').classList.contains('on'),
-    hatire_usb:$('hatireToggle').classList.contains('on'),
-    mdns_on:$('mdnsToggle').classList.contains('on'),
-    hostname:$('hostname').value.trim().toLowerCase(),
-    imu_period_ms:parseInt($('imuPeriod').value,10)||10,
-    wifi_tx:parseInt($('wifiTx').value,10),
-    battery_capacity_mah:parseInt($('batteryCapacity').value,10),
-    rgb_brightness:parseInt($('rgbBrightness').value,10),
-    buzzer_volume:parseInt($('buzzerVolume').value,10)
-  };
-  if(body.rgb_brightness<0||body.rgb_brightness>100||Number.isNaN(body.rgb_brightness))body.rgb_brightness=25;
-  if(body.buzzer_volume<0||body.buzzer_volume>100||Number.isNaN(body.buzzer_volume))body.buzzer_volume=25;
-  if(body.battery_capacity_mah<100||body.battery_capacity_mah>5000||Number.isNaN(body.battery_capacity_mah))body.battery_capacity_mah=800;
-  if(![0,1,2].includes(body.wifi_tx))body.wifi_tx=1;
-  const lmEl=$('ledMode');
-  if(lmEl){
-    body.led_mode=parseInt(lmEl.value,10);
-    if(![0,1,2,3].includes(body.led_mode))body.led_mode=0;
-  }
-  const lrEl=$('ledR'),lgEl=$('ledG'),lbEl=$('ledB');
-  if(lrEl&&lgEl&&lbEl){
-    body.led_r=clamp255(lrEl.value);
-    body.led_g=clamp255(lgEl.value);
-    body.led_b=clamp255(lbEl.value);
-  }
-  const pw=$('pass').value;
-  if(pw.length)body.password=pw;
-  try{
-    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const j=await r.json();
-    if(!r.ok){setMsg(j.error||'Save failed','err');return}
-    setMsg(j.restarting?'Saved — rebooting…':'Saved.','ok');
-    if(!j.restarting)hydrateForm();
-  }catch(e){setMsg('Network error','err')}
-};
-$('btnReboot').onclick=async()=>{
-  if(!confirm('Reboot device?'))return;
-  await fetch('/api/reboot',{method:'POST'});
-  setMsg('Reboot sent…','ok');
-};
-$('btnBatteryCal').onclick=async()=>{
-  setMsg('Calibrating battery at 4.2V (about 3s)…','');
-  try{
-    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({battery_calibrate_4v2:true})});
-    const j=await r.json();
-    if(!r.ok){setMsg(j.error||'Calibration failed','err');return}
-    if(j.battery_calibrated){
-      const off=(j.battery_cal_offset_mv!=null)?j.battery_cal_offset_mv:0;
-      const sign=off>0?'+':'';
-      setMsg('Battery calibrated ('+sign+off+' mV offset).','ok');
-    }else{
-      setMsg('Battery calibrated.','ok');
-    }
-    hydrateForm();
-  }catch(e){setMsg('Network error','err')}
-};
-$('btnFactory').onclick=async()=>{
-  if(!confirm('Reset all settings to factory defaults and reboot? You’ll need Azimuth‑Setup or a USB flash to configure Wi‑Fi again.'))return;
-  try{
-    await fetch('/api/factory_reset',{method:'POST'});
-    setMsg('Resetting…','ok');
-  }catch(e){setMsg('Request failed','err')}
-};
-hydrateForm();
-setInterval(()=>{if(!document.hidden)pollOnly();},25000);
+});
+schedulePowerAwarePoll();
+scheduleBootstrapRetry();
 </script>
 </body>
 </html>

@@ -31,6 +31,10 @@
 #define AZIMUTH_RELEASE_FLASHER_URL "https://fuglong.github.io/Azimuth/"
 #endif
 
+#ifndef AZIMUTH_RELEASE_MANIFEST_CA_CERT
+#define AZIMUTH_RELEASE_MANIFEST_CA_CERT ""
+#endif
+
 namespace azimuth_net {
 
 constexpr uint16_t kWebPortSta = 8080;
@@ -42,7 +46,7 @@ constexpr const char* kPrefsKeyLedR = "led_r";
 constexpr const char* kPrefsKeyLedG = "led_g";
 constexpr const char* kPrefsKeyLedB = "led_b";
 constexpr uint32_t kWifiConnectTimeoutMs = 12000;
-constexpr const char* kSetupApSsid = "Azimuth-Setup";
+constexpr const char* kOfflineApSsid = "Azimuth-Tracker";
 
 struct NetworkRuntime {
   WebServer webSta;
@@ -58,7 +62,7 @@ struct NetworkRuntime {
   bool udpSendEnabled = true;
   bool staWebActive = false;
   bool apPortalActive = false;
-  bool setupApMode = false;
+  bool offlineApMode = false;
   bool fwUpdateCheckDone = false;
   bool fwUpdateAvailable = false;
   String fwLatestVersion;
@@ -68,6 +72,7 @@ struct NetworkRuntime {
   bool hatireUsbRuntime = true;
   OtAxisMapConfig otAxisMapRuntime{};
   uint32_t lastPortalActivityMs = 0;
+  uint32_t lastUdpTxMs = 0;
   uint32_t lastNetworkServiceMs = 0;
   uint32_t lastBackgroundTickMs = 0;
   bool wifiSleepEnabled = false;
@@ -106,7 +111,6 @@ uint16_t mergedBatteryCapacityMah();
 int32_t mergedBatteryCalOffsetMv();
 void applyIoLevelsFromPrefs();
 OtAxisMapConfig mergedOtAxisMap();
-bool applyOtAxesFromJson(const JsonArray& arr, const char** errOut);
 void appendOtAxesToJson(JsonDocument& doc);
 
 void maybeRefreshOtHostname();
@@ -121,7 +125,7 @@ void registerRoutes(WebServer& http, bool captiveProbeRedirect);
 void performFirmwareUpdateCheckOnce();
 
 void applyThermalEmergency();
-void startProvisioningPortal();
+void startOfflineApPortal();
 void networkInit();
 void networkLoop();
 void loadTrackingPrefs();

@@ -21,6 +21,10 @@ bool trackNetworkThermalHoldActive() {
 }
 
 bool trackNetworkSetupApActive() {
+  return trackNetworkOfflineApActive();
+}
+
+bool trackNetworkOfflineApActive() {
   return false;
 }
 
@@ -86,7 +90,11 @@ bool trackNetworkThermalHoldActive() {
 }
 
 bool trackNetworkSetupApActive() {
-  return azimuth_net::gRuntime.setupApMode;
+  return trackNetworkOfflineApActive();
+}
+
+bool trackNetworkOfflineApActive() {
+  return azimuth_net::gRuntime.offlineApMode;
 }
 
 void trackNetworkSetStasis(bool active) {

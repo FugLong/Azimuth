@@ -13,7 +13,7 @@ namespace {
 
 ConfigPlanInput makeBaseInput() {
   ConfigPlanInput in;
-  in.setupApMode = false;
+  in.offlineApMode = false;
   in.prevImuPeriodMs = 10;
   in.prevMdnsOn = true;
   in.prevHostname = "azimuth";
@@ -112,6 +112,12 @@ int main() {
   }
   {
     auto in = makeBaseInput();
+    in.password.present = true;
+    in.password.value = "";
+    cases.push_back({"explicit empty password is accepted", in, true, "", false, true, false});
+  }
+  {
+    auto in = makeBaseInput();
     in.mdnsOn.present = true;
     in.mdnsOn.value = false;
     cases.push_back({"mdns toggle reboot", in, true, "", true, false, false});
@@ -160,7 +166,7 @@ int main() {
   }
   {
     auto in = makeBaseInput();
-    in.setupApMode = true;
+    in.offlineApMode = true;
     in.prevSsid.clear();
     in.ssid.present = true;
     in.ssid.value.clear();
@@ -195,6 +201,18 @@ int main() {
     assert(plan.writeOtAxes);
     assert(plan.otAxesValue[0].src == 2);
     assert(plan.otAxesValue[1].inv);
+  }
+  {
+    auto in = makeBaseInput();
+    in.ssid.present = true;
+    in.ssid.value = "";
+    in.password.present = true;
+    in.password.value = "";
+    const ConfigApplyPlan plan = azimuth_cfg::buildConfigApplyPlan(in);
+    assert(plan.ok);
+    assert(plan.writeSsid && plan.ssidValue.empty());
+    assert(plan.writePassword && plan.passwordValue.empty());
+    assert(plan.wifiCredChanged);
   }
 
   return 0;

@@ -33,7 +33,9 @@ void maybeRefreshOtHostname() {
     return;
   }
   const uint32_t now = millis();
-  if (now - gRuntime.lastOtDnsMs < 45000) {
+  const bool unresolved = (gRuntime.otIp == INADDR_NONE);
+  const uint32_t intervalMs = unresolved ? 3000 : 45000;
+  if (now - gRuntime.lastOtDnsMs < intervalMs) {
     return;
   }
   resolveOtHostnameNow();
@@ -96,6 +98,7 @@ void sendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {
   }
   gRuntime.udp.write(reinterpret_cast<const uint8_t*>(pose), sizeof(pose));
   gRuntime.udp.endPacket();
+  gRuntime.lastUdpTxMs = millis();
 }
 
 }  // namespace azimuth_net

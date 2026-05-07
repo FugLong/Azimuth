@@ -18,8 +18,10 @@ void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg);
 void trackNetworkApplyThermalEmergency();
 bool trackNetworkThermalHoldActive();
 
-/** Captive **Azimuth-Setup** / recovery AP (not normal STA tracking). */
+/** Captive **Azimuth-Tracker** / Offline Mode AP (first-time setup or off-grid use). */
 bool trackNetworkSetupApActive();
+/** Preferred naming (same behavior as `trackNetworkSetupApActive`). */
+bool trackNetworkOfflineApActive();
 
 /**
  * Pause / stasis (FUNC): runtime gate for OpenTrack UDP and Hatire — does **not** change NVS `udp_enabled`.

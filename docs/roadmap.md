@@ -10,7 +10,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 |------------|----------|-------|
 | Hardware selection | **100%** | DIY: **XIAO ESP32-C3** + **BNO08x**; product: **Azimuth** PCB ([**Azimuth_Design**](../kicad/Azimuth_Design/)) |
 | Custom PCB — **V0.1** | **100%** (design) · **assembled units received** | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean**. **V0.1** fab complete; **boards in hand**; **bring-up / testing in progress**. **Panelization** still optional for future arrays. |
-| Firmware | **60–75%** | SPI IMU; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Azimuth-Setup**, power/thermal tuning, modular **I/O** (RGB / buzzer / FUNC) on PCB path. Still ahead: **battery ADC** (stub today), OTA, fuller LED/buzzer UX, modular `imu/` / `io/` refactor (Phase 1 table below). |
+| Firmware | **60–75%** | SPI IMU; **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Offline Mode AP** (`Azimuth-Tracker`), power/thermal tuning, modular **I/O** (RGB / buzzer / FUNC) on PCB path. Still ahead: **battery ADC** (stub today), OTA, fuller LED/buzzer UX, modular `imu/` / `io/` refactor (Phase 1 table below). |
 | 3D enclosure | **Starting** | **Design in progress** — no published CAD yet |
 | End-user docs & release | **~50%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal banner documented; OTA TBD |
 
@@ -75,7 +75,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 | Task | Status |
 |------|--------|
 | WiFi STA | ✅ (UDP client to PC; credentials via NVS + `include/secrets.h`) |
-| WiFi AP / onboarding portal | ✅ (`Azimuth-Setup`, captive DNS + HTTP :80; recovery if STA fails) |
+| WiFi AP / onboarding portal | ✅ (`Azimuth-Tracker` Offline Mode AP, captive DNS + HTTP :80; recovery if STA fails) |
 | Transport: OpenTrack **UDP** (6× `double`, default port 4242) | ✅ |
 | Semantics aligned with Hatire (yaw / pitch sign / roll) | ✅ (`opentrackMapEulerToRot` + NVS axis map in `include/opentrack_pose.h`) |
 | Coexistence with USB (Hatire + UDP same build) | ✅ |
