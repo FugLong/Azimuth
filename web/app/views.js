@@ -98,7 +98,7 @@ window.AppViews=(function(){
         if(htrk)htrk.textContent='Cooling — USB tracking may still run';
       }else if(j.stasis){
         htr.textContent='Paused';
-        if(htrk)htrk.textContent='No UDP / USB pose · low power';
+        if(htrk)htrk.textContent='Low power';
       }else{
         const im=j.imu_period_ms;
         const hz=im?Math.round(1000/im):'—';
@@ -111,7 +111,9 @@ window.AppViews=(function(){
   function applyShell(j){
     const ap=!!j.setup_ap;
     applyHero(j);
-    $('setupBanner').style.display=ap?'block':'none';
+    if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyStatus==='function'){
+      window.AppPoseMascot.applyStatus(j);
+    }
     const ub=$('updateBanner');
     if(ub){
       if(!ap&&j.fw_update_available&&j.fw_latest_version){
@@ -123,7 +125,6 @@ window.AppViews=(function(){
       }else{ub.style.display='none'}
     }
     $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
-    if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
     const cip=j.http_client_ip;
     const rssi=ap?'':(j.rssi!=null?j.rssi+' dBm':'—');

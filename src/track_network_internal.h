@@ -78,6 +78,11 @@ struct NetworkRuntime {
   bool wifiSleepEnabled = false;
   bool thermalHoldActive = false;
   bool stasisActive = false;
+  bool poseValid = false;
+  float poseYawDeg = 0.0f;
+  float posePitchDeg = 0.0f;
+  float poseRollDeg = 0.0f;
+  uint32_t poseLastMs = 0;
 
   NetworkRuntime();
 };

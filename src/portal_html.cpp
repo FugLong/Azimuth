@@ -213,7 +213,99 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 }
 .hero-wifi-bars span.on{background:linear-gradient(180deg,#6ec9ff,var(--acc));border-color:transparent}
 .hero-wifi-bars .b1{height:6px}.hero-wifi-bars .b2{height:10px}.hero-wifi-bars .b3{height:14px}.hero-wifi-bars .b4{height:18px}
-.page-shell{
+.imu-health{
+  margin:0 0 1rem;
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.5rem .65rem;
+  border-radius:10px;
+  border:1px solid var(--bd);
+  background:rgba(16,27,39,.76);
+  font-size:.74rem;
+}
+.imu-dot{
+  width:.55rem;height:.55rem;border-radius:999px;
+  background:#7a8ca5;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;
+}
+.imu-health.live .imu-dot{background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.6)}
+.imu-health.warn .imu-dot{background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.55)}
+.imu-health.err .imu-dot{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.55)}
+.imu-label{color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.imu-state{color:var(--tx-soft);font-weight:600}
+.imu-toggle{
+  margin-left:auto;
+  border:1px solid var(--bd);
+  background:rgba(15,26,38,.92);
+  color:#cfe0f1;
+  border-radius:999px;
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  padding:.28rem .62rem;
+  line-height:1;
+  cursor:pointer;
+}
+.imu-toggle[aria-expanded="true"]{
+  border-color:rgba(61,158,229,.42);
+  color:#9fd2f6;
+}
+.imu-hero{
+  margin:0 0 1rem;
+  background:var(--card);
+  border:1px solid var(--bd);
+  border-radius:14px;
+  padding:.85rem .9rem;
+  box-shadow:var(--shadow);
+}
+.pose-preview .pose-preview-head{margin:0 0 .45rem}
+.att-hud-badge{
+  font-size:.66rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  border:1px solid rgba(61,158,229,.28);
+  padding:.18rem .5rem;
+  border-radius:999px;
+  color:#c8d7e7;
+  background:rgba(12,22,34,.82);
+}
+.att-hud-badge.live{color:#79f2ad;border-color:rgba(74,222,128,.45)}
+.att-hud-badge.warn{color:#ffd37a;border-color:rgba(251,191,36,.46)}
+.att-hud-badge.err{color:#ff9a9a;border-color:rgba(248,113,113,.46)}
+.att-hud-stage{
+  display:flex;justify-content:center;align-items:center;
+  margin:.1rem 0 .5rem;
+}
+.att-hud-svg{
+  width:min(100%,220px);height:auto;display:block;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));
+}
+.att-hud-readout{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.5rem;
+}
+.att-hud-readout div{
+  border:1px solid var(--bd);
+  border-radius:10px;
+  background:var(--bg2);
+  padding:.45rem .5rem;
+}
+.att-hud-readout span{
+  display:block;
+  font-size:.64rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted);
+}
+.att-hud-readout strong{
+  display:block;
+  margin-top:.12rem;
+  font-size:.9rem;
+  color:var(--tx);
+}
+.settings-workspace{
   margin-bottom:1.15rem;
   border:1px solid rgba(61,158,229,.28);
   border-radius:16px;
@@ -221,26 +313,57 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
   box-shadow:0 12px 28px rgba(0,0,0,.34);
   overflow:hidden;
 }
-.page-shell-head{
-  display:flex;align-items:center;gap:.75rem;
-  padding:.72rem .9rem;
-  min-height:2.55rem;
-  border-bottom:1px solid rgba(61,158,229,.25);
+.settings-head{
+  padding:.72rem .8rem .75rem;
+  border-bottom:1px solid rgba(61,158,229,.2);
   background:linear-gradient(180deg,rgba(25,48,72,.72),rgba(17,31,47,.82));
+}
+.settings-head-top{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:.8rem;
+  margin:0 0 .68rem;
 }
 .page-shell-title{
   font-size:.86rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9fd2f6
 }
-.section-shell-title{
-  color:#9fd2f6
+.section-shell-title{color:#9fd2f6}
+.settings-subline{
+  margin:0;
+  font-size:.73rem;
+  color:#b8c9db;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  font-weight:650;
 }
-.section-back{
-  border:1px solid rgba(61,158,229,.28);background:rgba(12,22,34,.9);color:#d8e6f6;padding:.3rem .62rem;margin:0;
-  border-radius:999px;font-size:.73rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1;cursor:pointer
+.section-tabs{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.5rem;
 }
-.section-back:hover{background:rgba(27,48,72,.96)}
-.section-back:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
-.page-shell-body{
+.section-tab{
+  width:100%;
+  text-align:left;
+  background:rgba(16,28,41,.86);
+  border:1px solid rgba(61,158,229,.2);
+  border-radius:12px;
+  color:var(--tx);
+  padding:.6rem .66rem;
+  cursor:pointer;
+  transition:border-color .12s ease,background .12s ease,transform .12s ease;
+}
+.section-tab:hover{border-color:rgba(61,158,229,.35);background:rgba(21,33,47,.96)}
+.section-tab:active{transform:translateY(1px)}
+.section-tab span{display:block;font-weight:650;line-height:1.25}
+.section-tab small{display:block;margin-top:.17rem;color:var(--muted);font-size:.68rem;line-height:1.3}
+.section-tab.is-active{
+  border-color:var(--acc);
+  box-shadow:0 0 0 1px rgba(61,158,229,.32) inset;
+  background:rgba(23,39,56,.95);
+}
+.section-tab[aria-selected="true"] small{color:#b9cde1}
+.section-page-body{
   padding:.85rem .8rem .5rem;
 }
 .section-page-body .section-card{
@@ -248,27 +371,9 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
   background:rgba(18,27,38,.92);
 }
 .section-page-body .section-card:last-child{margin-bottom:0}
-.section-list{display:flex;flex-direction:column;gap:.55rem}
-.home-page-shell{border-color:rgba(61,158,229,.3)}
-.home-page-shell .hint{margin:0 0 .85rem}
-.section-item{
-  width:100%;text-align:left;background:rgba(18,27,38,.94);border:1px solid rgba(61,158,229,.2);border-radius:12px;
-  color:var(--tx);padding:.78rem .82rem;cursor:pointer;
-  transition:border-color .12s ease, background .12s ease, transform .12s ease
-}
-.section-item:hover{border-color:rgba(61,158,229,.35);background:rgba(21,33,47,.96)}
-.section-item:active{transform:translateY(1px)}
-.section-item.is-active{border-color:var(--acc);box-shadow:0 0 0 1px rgba(61,158,229,.35) inset}
-.section-item.is-disabled{opacity:.55;cursor:not-allowed}
-.section-item-inner{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
-.section-item-title{display:block;font-weight:650}
-.section-item small{display:block;margin-top:.2rem;color:var(--muted);font-size:.73rem;line-height:1.35}
-.section-item-arrow{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:1.35rem;height:1.35rem;border-radius:999px;
-  border:1px solid rgba(61,158,229,.26);
-  color:#9fd2f6;font-size:1.05rem;line-height:1;flex:0 0 auto;
-  background:rgba(17,30,44,.95)
+.section-tab.is-disabled{opacity:.55;cursor:not-allowed}
+@media(min-width:540px){
+  .section-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 @media(min-width:480px){
   .row-actions{flex-wrap:nowrap}
@@ -322,34 +427,57 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 </div>
 </section>
-<p class="banner" id="setupBanner">Join <strong>Azimuth‑Tracker</strong> (Offline Mode AP). This page may open automatically; if not, use <strong id="portalUrl">http://192.168.4.1/</strong> on <strong>port 80</strong>. <strong>azimuth.local</strong> works only on your home Wi‑Fi after setup.</p>
-<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
-<section class="page-shell home-page-shell" id="cardHomeNav">
-<div class="page-shell-head">
-<div class="page-shell-title">Settings</div>
+<div class="imu-health" id="imuHealth" role="status" aria-live="polite">
+<span class="imu-dot" id="imuDot" aria-hidden="true"></span>
+<span class="imu-label">IMU</span>
+<span class="imu-state" id="imuState">Checking…</span>
+<button type="button" class="imu-toggle" id="imuPreviewToggle" aria-expanded="false" aria-controls="cardPosePreview">Preview</button>
 </div>
-<div class="page-shell-body">
-<p class="hint">Choose a category to adjust details.</p>
-<div class="section-list">
-<button type="button" class="section-item" data-section-nav="wifi"><span class="section-item-inner"><span><span class="section-item-title">Wi‑Fi</span><small id="sumWifi">Network and discovery</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="tracking"><span class="section-item-inner"><span><span class="section-item-title">Tracking output</span><small id="sumTracking">Hatire, UDP, axes, rate</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="device"><span class="section-item-inner"><span><span class="section-item-title">Device & battery</span><small id="sumDevice">Firmware, battery, save/reboot</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="sound"><span class="section-item-inner"><span><span class="section-item-title">Sound & light</span><small id="sumSound">Buzzer and RGB behavior</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="advanced"><span class="section-item-inner"><span><span class="section-item-title">Advanced</span><small id="sumAdvanced">Factory reset</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<section class="imu-hero pose-preview" id="cardPosePreview" aria-live="polite" style="display:none">
+<div class="row pose-preview-head">
+<div class="hd" style="margin:0">Motion preview</div>
+<span class="att-hud-badge" id="attHudBadge">—</span>
 </div>
+<div class="att-hud-stage">
+<svg viewBox="-64 -64 128 128" class="att-hud-svg" aria-label="IMU attitude preview">
+<defs>
+<clipPath id="attHudClip"><circle cx="0" cy="0" r="48"/></clipPath>
+</defs>
+<g clip-path="url(#attHudClip)">
+<g id="adiHorizon">
+<rect x="-80" y="-80" width="160" height="80" fill="#2b5f93"></rect>
+<rect x="-80" y="0" width="160" height="80" fill="#473a26"></rect>
+<line x1="-80" y1="0" x2="80" y2="0" stroke="#ffffff" stroke-width="2" stroke-opacity=".9"></line>
+</g>
+</g>
+<circle cx="0" cy="0" r="48" fill="none" stroke="rgba(238,244,250,.28)" stroke-width="2"></circle>
+<line x1="-14" y1="0" x2="14" y2="0" stroke="#9fd2f6" stroke-width="2"></line>
+<line x1="0" y1="-14" x2="0" y2="14" stroke="#9fd2f6" stroke-width="2" stroke-opacity=".65"></line>
+</svg>
 </div>
+<div class="att-hud-readout">
+<div><span>Yaw</span><strong id="attHudYaw">—</strong></div>
+<div><span>Pitch</span><strong id="attHudPitch">—</strong></div>
+<div><span>Roll</span><strong id="attHudRoll">—</strong></div>
+</div>
+<p class="hint" id="attHudMeta" style="margin:.5rem 0 0">Waiting for pose…</p>
 </section>
-<div class="card" id="cardHomeStatus">
-<div class="hd">Device status</div>
-<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="homeFwVer">—</strong> · Battery: <strong id="homeBattState">—</strong>.</p>
-<pre class="stats" id="homeStats"></pre>
+<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<section class="settings-workspace" id="settingsWorkspace" aria-live="polite">
+<div class="settings-head">
+<div class="settings-head-top">
+<div class="page-shell-title section-shell-title">Settings</div>
+<p class="settings-subline" id="sectionTitle">Wi‑Fi</p>
 </div>
-<section class="page-shell section-page" id="sectionPage" style="display:none" aria-live="polite">
-<div class="page-shell-head section-page-head" id="sectionShell">
-<button type="button" class="section-back" id="btnSectionBack" aria-label="Go back to settings">Back</button>
-<div class="page-shell-title section-shell-title" id="sectionTitle">Section</div>
+<div class="section-tabs" role="tablist" aria-label="Settings sections">
+<button type="button" class="section-tab" role="tab" aria-selected="true" data-section-nav="wifi"><span>Wi‑Fi</span><small id="sumWifi">Network</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="tracking"><span>Tracking</span><small id="sumTracking">Output</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="device"><span>Device</span><small id="sumDevice">Power</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="sound"><span>Sound & light</span><small id="sumSound">Buzzer/RGB</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="advanced"><span>Advanced</span><small id="sumAdvanced">Reset</small></button>
 </div>
-<div class="page-shell-body section-page-body" id="sectionPageBody">
+</div>
+<div class="section-page-body" id="sectionPageBody">
 
 <div class="card section-card" id="cardWifi" data-section="wifi">
 <div class="hd">Wi‑Fi</div>
@@ -607,6 +735,11 @@ window.AppApi=(function(){
     if(!r.ok)throw new Error(j.error||('Status failed ('+r.status+')'));
     return j;
   }
+  async function getPose(){
+    const {response:r,json:j}=await requestJson('/api/pose');
+    if(!r.ok)throw new Error(j.error||('Pose failed ('+r.status+')'));
+    return j;
+  }
   async function scanNetworks(){
     const {response:r,json:j}=await requestJson('/api/scan');
     if(!r.ok)throw new Error(j.error||('Scan failed ('+r.status+')'));
@@ -625,7 +758,7 @@ window.AppApi=(function(){
   async function postFactoryReset(){
     return requestJson('/api/factory_reset',{method:'POST',headers:MUTATION_HEADERS});
   }
-  return {getStatus,scanNetworks,postConfig,postReboot,postFactoryReset};
+  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset};
 })();
 </script>
 <script>
@@ -769,7 +902,6 @@ window.AppSections=(function(){
   const {$}=window.AppUi;
 
   const titles={
-    home:'Settings',
     wifi:'Wi‑Fi',
     tracking:'Tracking output',
     device:'Device & battery',
@@ -777,8 +909,10 @@ window.AppSections=(function(){
     advanced:'Advanced'
   };
 
-  let current='home';
+  let current='wifi';
   let soundSupported=true;
+  let userNavigated=false;
+  let startupSectionChosen=false;
 
   function sectionCards(){
     return Array.from(document.querySelectorAll('.section-card'));
@@ -798,8 +932,9 @@ window.AppSections=(function(){
 
   function updateNavState(){
     sectionButtons().forEach(btn=>{
-      const key=btn.getAttribute('data-section-nav')||'home';
+      const key=btn.getAttribute('data-section-nav')||'wifi';
       btn.classList.toggle('is-active',current===key);
+      btn.setAttribute('aria-selected',current===key?'true':'false');
       if(key==='sound'){
         btn.style.display=soundSupported?'block':'none';
         btn.classList.toggle('is-disabled',!soundSupported);
@@ -809,19 +944,13 @@ window.AppSections=(function(){
   }
 
   function setSection(next){
-    if(next==='sound'&&!soundSupported)next='home';
-    current=titles[next]?next:'home';
-    const sectionPage=$('sectionPage');
+    if(next==='sound'&&!soundSupported)next='wifi';
+    current=titles[next]?next:'wifi';
     const title=$('sectionTitle');
-    const homeNav=$('cardHomeNav');
-    const homeStatus=$('cardHomeStatus');
-    if(title)title.textContent=titles[current]||titles.home;
-    if(sectionPage)sectionPage.style.display=(current==='home')?'none':'block';
-    if(homeNav)homeNav.style.display=(current==='home')?'block':'none';
-    if(homeStatus)homeStatus.style.display=(current==='home')?'block':'none';
+    if(title)title.textContent=titles[current]||titles.wifi;
 
     sectionCards().forEach(card=>{
-      let show=(current==='home')?false:(cardSection(card)===current);
+      let show=(cardSection(card)===current);
       if(show&&cardSection(card)==='sound'&&!soundSupported){
         show=false;
       }
@@ -831,47 +960,242 @@ window.AppSections=(function(){
   }
 
   function applyStatus(j){
+    if(!startupSectionChosen&&!userNavigated){
+      setSection(j.setup_ap?'wifi':'tracking');
+      startupSectionChosen=true;
+    }
     const sw=$('sumWifi'),st=$('sumTracking'),sd=$('sumDevice'),ss=$('sumSound'),sa=$('sumAdvanced');
     if(sw){
-      if(j.setup_ap)sw.textContent='Offline mode (direct AP)';
-      else sw.textContent=(j.wifi_connected?'Connected':'Not connected')+(j.ip?(' · '+j.ip):'');
+      if(j.setup_ap)sw.textContent='Offline AP';
+      else sw.textContent=j.wifi_connected?'Connected':'Not connected';
     }
     if(st){
       const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-      st.textContent=(j.stasis?'Paused':'~'+hz+' Hz')+' · '+((j.udp_enabled===false)?'UDP off':(j.ot_target_ok?'UDP ok':'UDP pending'));
+      st.textContent=(j.stasis?'Paused':'~'+hz+' Hz');
     }
     if(sd){
       const pct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';
-      sd.textContent='FW '+(j.fw_version||'—')+' · Batt '+pct;
+      sd.textContent='Batt '+pct;
     }
     if(ss){
       soundSupported=!!(j.has_rgb||j.has_buzzer);
-      ss.textContent=soundSupported?'Board supports configurable I/O':'No configurable sound/light on this board';
+      ss.textContent=soundSupported?'Available':'Not available';
     }
     if(sa){
-      sa.textContent='Factory reset and recovery options';
+      sa.textContent='Reset';
     }
     if(current==='sound'&&!soundSupported){
-      setSection('home');
+      setSection('wifi');
     }else{
       updateNavState();
     }
   }
 
   function init(){
-    const back=$('btnSectionBack');
-    if(back)back.onclick=()=>setSection('home');
     document.querySelectorAll('[data-section-nav]').forEach(btn=>{
       btn.addEventListener('click',()=>{
-        const next=btn.getAttribute('data-section-nav')||'home';
+        const next=btn.getAttribute('data-section-nav')||'wifi';
         if(next==='sound'&&!soundSupported)return;
+        userNavigated=true;
         setSection(next);
       });
     });
-    setSection('home');
+    setSection('wifi');
   }
 
   return {init,setSection,applyStatus,currentSection};
+})();
+</script>
+<script>
+/**
+ * Attitude HUD: artificial horizon + numeric yaw/pitch/roll + tracking summary.
+ * Same /api/status payload — no extra HTTP. Angles snap to each sample (honest for slow poll).
+ */
+window.AppPoseMascot=(function(){
+  let horizon=null;
+  let badge=null;
+  let yawEl=null;
+  let pitchEl=null;
+  let rollEl=null;
+  let metaEl=null;
+  let healthEl=null;
+  let healthStateEl=null;
+  let previewCardEl=null;
+  let toggleEl=null;
+  let expanded=false;
+
+  function wrap180(deg){
+    let x=deg;
+    while(x>180)x-=360;
+    while(x<-180)x+=360;
+    return x;
+  }
+
+  function fmtDeg(v){
+    if(!Number.isFinite(v))return'—';
+    const w=wrap180(v);
+    const s=(w>=0?'+':'')+w.toFixed(1)+'°';
+    return s;
+  }
+
+  function parseTri(j){
+    const y=j.pose_yaw_deg;
+    // UI convention expects pitch/roll opposite of transport naming.
+    const p=j.pose_roll_deg;
+    const r=j.pose_pitch_deg;
+    if(y==null&&p==null&&r==null)return null;
+    const ny=Number(y);
+    const np=Number(p);
+    const nr=Number(r);
+    if(!Number.isFinite(ny)||!Number.isFinite(np)||!Number.isFinite(nr))return null;
+    return{y:ny,p:np,r:nr};
+  }
+
+  function setBadge(text,cls){
+    if(!badge)return;
+    badge.textContent=text;
+    badge.classList.remove('live','warn','err');
+    if(cls)badge.classList.add(cls);
+  }
+
+  function setHealth(text,cls){
+    if(!healthEl||!healthStateEl)return;
+    healthStateEl.textContent=text;
+    healthEl.classList.remove('live','warn','err');
+    if(cls)healthEl.classList.add(cls);
+  }
+
+  function isPreviewActive(){ return expanded; }
+
+  function setExpanded(on){
+    expanded=!!on;
+    if(previewCardEl)previewCardEl.style.display=expanded?'block':'none';
+    if(toggleEl)toggleEl.setAttribute('aria-expanded',expanded?'true':'false');
+    window.dispatchEvent(new CustomEvent('azimuth:pose-preview-active',{detail:{active:expanded}}));
+  }
+
+  function buildMeta(j){
+    const ap=!!j.setup_ap;
+    if(ap)return'Offline AP · pose N/A on this page';
+    const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
+    const parts=['~'+hz+' Hz'];
+    if(j.thermal_hold){
+      parts.push('Wi‑Fi off (thermal)');
+    }else if(j.stasis){
+      parts.push('Pose paused (FUNC)');
+    }else if(j.udp_enabled===false){
+      parts.push('UDP off');
+    }else if(!j.ot_target_ok){
+      parts.push('UDP target pending');
+    }else{
+      parts.push('UDP path armed');
+    }
+    if(j.ot_resolved_ip&&String(j.ot_resolved_ip).length){
+      parts.push(String(j.ot_resolved_ip));
+    }
+    return parts.join(' · ');
+  }
+
+  function applyStatus(j){
+    horizon=horizon||document.getElementById('adiHorizon');
+    badge=badge||document.getElementById('attHudBadge');
+    yawEl=yawEl||document.getElementById('attHudYaw');
+    pitchEl=pitchEl||document.getElementById('attHudPitch');
+    rollEl=rollEl||document.getElementById('attHudRoll');
+    metaEl=metaEl||document.getElementById('attHudMeta');
+    healthEl=healthEl||document.getElementById('imuHealth');
+    healthStateEl=healthStateEl||document.getElementById('imuState');
+    previewCardEl=previewCardEl||document.getElementById('cardPosePreview');
+    if(!horizon)return;
+
+    const ap=!!j.setup_ap;
+    const tri=parseTri(j);
+    if(metaEl)metaEl.textContent=buildMeta(j);
+
+    if(ap||!tri){
+      if(horizon)horizon.setAttribute('transform','rotate(0) translate(0 0)');
+      if(yawEl)yawEl.textContent='—';
+      if(pitchEl)pitchEl.textContent='—';
+      if(rollEl)rollEl.textContent='—';
+      if(ap){
+        setBadge('SETUP','warn');
+        setHealth('Offline AP','warn');
+        return;
+      }
+      if(j.thermal_hold){
+        setBadge('COOLING','err');
+        setHealth('Cooling hold','err');
+        return;
+      }
+      if(j.stasis){
+        setBadge('PAUSED','warn');
+        setHealth('Paused','warn');
+        return;
+      }
+      if(j.udp_enabled===false){
+        setBadge('UDP OFF','warn');
+        setHealth('IMU status only','warn');
+        return;
+      }
+      if(j.ot_target_ok){
+        setBadge('LIVE','live');
+        setHealth('Live (UDP)','live');
+      }else{
+        setBadge('NO TARGET','warn');
+        setHealth('Target pending','warn');
+      }
+      if(metaEl){
+        metaEl.textContent='Waiting for fresh pose samples…';
+      }
+      return;
+    }
+
+    const pitchPx=Math.max(-40,Math.min(40,-(tri.p/55)*38));
+    if(horizon)horizon.setAttribute('transform','rotate('+(-tri.r)+') translate(0 '+pitchPx+')');
+    if(yawEl)yawEl.textContent=fmtDeg(tri.y);
+    if(pitchEl)pitchEl.textContent=fmtDeg(tri.p);
+    if(rollEl)rollEl.textContent=fmtDeg(tri.r);
+
+    if(j.thermal_hold){
+      setBadge('COOLING','err');
+      setHealth('Cooling hold','err');
+    }else if(j.stasis){
+      setBadge('PAUSED','warn');
+      setHealth('Paused','warn');
+    }else if(j.udp_enabled===false){
+      setBadge('UDP OFF','warn');
+      setHealth('IMU live · UDP off','warn');
+    }else if(!j.ot_target_ok){
+      setBadge('NO TARGET','warn');
+      setHealth('IMU live · target pending','warn');
+    }else{
+      setBadge('LIVE','live');
+      setHealth('Live','live');
+    }
+  }
+
+  function applyPose(j){
+    applyStatus(j);
+  }
+
+  function init(){
+    horizon=document.getElementById('adiHorizon');
+    badge=document.getElementById('attHudBadge');
+    yawEl=document.getElementById('attHudYaw');
+    pitchEl=document.getElementById('attHudPitch');
+    rollEl=document.getElementById('attHudRoll');
+    metaEl=document.getElementById('attHudMeta');
+    healthEl=document.getElementById('imuHealth');
+    healthStateEl=document.getElementById('imuState');
+    previewCardEl=document.getElementById('cardPosePreview');
+    toggleEl=document.getElementById('imuPreviewToggle');
+    if(toggleEl){
+      toggleEl.addEventListener('click',()=>setExpanded(!expanded));
+    }
+    setExpanded(false);
+  }
+
+  return {init,applyStatus,applyPose,isPreviewActive};
 })();
 </script>
 <script>
@@ -975,7 +1299,7 @@ window.AppViews=(function(){
         if(htrk)htrk.textContent='Cooling — USB tracking may still run';
       }else if(j.stasis){
         htr.textContent='Paused';
-        if(htrk)htrk.textContent='No UDP / USB pose · low power';
+        if(htrk)htrk.textContent='Low power';
       }else{
         const im=j.imu_period_ms;
         const hz=im?Math.round(1000/im):'—';
@@ -988,7 +1312,9 @@ window.AppViews=(function(){
   function applyShell(j){
     const ap=!!j.setup_ap;
     applyHero(j);
-    $('setupBanner').style.display=ap?'block':'none';
+    if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyStatus==='function'){
+      window.AppPoseMascot.applyStatus(j);
+    }
     const ub=$('updateBanner');
     if(ub){
       if(!ap&&j.fw_update_available&&j.fw_latest_version){
@@ -1000,7 +1326,6 @@ window.AppViews=(function(){
       }else{ub.style.display='none'}
     }
     $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
-    if(ap&&j.portal_url)$('portalUrl').textContent=j.portal_url;
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
     const cip=j.http_client_ip;
     const rssi=ap?'':(j.rssi!=null?j.rssi+' dBm':'—');
@@ -1214,8 +1539,37 @@ const POWER_IDLE_GRACE_MS=monitorCfg.idleGraceMs||60000;
 const POWER_BOOTSTRAP_RETRY_MS=monitorCfg.bootstrapRetryMs||3000;
 const ACTIVITY_RESCHEDULE_MIN_MS=monitorCfg.activityRescheduleMinMs||1500;
 const STALE_UI_AFTER_FAILURES=monitorCfg.staleUiAfterFailures||2;
+const IMU_LIVE_POLL_MS=monitorCfg.posePreviewPollMs||700;
+const TAB_COORD_KEY='azimuth.portal.activeTabs.v1';
+const TAB_HEARTBEAT_MS=3000;
+const TAB_STALE_MS=12000;
+const TAB_MAX_ACTIVE=2;
 let hydrateOk=false;
 let pollFailCount=0;
+let posePollTimer=0;
+let tabHeartbeatTimer=0;
+let tabAdmitted=true;
+const tabId='tab_'+Math.random().toString(36).slice(2)+'_'+Date.now().toString(36);
+
+function syncTrackingHeroFromPose(j){
+  const htr=$('heroTrack');
+  const htrk=$('heroTrackSub');
+  if(!htr)return;
+  if(j.thermal_hold){
+    htr.textContent='Wi‑Fi off';
+    if(htrk)htrk.textContent='Cooling — USB tracking may still run';
+    return;
+  }
+  if(j.stasis){
+    htr.textContent='Paused';
+    if(htrk)htrk.textContent='Low power';
+    return;
+  }
+  const im=j.imu_period_ms;
+  const hz=im?Math.round(1000/im):'—';
+  htr.textContent='~'+hz+' Hz';
+  if(htrk)htrk.textContent=im?'Update rate':'';
+}
 
 function applyLiveStatus(j){
   applyShell(j);
@@ -1299,8 +1653,65 @@ function markUserActivity(force){
   window.AppState.power.lastUserActivityMs=lastUserActivityMs;
   schedulePowerAwarePoll();
 }
+function readTabRegistry(){
+  try{
+    const raw=localStorage.getItem(TAB_COORD_KEY);
+    if(!raw)return {};
+    const o=JSON.parse(raw);
+    return(o&&typeof o==='object')?o:{};
+  }catch(e){return {}}
+}
+function writeTabRegistry(reg){
+  try{localStorage.setItem(TAB_COORD_KEY,JSON.stringify(reg));}catch(e){}
+}
+function pruneTabRegistry(reg,now){
+  Object.keys(reg).forEach(id=>{
+    const rec=reg[id];
+    if(!rec||typeof rec!=='object'||!Number.isFinite(rec.ts)||now-rec.ts>TAB_STALE_MS){
+      delete reg[id];
+    }
+  });
+}
+function setTabAdmitted(next){
+  if(tabAdmitted===next)return;
+  tabAdmitted=next;
+  if(!tabAdmitted){
+    clearPollTimer();
+    clearPosePollTimer();
+  }else{
+    markUserActivity(true);
+    pollOnly();
+    schedulePosePoll();
+  }
+}
+function refreshTabAdmission(){
+  const now=Date.now();
+  const reg=readTabRegistry();
+  pruneTabRegistry(reg,now);
+  reg[tabId]={ts:now,visible:!document.hidden};
+  const visibleActive=Object.entries(reg)
+    .filter(([,rec])=>rec&&rec.visible===true&&Number.isFinite(rec.ts)&&now-rec.ts<=TAB_STALE_MS)
+    .sort((a,b)=>b[1].ts-a[1].ts)
+    .map(([id])=>id);
+  const allowed=new Set(visibleActive.slice(0,TAB_MAX_ACTIVE));
+  writeTabRegistry(reg);
+  setTabAdmitted(!document.hidden&&allowed.has(tabId));
+}
+function clearTabHeartbeat(){
+  if(!tabHeartbeatTimer)return;
+  clearTimeout(tabHeartbeatTimer);
+  tabHeartbeatTimer=0;
+}
+function scheduleTabHeartbeat(){
+  clearTabHeartbeat();
+  tabHeartbeatTimer=setTimeout(()=>{
+    tabHeartbeatTimer=0;
+    refreshTabAdmission();
+    scheduleTabHeartbeat();
+  },TAB_HEARTBEAT_MS);
+}
 function shouldPollNow(){
-  if(document.hidden)return false;
+  if(document.hidden||!tabAdmitted)return false;
   return true;
 }
 function pollDelayMs(){
@@ -1321,6 +1732,33 @@ function clearBootstrapTimer(){
     clearTimeout(bootstrapTimer);
     bootstrapTimer=0;
   }
+}
+function clearPosePollTimer(){
+  if(!posePollTimer)return;
+  clearTimeout(posePollTimer);
+  posePollTimer=0;
+}
+function schedulePosePoll(){
+  clearPosePollTimer();
+  if(document.hidden||!tabAdmitted)return;
+  if(!(window.AppPoseMascot&&typeof window.AppPoseMascot.isPreviewActive==='function'&&window.AppPoseMascot.isPreviewActive())){
+    return;
+  }
+  posePollTimer=setTimeout(async()=>{
+    posePollTimer=0;
+    if(document.hidden){
+      schedulePosePoll();
+      return;
+    }
+    try{
+      const j=await window.AppApi.getPose();
+      if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyPose==='function'){
+        window.AppPoseMascot.applyPose(j);
+      }
+      syncTrackingHeroFromPose(j);
+    }catch(e){}
+    schedulePosePoll();
+  },IMU_LIVE_POLL_MS);
 }
 function scheduleBootstrapRetry(){
   clearBootstrapTimer();
@@ -1374,6 +1812,17 @@ $('btnFactory').onclick=()=>onFactoryReset();
 if(window.AppSections&&typeof window.AppSections.init==='function'){
   window.AppSections.init();
 }
+if(window.AppPoseMascot&&typeof window.AppPoseMascot.init==='function'){
+  window.AppPoseMascot.init();
+}
+refreshTabAdmission();
+scheduleTabHeartbeat();
+window.addEventListener('azimuth:pose-preview-active',()=>{
+  schedulePosePoll();
+  if(window.AppPoseMascot&&typeof window.AppPoseMascot.isPreviewActive==='function'&&window.AppPoseMascot.isPreviewActive()){
+    pollOnly();
+  }
+});
 hydrateForm().catch(()=>{
   // Keep trying quickly until the first successful status arrives.
   scheduleBootstrapRetry();
@@ -1383,14 +1832,28 @@ hydrateForm().catch(()=>{
   window.addEventListener(ev,()=>markUserActivity(force),{passive:true});
 });
 document.addEventListener('visibilitychange',()=>{
+  refreshTabAdmission();
   if(!document.hidden){
     markUserActivity(true);
-    pollOnly();
+    if(tabAdmitted){
+      pollOnly();
+      schedulePosePoll();
+    }
     if(!hydrateOk)scheduleBootstrapRetry();
   }else{
     clearPollTimer();
+    clearPosePollTimer();
     clearBootstrapTimer();
   }
+});
+window.addEventListener('storage',e=>{
+  if(e.key===TAB_COORD_KEY)refreshTabAdmission();
+});
+window.addEventListener('beforeunload',()=>{
+  const reg=readTabRegistry();
+  delete reg[tabId];
+  writeTabRegistry(reg);
+  clearTabHeartbeat();
 });
 schedulePowerAwarePoll();
 scheduleBootstrapRetry();

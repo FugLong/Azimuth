@@ -37,34 +37,57 @@
 </div>
 </div>
 </section>
-<p class="banner" id="setupBanner">Join <strong>Azimuth‑Tracker</strong> (Offline Mode AP). This page may open automatically; if not, use <strong id="portalUrl">http://192.168.4.1/</strong> on <strong>port 80</strong>. <strong>azimuth.local</strong> works only on your home Wi‑Fi after setup.</p>
-<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
-<section class="page-shell home-page-shell" id="cardHomeNav">
-<div class="page-shell-head">
-<div class="page-shell-title">Settings</div>
+<div class="imu-health" id="imuHealth" role="status" aria-live="polite">
+<span class="imu-dot" id="imuDot" aria-hidden="true"></span>
+<span class="imu-label">IMU</span>
+<span class="imu-state" id="imuState">Checking…</span>
+<button type="button" class="imu-toggle" id="imuPreviewToggle" aria-expanded="false" aria-controls="cardPosePreview">Preview</button>
 </div>
-<div class="page-shell-body">
-<p class="hint">Choose a category to adjust details.</p>
-<div class="section-list">
-<button type="button" class="section-item" data-section-nav="wifi"><span class="section-item-inner"><span><span class="section-item-title">Wi‑Fi</span><small id="sumWifi">Network and discovery</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="tracking"><span class="section-item-inner"><span><span class="section-item-title">Tracking output</span><small id="sumTracking">Hatire, UDP, axes, rate</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="device"><span class="section-item-inner"><span><span class="section-item-title">Device & battery</span><small id="sumDevice">Firmware, battery, save/reboot</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="sound"><span class="section-item-inner"><span><span class="section-item-title">Sound & light</span><small id="sumSound">Buzzer and RGB behavior</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
-<button type="button" class="section-item" data-section-nav="advanced"><span class="section-item-inner"><span><span class="section-item-title">Advanced</span><small id="sumAdvanced">Factory reset</small></span><span class="section-item-arrow" aria-hidden="true">›</span></span></button>
+<section class="imu-hero pose-preview" id="cardPosePreview" aria-live="polite" style="display:none">
+<div class="row pose-preview-head">
+<div class="hd" style="margin:0">Motion preview</div>
+<span class="att-hud-badge" id="attHudBadge">—</span>
 </div>
+<div class="att-hud-stage">
+<svg viewBox="-64 -64 128 128" class="att-hud-svg" aria-label="IMU attitude preview">
+<defs>
+<clipPath id="attHudClip"><circle cx="0" cy="0" r="48"/></clipPath>
+</defs>
+<g clip-path="url(#attHudClip)">
+<g id="adiHorizon">
+<rect x="-80" y="-80" width="160" height="80" fill="#2b5f93"></rect>
+<rect x="-80" y="0" width="160" height="80" fill="#473a26"></rect>
+<line x1="-80" y1="0" x2="80" y2="0" stroke="#ffffff" stroke-width="2" stroke-opacity=".9"></line>
+</g>
+</g>
+<circle cx="0" cy="0" r="48" fill="none" stroke="rgba(238,244,250,.28)" stroke-width="2"></circle>
+<line x1="-14" y1="0" x2="14" y2="0" stroke="#9fd2f6" stroke-width="2"></line>
+<line x1="0" y1="-14" x2="0" y2="14" stroke="#9fd2f6" stroke-width="2" stroke-opacity=".65"></line>
+</svg>
 </div>
+<div class="att-hud-readout">
+<div><span>Yaw</span><strong id="attHudYaw">—</strong></div>
+<div><span>Pitch</span><strong id="attHudPitch">—</strong></div>
+<div><span>Roll</span><strong id="attHudRoll">—</strong></div>
+</div>
+<p class="hint" id="attHudMeta" style="margin:.5rem 0 0">Waiting for pose…</p>
 </section>
-<div class="card" id="cardHomeStatus">
-<div class="hd">Device status</div>
-<p class="sub" style="margin:0 0 .75rem">Firmware <strong id="homeFwVer">—</strong> · Battery: <strong id="homeBattState">—</strong>.</p>
-<pre class="stats" id="homeStats"></pre>
+<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<section class="settings-workspace" id="settingsWorkspace" aria-live="polite">
+<div class="settings-head">
+<div class="settings-head-top">
+<div class="page-shell-title section-shell-title">Settings</div>
+<p class="settings-subline" id="sectionTitle">Wi‑Fi</p>
 </div>
-<section class="page-shell section-page" id="sectionPage" style="display:none" aria-live="polite">
-<div class="page-shell-head section-page-head" id="sectionShell">
-<button type="button" class="section-back" id="btnSectionBack" aria-label="Go back to settings">Back</button>
-<div class="page-shell-title section-shell-title" id="sectionTitle">Section</div>
+<div class="section-tabs" role="tablist" aria-label="Settings sections">
+<button type="button" class="section-tab" role="tab" aria-selected="true" data-section-nav="wifi"><span>Wi‑Fi</span><small id="sumWifi">Network</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="tracking"><span>Tracking</span><small id="sumTracking">Output</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="device"><span>Device</span><small id="sumDevice">Power</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="sound"><span>Sound & light</span><small id="sumSound">Buzzer/RGB</small></button>
+<button type="button" class="section-tab" role="tab" aria-selected="false" data-section-nav="advanced"><span>Advanced</span><small id="sumAdvanced">Reset</small></button>
 </div>
-<div class="page-shell-body section-page-body" id="sectionPageBody">
+</div>
+<div class="section-page-body" id="sectionPageBody">
 
 <div class="card section-card" id="cardWifi" data-section="wifi">
 <div class="hd">Wi‑Fi</div>
@@ -270,6 +293,7 @@
 <script src="app/ui.js"></script>
 <script src="app/state_fns.js"></script>
 <script src="app/sections.js"></script>
+<script src="app/pose_mascot.js"></script>
 <script src="app/views.js"></script>
 <script src="app/controllers.js"></script>
 <script src="app/main.js"></script>

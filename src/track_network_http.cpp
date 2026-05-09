@@ -120,6 +120,18 @@ void appendStatusTracking(JsonDocument& doc) {
   doc["hostname"] = mergedHostname();
   doc["mdns_on"] = mergedMdnsOn();
   doc["wifi_tx"] = mergedWifiTxProfile();
+  const uint32_t nowMs = millis();
+  const bool poseFresh = (!gRuntime.stasisActive) && gRuntime.poseValid &&
+                         (nowMs - gRuntime.poseLastMs <= 2500U);
+  if (poseFresh) {
+    doc["pose_yaw_deg"] = gRuntime.poseYawDeg;
+    doc["pose_pitch_deg"] = gRuntime.posePitchDeg;
+    doc["pose_roll_deg"] = gRuntime.poseRollDeg;
+  } else {
+    doc["pose_yaw_deg"] = nullptr;
+    doc["pose_pitch_deg"] = nullptr;
+    doc["pose_roll_deg"] = nullptr;
+  }
   appendOtAxesToJson(doc);
 }
 
@@ -199,6 +211,30 @@ void handleStatus(WebServer& http) {
   appendStatusTracking(doc);
   appendStatusBattery(doc);
   appendStatusDevice(doc);
+  http.sendHeader("Cache-Control", "no-store");
+  sendJson(http, 200, doc);
+}
+
+void handlePose(WebServer& http) {
+  JsonDocument doc;
+  const uint32_t nowMs = millis();
+  const bool poseFresh = (!gRuntime.stasisActive) && gRuntime.poseValid &&
+                         (nowMs - gRuntime.poseLastMs <= 2500U);
+  doc["setup_ap"] = gRuntime.offlineApMode;
+  doc["udp_enabled"] = gRuntime.udpSendEnabled;
+  doc["ot_target_ok"] = otTargetOk();
+  doc["stasis"] = gRuntime.stasisActive;
+  doc["thermal_hold"] = gRuntime.thermalHoldActive;
+  doc["imu_period_ms"] = mergedImuPeriodMs();
+  if (poseFresh) {
+    doc["pose_yaw_deg"] = gRuntime.poseYawDeg;
+    doc["pose_pitch_deg"] = gRuntime.posePitchDeg;
+    doc["pose_roll_deg"] = gRuntime.poseRollDeg;
+  } else {
+    doc["pose_yaw_deg"] = nullptr;
+    doc["pose_pitch_deg"] = nullptr;
+    doc["pose_roll_deg"] = nullptr;
+  }
   http.sendHeader("Cache-Control", "no-store");
   sendJson(http, 200, doc);
 }
@@ -308,7 +344,6 @@ void parseOtAxesField(const JsonDocument& body, azimuth_cfg::OtAxesField& out) {
 
 azimuth_cfg::ConfigPlanInput parseConfigPlanInput(const JsonDocument& body) {
   azimuth_cfg::ConfigPlanInput in;
-  in.offlineApMode = gRuntime.offlineApMode;
   in.prevImuPeriodMs = mergedImuPeriodMs();
   in.prevMdnsOn = mergedMdnsOn();
   in.prevHostname = mergedHostname().c_str();
@@ -555,6 +590,7 @@ void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
   http.collectHeaders(hdrs, 1);
   http.on("/", HTTP_GET, [&http]() { handleRoot(http); });
   http.on("/api/status", HTTP_GET, [&http]() { handleStatus(http); });
+  http.on("/api/pose", HTTP_GET, [&http]() { handlePose(http); });
   http.on("/api/scan", HTTP_GET, [&http]() { handleScan(http); });
   http.on("/api/config", HTTP_POST, [&http]() { handleConfigPost(http); });
   http.on("/api/reboot", HTTP_POST, [&http]() { handleRebootPost(http); });

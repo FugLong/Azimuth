@@ -25,6 +25,11 @@ window.AppApi=(function(){
     if(!r.ok)throw new Error(j.error||('Status failed ('+r.status+')'));
     return j;
   }
+  async function getPose(){
+    const {response:r,json:j}=await requestJson('/api/pose');
+    if(!r.ok)throw new Error(j.error||('Pose failed ('+r.status+')'));
+    return j;
+  }
   async function scanNetworks(){
     const {response:r,json:j}=await requestJson('/api/scan');
     if(!r.ok)throw new Error(j.error||('Scan failed ('+r.status+')'));
@@ -43,5 +48,5 @@ window.AppApi=(function(){
   async function postFactoryReset(){
     return requestJson('/api/factory_reset',{method:'POST',headers:MUTATION_HEADERS});
   }
-  return {getStatus,scanNetworks,postConfig,postReboot,postFactoryReset};
+  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset};
 })();

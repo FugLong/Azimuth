@@ -35,7 +35,6 @@ struct OtAxesField {
 };
 
 struct ConfigPlanInput {
-  bool offlineApMode = false;
   uint16_t prevImuPeriodMs = 10;
   bool prevMdnsOn = true;
   std::string prevHostname;

@@ -10,8 +10,37 @@ const POWER_IDLE_GRACE_MS=monitorCfg.idleGraceMs||60000;
 const POWER_BOOTSTRAP_RETRY_MS=monitorCfg.bootstrapRetryMs||3000;
 const ACTIVITY_RESCHEDULE_MIN_MS=monitorCfg.activityRescheduleMinMs||1500;
 const STALE_UI_AFTER_FAILURES=monitorCfg.staleUiAfterFailures||2;
+const IMU_LIVE_POLL_MS=monitorCfg.posePreviewPollMs||700;
+const TAB_COORD_KEY='azimuth.portal.activeTabs.v1';
+const TAB_HEARTBEAT_MS=3000;
+const TAB_STALE_MS=12000;
+const TAB_MAX_ACTIVE=2;
 let hydrateOk=false;
 let pollFailCount=0;
+let posePollTimer=0;
+let tabHeartbeatTimer=0;
+let tabAdmitted=true;
+const tabId='tab_'+Math.random().toString(36).slice(2)+'_'+Date.now().toString(36);
+
+function syncTrackingHeroFromPose(j){
+  const htr=$('heroTrack');
+  const htrk=$('heroTrackSub');
+  if(!htr)return;
+  if(j.thermal_hold){
+    htr.textContent='Wi‑Fi off';
+    if(htrk)htrk.textContent='Cooling — USB tracking may still run';
+    return;
+  }
+  if(j.stasis){
+    htr.textContent='Paused';
+    if(htrk)htrk.textContent='Low power';
+    return;
+  }
+  const im=j.imu_period_ms;
+  const hz=im?Math.round(1000/im):'—';
+  htr.textContent='~'+hz+' Hz';
+  if(htrk)htrk.textContent=im?'Update rate':'';
+}
 
 function applyLiveStatus(j){
   applyShell(j);
@@ -95,8 +124,65 @@ function markUserActivity(force){
   window.AppState.power.lastUserActivityMs=lastUserActivityMs;
   schedulePowerAwarePoll();
 }
+function readTabRegistry(){
+  try{
+    const raw=localStorage.getItem(TAB_COORD_KEY);
+    if(!raw)return {};
+    const o=JSON.parse(raw);
+    return(o&&typeof o==='object')?o:{};
+  }catch(e){return {}}
+}
+function writeTabRegistry(reg){
+  try{localStorage.setItem(TAB_COORD_KEY,JSON.stringify(reg));}catch(e){}
+}
+function pruneTabRegistry(reg,now){
+  Object.keys(reg).forEach(id=>{
+    const rec=reg[id];
+    if(!rec||typeof rec!=='object'||!Number.isFinite(rec.ts)||now-rec.ts>TAB_STALE_MS){
+      delete reg[id];
+    }
+  });
+}
+function setTabAdmitted(next){
+  if(tabAdmitted===next)return;
+  tabAdmitted=next;
+  if(!tabAdmitted){
+    clearPollTimer();
+    clearPosePollTimer();
+  }else{
+    markUserActivity(true);
+    pollOnly();
+    schedulePosePoll();
+  }
+}
+function refreshTabAdmission(){
+  const now=Date.now();
+  const reg=readTabRegistry();
+  pruneTabRegistry(reg,now);
+  reg[tabId]={ts:now,visible:!document.hidden};
+  const visibleActive=Object.entries(reg)
+    .filter(([,rec])=>rec&&rec.visible===true&&Number.isFinite(rec.ts)&&now-rec.ts<=TAB_STALE_MS)
+    .sort((a,b)=>b[1].ts-a[1].ts)
+    .map(([id])=>id);
+  const allowed=new Set(visibleActive.slice(0,TAB_MAX_ACTIVE));
+  writeTabRegistry(reg);
+  setTabAdmitted(!document.hidden&&allowed.has(tabId));
+}
+function clearTabHeartbeat(){
+  if(!tabHeartbeatTimer)return;
+  clearTimeout(tabHeartbeatTimer);
+  tabHeartbeatTimer=0;
+}
+function scheduleTabHeartbeat(){
+  clearTabHeartbeat();
+  tabHeartbeatTimer=setTimeout(()=>{
+    tabHeartbeatTimer=0;
+    refreshTabAdmission();
+    scheduleTabHeartbeat();
+  },TAB_HEARTBEAT_MS);
+}
 function shouldPollNow(){
-  if(document.hidden)return false;
+  if(document.hidden||!tabAdmitted)return false;
   return true;
 }
 function pollDelayMs(){
@@ -117,6 +203,33 @@ function clearBootstrapTimer(){
     clearTimeout(bootstrapTimer);
     bootstrapTimer=0;
   }
+}
+function clearPosePollTimer(){
+  if(!posePollTimer)return;
+  clearTimeout(posePollTimer);
+  posePollTimer=0;
+}
+function schedulePosePoll(){
+  clearPosePollTimer();
+  if(document.hidden||!tabAdmitted)return;
+  if(!(window.AppPoseMascot&&typeof window.AppPoseMascot.isPreviewActive==='function'&&window.AppPoseMascot.isPreviewActive())){
+    return;
+  }
+  posePollTimer=setTimeout(async()=>{
+    posePollTimer=0;
+    if(document.hidden){
+      schedulePosePoll();
+      return;
+    }
+    try{
+      const j=await window.AppApi.getPose();
+      if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyPose==='function'){
+        window.AppPoseMascot.applyPose(j);
+      }
+      syncTrackingHeroFromPose(j);
+    }catch(e){}
+    schedulePosePoll();
+  },IMU_LIVE_POLL_MS);
 }
 function scheduleBootstrapRetry(){
   clearBootstrapTimer();
@@ -170,6 +283,17 @@ $('btnFactory').onclick=()=>onFactoryReset();
 if(window.AppSections&&typeof window.AppSections.init==='function'){
   window.AppSections.init();
 }
+if(window.AppPoseMascot&&typeof window.AppPoseMascot.init==='function'){
+  window.AppPoseMascot.init();
+}
+refreshTabAdmission();
+scheduleTabHeartbeat();
+window.addEventListener('azimuth:pose-preview-active',()=>{
+  schedulePosePoll();
+  if(window.AppPoseMascot&&typeof window.AppPoseMascot.isPreviewActive==='function'&&window.AppPoseMascot.isPreviewActive()){
+    pollOnly();
+  }
+});
 hydrateForm().catch(()=>{
   // Keep trying quickly until the first successful status arrives.
   scheduleBootstrapRetry();
@@ -179,14 +303,28 @@ hydrateForm().catch(()=>{
   window.addEventListener(ev,()=>markUserActivity(force),{passive:true});
 });
 document.addEventListener('visibilitychange',()=>{
+  refreshTabAdmission();
   if(!document.hidden){
     markUserActivity(true);
-    pollOnly();
+    if(tabAdmitted){
+      pollOnly();
+      schedulePosePoll();
+    }
     if(!hydrateOk)scheduleBootstrapRetry();
   }else{
     clearPollTimer();
+    clearPosePollTimer();
     clearBootstrapTimer();
   }
+});
+window.addEventListener('storage',e=>{
+  if(e.key===TAB_COORD_KEY)refreshTabAdmission();
+});
+window.addEventListener('beforeunload',()=>{
+  const reg=readTabRegistry();
+  delete reg[tabId];
+  writeTabRegistry(reg);
+  clearTabHeartbeat();
 });
 schedulePowerAwarePoll();
 scheduleBootstrapRetry();

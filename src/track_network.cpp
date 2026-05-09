@@ -12,6 +12,7 @@ bool trackNetworkHatireUsbEnabled() { return true; }
 
 void trackNetworkInit() {}
 void trackNetworkLoop() {}
+void trackNetworkPublishPoseSample(float, float, float) {}
 void trackNetworkSendOpentrackUdp(float, float, float) {}
 
 void trackNetworkApplyThermalEmergency() {}
@@ -75,6 +76,18 @@ void trackNetworkInit() {
 
 void trackNetworkLoop() {
   azimuth_net::networkLoop();
+}
+
+void trackNetworkPublishPoseSample(float yawDeg, float pitchDeg, float rollDeg) {
+  if (azimuth_net::gRuntime.stasisActive) {
+    azimuth_net::gRuntime.poseValid = false;
+    return;
+  }
+  azimuth_net::gRuntime.poseYawDeg = yawDeg;
+  azimuth_net::gRuntime.posePitchDeg = pitchDeg;
+  azimuth_net::gRuntime.poseRollDeg = rollDeg;
+  azimuth_net::gRuntime.poseLastMs = millis();
+  azimuth_net::gRuntime.poseValid = true;
 }
 
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {

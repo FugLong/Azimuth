@@ -179,10 +179,36 @@ bool applyPolicyVisual() {
       break;
     }
     case PolicyOverride::SetupAp: {
-      const uint8_t v = trianglePulse(t, 1400U);
-      r = 0;
-      g = static_cast<uint8_t>((static_cast<uint16_t>(v) * 3U) / 4U);
-      b = v;
+      // Distinct AP/offline signature: each hue swells on, fades to black, then
+      // holds dark briefly before advancing to the next hue.
+      constexpr uint32_t kRiseMs = 280U;
+      constexpr uint32_t kFadeMs = 700U;
+      constexpr uint32_t kOffHoldMs = 260U;
+      constexpr uint32_t kCycleMs = kRiseMs + kFadeMs + kOffHoldMs;
+      const uint32_t phase = t % kCycleMs;
+      uint8_t amp = 0;
+      if (phase < kRiseMs) {
+        // Ease-in swell to make the start feel less "blinky".
+        const uint32_t lin = (phase * 255U) / kRiseMs;
+        amp = static_cast<uint8_t>((lin * lin) / 255U);
+      } else if (phase < (kRiseMs + kFadeMs)) {
+        const uint32_t down = phase - kRiseMs;
+        const uint32_t lin = 255U - ((down * 255U) / kFadeMs);
+        // Slightly slower tail so the fade breathes before the dark hold.
+        amp = static_cast<uint8_t>((lin * lin) / 255U);
+      } else {
+        amp = 0;
+      }
+
+      const uint32_t cycleIndex = t / kCycleMs;
+      const uint8_t hue = phaseToWarpedHue((cycleIndex * 9973U) & 0xFFFFU);
+      uint8_t br = 0;
+      uint8_t bg = 0;
+      uint8_t bb = 0;
+      wheel(hue, br, bg, bb);
+      r = static_cast<uint8_t>((static_cast<uint16_t>(br) * amp) / 255U);
+      g = static_cast<uint8_t>((static_cast<uint16_t>(bg) * amp) / 255U);
+      b = static_cast<uint8_t>((static_cast<uint16_t>(bb) * amp) / 255U);
       break;
     }
     case PolicyOverride::Stasis: {

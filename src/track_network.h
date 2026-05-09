@@ -12,6 +12,7 @@ const OtAxisMapConfig& trackNetworkOtAxisMap();
 
 void trackNetworkInit();
 void trackNetworkLoop();
+void trackNetworkPublishPoseSample(float yawDeg, float pitchDeg, float rollDeg);
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg);
 
 /** Cuts Wi‑Fi / portal / UDP for thermal protection (latched until cool reboot). */

@@ -125,12 +125,20 @@ void hatireInitPacket() {
   gHat.End = static_cast<int16_t>(0x5555);
 }
 
-bool sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
-  // ESP32 USB CDC: writing with no host (or full TX) can block forever — skip/drop instead.
+bool hatireUsbHostActive() {
   if (!Serial) {
     return false;
   }
+  // Keep this portable across HWCDC variants (not all expose DTR state).
   if (Serial.availableForWrite() < static_cast<int>(sizeof(gHat))) {
+    return false;
+  }
+  return true;
+}
+
+bool sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
+  // ESP32 USB CDC: writing with no host (or full TX) can block forever — skip/drop instead.
+  if (!hatireUsbHostActive()) {
     return false;
   }
 
@@ -295,7 +303,7 @@ void loop() {
   azimuth_io_button::tick();
   azimuth_io_buzzer::tick();
 #if !IMU_DEBUG_MODE
-  const bool usbConnected = static_cast<bool>(Serial);
+  const bool usbConnected = hatireUsbHostActive();
   if (usbConnected && !gHatireUsbWasConnected) {
     hatireInitPacket();
   }
@@ -349,6 +357,7 @@ void loop() {
 #else
   // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
   // after a rotation-vector report (network work is internally time-sliced).
+  trackNetworkPublishPoseSample(yawDeg, pitchDeg, rollDeg);
   bool hatireSentThisFrame = false;
   if (trackNetworkHatireUsbEnabled() && !trackNetworkStasisActive()) {
     hatireSentThisFrame = sendHatirePacket(yawDeg, pitchDeg, rollDeg);
