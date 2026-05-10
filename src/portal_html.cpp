@@ -689,13 +689,6 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <div class="card section-card" id="cardDevice" data-section="device">
 <div class="hd">Device</div>
 <p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
-<div class="row update-card-row">
-<div>
-<div class="update-card-label">Wireless update</div>
-<div class="update-card-sub" id="updateCardSub">Pulls the latest signed build from the release server (or force re‑pulls the current one) and reboots into it.</div>
-</div>
-<button type="button" class="btn btn-sec" id="btnUpdateWifi">Install over Wi‑Fi</button>
-</div>
 <label for="batteryCapacity">Battery capacity (mAh)</label>
 <input id="batteryCapacity" type="number" min="100" max="5000" step="50" value="800" aria-label="Battery capacity mAh">
 <div class="row battery-cal-meta"><span>Battery cal offset</span><strong id="batteryCalOffsetVal">0 mV</strong></div>
@@ -706,6 +699,13 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 
 <div class="card card-danger section-card" id="cardAdvanced" data-section="advanced">
 <div class="hd">Advanced</div>
+<details class="danger-details">
+<summary>Manual firmware reinstall…</summary>
+<div class="danger-panel">
+<p class="hint" id="updateManualSub">Force re‑pulls the release firmware over Wi‑Fi and reboots. Use this for testing OTA or recovering a suspect local flash.</p>
+<button type="button" class="btn btn-sec" id="btnUpdateManualWifi">Reinstall firmware over Wi‑Fi</button>
+</div>
+</details>
 <details class="danger-details">
 <summary>Reset to factory defaults…</summary>
 <div class="danger-panel">
@@ -1397,21 +1397,21 @@ window.AppViews=(function(){
         window.AppUpdateProgress.apply(o);
       }
     }
-    const wifiBtn=$('btnUpdateWifi');
-    const subEl=$('updateCardSub');
+    const manualBtn=$('btnUpdateManualWifi');
+    const manualSubEl=$('updateManualSub');
     const hasNewer=!!(j.fw_update_available&&j.fw_latest_version);
-    if(wifiBtn){
-      const blocked=ap||!j.wifi_connected||j.thermal_hold;
-      wifiBtn.disabled=!!blocked;
-      wifiBtn.textContent=hasNewer?'Install over Wi‑Fi':'Reinstall over Wi‑Fi';
-      wifiBtn.title=blocked
-        ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
-        :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
-                  :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    const blocked=ap||!j.wifi_connected||j.thermal_hold;
+    const updateTitle=blocked
+      ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
+      :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
+                :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    if(manualBtn){
+      manualBtn.disabled=!!blocked;
+      manualBtn.title=updateTitle;
     }
-    if(subEl){
-      subEl.textContent=hasNewer
-        ?('New build '+j.fw_latest_version+' available — pulls and reboots into it.')
+    if(manualSubEl){
+      manualSubEl.textContent=hasNewer
+        ?('Manual OTA will install '+j.fw_latest_version+' from the release server and reboot.')
         :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).');
     }
     const bannerBtn=$('btnUpdateBannerWifi');
@@ -2075,8 +2075,8 @@ $('btnSave').onclick=()=>onSave(hydrateForm);
 $('btnReboot').onclick=()=>onReboot();
 $('btnBatteryCal').onclick=()=>onBatteryCal(hydrateForm);
 $('btnFactory').onclick=()=>onFactoryReset();
-const _btnUpdateWifi=$('btnUpdateWifi');
-if(_btnUpdateWifi)_btnUpdateWifi.onclick=()=>onUpdateNow();
+const _btnUpdateManualWifi=$('btnUpdateManualWifi');
+if(_btnUpdateManualWifi)_btnUpdateManualWifi.onclick=()=>onUpdateNow();
 const _btnUpdateBannerWifi=$('btnUpdateBannerWifi');
 if(_btnUpdateBannerWifi)_btnUpdateBannerWifi.onclick=()=>onUpdateNow();
 if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.init==='function'){

@@ -280,8 +280,8 @@ $('btnSave').onclick=()=>onSave(hydrateForm);
 $('btnReboot').onclick=()=>onReboot();
 $('btnBatteryCal').onclick=()=>onBatteryCal(hydrateForm);
 $('btnFactory').onclick=()=>onFactoryReset();
-const _btnUpdateWifi=$('btnUpdateWifi');
-if(_btnUpdateWifi)_btnUpdateWifi.onclick=()=>onUpdateNow();
+const _btnUpdateManualWifi=$('btnUpdateManualWifi');
+if(_btnUpdateManualWifi)_btnUpdateManualWifi.onclick=()=>onUpdateNow();
 const _btnUpdateBannerWifi=$('btnUpdateBannerWifi');
 if(_btnUpdateBannerWifi)_btnUpdateBannerWifi.onclick=()=>onUpdateNow();
 if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.init==='function'){

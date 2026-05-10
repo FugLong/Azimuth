@@ -13,7 +13,6 @@
 namespace azimuth_net {
 namespace {
 constexpr uint16_t kApPortalServiceIntervalMs = 80;
-constexpr uint32_t kFwCheckUdpIdleMs = 5000;
 constexpr uint32_t kFwCheckMinStaUptimeMs = 300;
 
 void maybePerformFirmwareUpdateCheck(uint32_t now) {
@@ -30,9 +29,17 @@ void maybePerformFirmwareUpdateCheck(uint32_t now) {
   if (now - staReadyMs < kFwCheckMinStaUptimeMs) {
     return;
   }
-  const bool udpLikelyActive = gRuntime.udpSendEnabled && !gRuntime.stasisActive &&
-                               (now - gRuntime.lastUdpTxMs < kFwCheckUdpIdleMs);
-  if (!azimuth_io_buzzer::isActive() && !udpLikelyActive) {
+  // Honour exponential backoff after a failed attempt so we don't pound the
+  // release server on a flaky link.
+  if (gRuntime.fwUpdateNextCheckMs != 0 && now < gRuntime.fwUpdateNextCheckMs) {
+    return;
+  }
+  // Don't gate on UDP idle — when OpenTrack is streaming at 100 Hz the socket
+  // is *never* idle, which used to silently prevent the manifest check from
+  // ever running on a working device. The TLS fetch is one-shot per boot and
+  // any brief stutter is acceptable. Still avoid overlapping with audio so the
+  // buzzer's PWM timing isn't disturbed.
+  if (!azimuth_io_buzzer::isActive()) {
     performFirmwareUpdateCheckOnce();
   }
 }

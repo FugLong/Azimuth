@@ -176,10 +176,17 @@ void appendStatusDevice(JsonDocument& doc) {
   doc["board"] = azimuth_board::boardName();
   doc["fw_version"] = AZIMUTH_FW_VERSION;
   doc["fw_update_available"] = gRuntime.fwUpdateAvailable;
-  if (gRuntime.fwUpdateAvailable) {
+  if (!gRuntime.fwLatestVersion.isEmpty()) {
     doc["fw_latest_version"] = gRuntime.fwLatestVersion;
   } else {
     doc["fw_latest_version"] = nullptr;
+  }
+  doc["fw_update_check_done"] = gRuntime.fwUpdateCheckDone;
+  doc["fw_update_check_attempts"] = gRuntime.fwUpdateCheckAttempts;
+  if (!gRuntime.fwUpdateLastError.isEmpty()) {
+    doc["fw_update_check_error"] = gRuntime.fwUpdateLastError;
+  } else {
+    doc["fw_update_check_error"] = nullptr;
   }
   doc["fw_flasher_url"] = AZIMUTH_RELEASE_FLASHER_URL;
   {
@@ -605,8 +612,26 @@ const char* releaseRootCaCert() {
   return caCert;
 }
 
+namespace {
+/**
+ * Schedule the next manifest check based on current attempt count. Backoff is
+ * intentionally generous on a fresh boot (transient TLS / DHCP races) and caps
+ * out around 30 minutes so a long-running device that's been offline catches
+ * back up without hammering GitHub Pages.
+ */
+void scheduleManifestRetry(const char* reason) {
+  gRuntime.fwUpdateLastError = reason ? reason : "";
+  gRuntime.fwUpdateCheckAttempts++;
+  static const uint32_t kBackoffMs[] = {5000U, 15000U, 60000U, 300000U, 1800000U};
+  const size_t idx =
+      (gRuntime.fwUpdateCheckAttempts >= sizeof(kBackoffMs) / sizeof(kBackoffMs[0]))
+          ? (sizeof(kBackoffMs) / sizeof(kBackoffMs[0]) - 1)
+          : (gRuntime.fwUpdateCheckAttempts - 1);
+  gRuntime.fwUpdateNextCheckMs = millis() + kBackoffMs[idx];
+}
+}  // namespace
+
 void performFirmwareUpdateCheckOnce() {
-  gRuntime.fwUpdateCheckDone = true;
   const char* caCert = releaseRootCaCert();
   WiFiClientSecure client;
   client.setTimeout(1200);
@@ -614,11 +639,15 @@ void performFirmwareUpdateCheckOnce() {
   HTTPClient http;
   http.setTimeout(1200);
   if (!http.begin(client, AZIMUTH_RELEASE_MANIFEST_URL)) {
+    scheduleManifestRetry("begin_failed");
     return;
   }
   const int code = http.GET();
   if (code != HTTP_CODE_OK) {
     http.end();
+    char buf[24];
+    snprintf(buf, sizeof(buf), "http_%d", code);
+    scheduleManifestRetry(buf);
     return;
   }
   const String payload = http.getString();
@@ -626,22 +655,30 @@ void performFirmwareUpdateCheckOnce() {
   JsonDocument doc;
   const DeserializationError jerr = deserializeJson(doc, payload);
   if (jerr) {
+    scheduleManifestRetry("json_parse");
     return;
   }
   const char* remoteVer = doc["version"].as<const char*>();
   if (!remoteVer || !remoteVer[0]) {
+    scheduleManifestRetry("no_version");
     return;
   }
   azimuth_version::SemVer cur{};
   azimuth_version::SemVer rem{};
   if (!azimuth_version::parseSemVer(AZIMUTH_FW_VERSION, cur) ||
       !azimuth_version::parseSemVer(remoteVer, rem)) {
+    scheduleManifestRetry("semver_parse");
     return;
   }
   if (azimuth_version::semverLess(cur, rem)) {
     gRuntime.fwUpdateAvailable = true;
     gRuntime.fwLatestVersion = remoteVer;
+  } else {
+    gRuntime.fwUpdateAvailable = false;
+    gRuntime.fwLatestVersion = remoteVer;
   }
+  gRuntime.fwUpdateCheckDone = true;
+  gRuntime.fwUpdateLastError = "";
 }
 
 void registerRoutes(WebServer& http, bool captiveProbeRedirect) {

@@ -66,6 +66,9 @@ struct NetworkRuntime {
   bool fwUpdateCheckDone = false;
   bool fwUpdateAvailable = false;
   String fwLatestVersion;
+  uint8_t fwUpdateCheckAttempts = 0;
+  uint32_t fwUpdateNextCheckMs = 0;
+  String fwUpdateLastError;
   Preferences prefs;
   bool prefsOpened = false;
   uint16_t imuPeriodMsRuntime = 10;

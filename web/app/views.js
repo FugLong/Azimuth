@@ -138,21 +138,21 @@ window.AppViews=(function(){
         window.AppUpdateProgress.apply(o);
       }
     }
-    const wifiBtn=$('btnUpdateWifi');
-    const subEl=$('updateCardSub');
+    const manualBtn=$('btnUpdateManualWifi');
+    const manualSubEl=$('updateManualSub');
     const hasNewer=!!(j.fw_update_available&&j.fw_latest_version);
-    if(wifiBtn){
-      const blocked=ap||!j.wifi_connected||j.thermal_hold;
-      wifiBtn.disabled=!!blocked;
-      wifiBtn.textContent=hasNewer?'Install over Wi‑Fi':'Reinstall over Wi‑Fi';
-      wifiBtn.title=blocked
-        ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
-        :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
-                  :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    const blocked=ap||!j.wifi_connected||j.thermal_hold;
+    const updateTitle=blocked
+      ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
+      :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
+                :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    if(manualBtn){
+      manualBtn.disabled=!!blocked;
+      manualBtn.title=updateTitle;
     }
-    if(subEl){
-      subEl.textContent=hasNewer
-        ?('New build '+j.fw_latest_version+' available — pulls and reboots into it.')
+    if(manualSubEl){
+      manualSubEl.textContent=hasNewer
+        ?('Manual OTA will install '+j.fw_latest_version+' from the release server and reboot.')
         :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).');
     }
     const bannerBtn=$('btnUpdateBannerWifi');
