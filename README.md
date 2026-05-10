@@ -71,6 +71,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | [**Implementation handoff**](docs/implementation-handoff-prompt.md) | Copy-paste prompt + ordered tasks for agents / new contributors |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |
+| [**Enclosure (Onshape CAD)**](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46) | Interactive 3D model — print/fit validation still in progress ([roadmap](docs/roadmap.md)) |
 
 ## Goals
 
@@ -86,7 +87,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | Hardware / BOM | 100% | [Parts list](docs/parts-list.md) |
 | Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) — **V0.1** | **100%** (layout) · **units received** | Assembled boards **under test**. RGB / buzzer / FUNC in firmware for bring-up — see [wiring](docs/wiring.md) / [parts-list](docs/parts-list.md) — [roadmap](docs/roadmap.md) |
 | Firmware | ~90% | Tracking + Wi‑Fi + portal + Hatire + **wireless OTA** + modular **`track_network_*`**; **battery ADC** polish and optional **`main`** layering remain — [roadmap](docs/roadmap.md) |
-| 3D enclosure | ~90%+ | **Design nearly complete** — publish / validate next |
+| 3D enclosure | ~90%+ | **Design nearly complete** — [**Onshape CAD (interactive)**](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46); print / fit validation still ahead |
 
 ```
 Hardware/BOM   [████████████████████] 100%

@@ -229,7 +229,13 @@ Full detail: [power-and-thermal.md](power-and-thermal.md).
 
 ---
 
-## 13. Related documentation
+## 13. Enclosure (3D-printed shell)
+
+The **integrated PCB** can mount in a **3D-printed enclosure** (battery-friendly internal volume). Open the model on **Onshape** to rotate, measure, or export for printing: [Azimuth enclosure](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46).
+
+---
+
+## 14. Related documentation
 
 | Doc | Contents |
 |-----|----------|

@@ -11,7 +11,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Hardware selection | **100%** | DIY: **XIAO ESP32-C3** + **BNO08x**; product: **Azimuth** PCB ([**Azimuth_Design**](../kicad/Azimuth_Design/)) |
 | Custom PCB — **V0.1** | **100%** (design) · **assembled units received** | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean**. **V0.1** fab complete; **boards in hand**; **bring-up / testing in progress**. **Panelization** still optional for future arrays. |
 | Firmware | **~90%** | **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Offline Mode AP**, power/thermal, **pause/stasis**, **wireless OTA**, modular networking (`track_network_*.cpp`), LED policy + portal. Polish: **battery ADC** refinement, optional **`main.cpp`** split, NVS schema versioning (Phase 3). |
-| 3D enclosure | **~90%+** | **Design nearly complete** — publication / fab validation still ahead |
+| 3D enclosure | **~90%+** | **Design nearly complete** — [**Onshape document**](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46) (interactive CAD); print / fit validation still ahead |
 | End-user docs & release | **~85%** | **[user-guide.md](user-guide.md)** (manual) + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal / OTA documented; enclosure assembly + field troubleshooting still thin |
 
 **Visual (rough):**
@@ -29,7 +29,7 @@ Enclosure        [██████████████████░░] 
 
 **Wireless is a V1 requirement** — The tracker is meant to run untethered with a battery; **WiFi → UDP (OpenTrack)** is implemented in firmware for LAN use; **USB stays supported** for desk use, flashing, serial debug, and **Hatire** as an alternative input path.
 
-**Enclosure** — Default plan is **one enclosure** sized for the **battery** build (internal volume for cell + PH connector clearance). A **second, slimmer** enclosure for **wired-only** builds is possible if there is demand: same PCB, but without a battery installed and ideally without the tall **JST PH2.0** connector populated (see assembly note below).
+**Enclosure** — Default plan is **one enclosure** sized for the **battery** build (internal volume for cell + PH connector clearance). **CAD:** [Onshape — Azimuth enclosure](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46) (open in a browser for the live viewer). A **second, slimmer** enclosure for **wired-only** builds is possible if there is demand: same PCB, but without a battery installed and ideally without the tall **JST PH2.0** connector populated (see assembly note below).
 
 ---
 
@@ -47,7 +47,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md), [using-azimuth.md](using-azimuth.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [x] **Updates (USB)** — GitHub Pages **esp-web-tools** flasher + repo **`VERSION`** / **`manifest.json`**; portal banner compares to hosted manifest.
 - [x] **Updates (OTA)** — **`track_update`** streams `firmware/<board>/firmware.bin` from the same trusted GitHub Pages release (Let's Encrypt root pinned) into the standby `ota_0`/`ota_1` slot via the Arduino `Update` class, then reboots into it. Triggered by **FUNC long-press (~2 s)** or the portal **“Install over Wi‑Fi”** button (banner + Device card). Refuses to start in Offline‑Mode AP, during thermal hold, or with battery ≤15 % off‑charger; USB flasher remains recovery.
-- [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered. **Design ~90%+ complete** (2026-05); publish / verify fit & manufacturing next.
+- [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered. **CAD:** [Onshape document](https://cad.onshape.com/documents/fa78666ff0e219ba32d45d9f/w/679625cc5ba48f8e098cba83/e/0cd4f9cad8e872128d491b46). **Design ~90%+ complete** (2026-05); verify fit & manufacturing next.
 - [x] **User-facing docs (baseline)** — **[user-guide.md](user-guide.md)** manual + existing guides; deeper troubleshooting + enclosure still expanding.
 
 ---
