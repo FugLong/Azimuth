@@ -17,6 +17,7 @@
 #include "thermal_monitor.h"
 #include "track_config_plan.h"
 #include "track_config_validation.h"
+#include "track_update.h"
 #include "track_version.h"
 
 namespace azimuth_net {
@@ -181,6 +182,20 @@ void appendStatusDevice(JsonDocument& doc) {
     doc["fw_latest_version"] = nullptr;
   }
   doc["fw_flasher_url"] = AZIMUTH_RELEASE_FLASHER_URL;
+  {
+    const auto u = azimuth_update::status();
+    JsonObject up = doc["fw_ota"].to<JsonObject>();
+    up["phase"] = azimuth_update::phaseString(u.phase);
+    up["progress_percent"] = u.progressPercent;
+    up["written_bytes"] = u.writtenBytes;
+    up["total_bytes"] = u.totalBytes;
+    if (u.errorMessage && u.errorMessage[0]) {
+      up["error"] = u.errorMessage;
+    } else {
+      up["error"] = nullptr;
+    }
+    up["active"] = azimuth_update::isActive();
+  }
   doc["rgb_brightness"] = mergedRgbBrightness();
   doc["buzzer_volume"] = mergedBuzzerVolume();
   doc["led_mode"] = mergedLedMode();
@@ -535,6 +550,45 @@ void handleFactoryResetPost(WebServer& http) {
   gRuntime.prefsOpened = false;
   ESP.restart();
 }
+
+void handleUpdatePost(WebServer& http) {
+  markPortalActivity();
+  if (!validateMutatingRequest(http)) {
+    return;
+  }
+  const azimuth_update::BeginResult r = azimuth_update::beginUpdate();
+  JsonDocument doc;
+  doc["result"] = azimuth_update::beginResultString(r);
+  doc["ok"] = (r == azimuth_update::BeginResult::Started ||
+               r == azimuth_update::BeginResult::AlreadyActive);
+  const auto s = azimuth_update::status();
+  doc["phase"] = azimuth_update::phaseString(s.phase);
+  if (s.errorMessage && s.errorMessage[0]) {
+    doc["error"] = s.errorMessage;
+  }
+  const int code = (r == azimuth_update::BeginResult::Started ||
+                    r == azimuth_update::BeginResult::AlreadyActive)
+                       ? 200
+                       : 409;
+  sendJson(http, code, doc);
+}
+
+void handleUpdateStatusGet(WebServer& http) {
+  const auto s = azimuth_update::status();
+  JsonDocument doc;
+  doc["phase"] = azimuth_update::phaseString(s.phase);
+  doc["active"] = azimuth_update::isActive();
+  doc["progress_percent"] = s.progressPercent;
+  doc["written_bytes"] = s.writtenBytes;
+  doc["total_bytes"] = s.totalBytes;
+  if (s.errorMessage && s.errorMessage[0]) {
+    doc["error"] = s.errorMessage;
+  } else {
+    doc["error"] = nullptr;
+  }
+  http.sendHeader("Cache-Control", "no-store");
+  sendJson(http, 200, doc);
+}
 }  // namespace
 
 void sendJson(WebServer& http, int code, const JsonDocument& doc) {
@@ -543,12 +597,17 @@ void sendJson(WebServer& http, int code, const JsonDocument& doc) {
   http.send(code, "application/json", out);
 }
 
-void performFirmwareUpdateCheckOnce() {
-  gRuntime.fwUpdateCheckDone = true;
+const char* releaseRootCaCert() {
   const char* caCert = AZIMUTH_RELEASE_MANIFEST_CA_CERT;
   if (!caCert || !caCert[0]) {
     caCert = kDefaultManifestCaCert;
   }
+  return caCert;
+}
+
+void performFirmwareUpdateCheckOnce() {
+  gRuntime.fwUpdateCheckDone = true;
+  const char* caCert = releaseRootCaCert();
   WiFiClientSecure client;
   client.setTimeout(1200);
   client.setCACert(caCert);
@@ -595,6 +654,8 @@ void registerRoutes(WebServer& http, bool captiveProbeRedirect) {
   http.on("/api/config", HTTP_POST, [&http]() { handleConfigPost(http); });
   http.on("/api/reboot", HTTP_POST, [&http]() { handleRebootPost(http); });
   http.on("/api/factory_reset", HTTP_POST, [&http]() { handleFactoryResetPost(http); });
+  http.on("/api/update", HTTP_POST, [&http]() { handleUpdatePost(http); });
+  http.on("/api/update_status", HTTP_GET, [&http]() { handleUpdateStatusGet(http); });
   if (captiveProbeRedirect) {
     http.onNotFound([&http]() {
       const HTTPMethod m = http.method();

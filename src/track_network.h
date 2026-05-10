@@ -30,3 +30,10 @@ bool trackNetworkOfflineApActive();
  */
 void trackNetworkSetStasis(bool active);
 bool trackNetworkStasisActive();
+
+/**
+ * Trigger a wireless firmware update from the trusted release URL.
+ * Returns one of `azimuth_update::beginResultString(...)` values. Safe to call
+ * from IMU_DEBUG_MODE builds (returns "chip_busy").
+ */
+const char* trackNetworkBeginFirmwareUpdate();

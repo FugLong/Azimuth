@@ -112,5 +112,48 @@ window.AppControllers=(function(){
     }catch(e){setMsg('Request failed','err')}
   }
 
-  return {onScan,onSave,onReboot,onBatteryCal,onFactoryReset};
+  /**
+   * Map the device's begin-update result string to a friendly message and a
+   * boolean for whether we should start polling progress.
+   */
+  function describeBeginResult(result){
+    switch(result){
+      case'started':return{ok:true,msg:'Update started. Don’t close this page or unplug the device.'};
+      case'already_active':return{ok:true,msg:'Update already in progress.'};
+      case'no_network':return{ok:false,msg:'Can’t update: device isn’t connected to your Wi‑Fi.'};
+      case'offline_ap':return{ok:false,msg:'Can’t update from the Offline‑Mode AP. Join your Wi‑Fi first.'};
+      case'thermal_hold':return{ok:false,msg:'Can’t update during thermal hold. Let the device cool, then power-cycle.'};
+      case'battery_critical':return{ok:false,msg:'Battery too low (≤15%). Plug into USB to charge first.'};
+      case'partition_unavailable':return{ok:false,msg:'No spare OTA slot available on this build.'};
+      case'http_error':return{ok:false,msg:'Couldn’t reach the release server. Try again in a moment.'};
+      case'chip_busy':return{ok:false,msg:'Chip is busy. Try again in a few seconds.'};
+      default:return{ok:false,msg:'Update failed: '+(result||'unknown')};
+    }
+  }
+
+  async function onUpdateNow(){
+    const last=(window.AppState&&window.AppState.lastStatus)||{};
+    const cur=last.fw_version||'?';
+    const latest=last.fw_latest_version||'';
+    const hasNewer=!!(last.fw_update_available&&latest);
+    const prompt=hasNewer
+      ?('Install firmware '+latest+' over Wi‑Fi? (currently '+cur+'). The device will reboot when the download completes.')
+      :('Re‑install firmware '+cur+' over Wi‑Fi? The device pulls the same build from the release server again and reboots — useful for forcing a known-good flash. Continue?');
+    if(!confirm(prompt))return;
+    setMsg('Asking the device to fetch firmware…','');
+    try{
+      const {response:r,json:j}=await window.AppApi.postUpdate();
+      const desc=describeBeginResult((j&&j.result)||'');
+      if(!desc.ok&&!r.ok){
+        setMsg(desc.msg,'err');
+        return;
+      }
+      setMsg(desc.msg,desc.ok?'ok':'err');
+      if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.show==='function'){
+        window.AppUpdateProgress.show(j);
+      }
+    }catch(e){setMsg('Network error','err')}
+  }
+
+  return {onScan,onSave,onReboot,onBatteryCal,onFactoryReset,onUpdateNow};
 })();

@@ -27,6 +27,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | | |
 |:---|:---|
 | **Install or update firmware (USB)** | [**Azimuth web flasher**](https://fuglong.github.io/Azimuth/) — use **Chrome** or **Edge** and a **data** USB cable. |
+| **Update firmware over Wi‑Fi** | Open the portal, hit **Install over Wi‑Fi** in the **Device** card or update banner — *or* hold **FUNC** for ~2 s on the board. The chip pulls the latest signed build from the same release URL and reboots into the standby OTA slot. See [**using-azimuth.md → Wireless updates**](docs/using-azimuth.md#firmware-updates). |
 | **Settings (Wi‑Fi, OpenTrack, device)** | [**http://azimuth.local:8080**](http://azimuth.local:8080) — only after the board is on your home network. First time? Connect to **Azimuth-Tracker** (**Offline Mode**) and follow the [**quick start**](docs/quickstart.md). |
 | **Step-by-step: Wi‑Fi → OpenTrack** | [**docs/quickstart.md**](docs/quickstart.md) |
 
@@ -64,7 +65,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md) | Wi‑Fi power saving, portal polling, defaults; battery runtime / PCB pack polarity |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
 | [**Firmware architecture plan**](docs/firmware-architecture-plan.md) | Maintainers — module splits, CI breadth, refactor phases |
-| [**I/O experience plan**](docs/io-led-buzzer-plan.md) | LED / buzzer / FUNC — pause/stasis, layered overrides, future OTA |
+| [**I/O experience plan**](docs/io-led-buzzer-plan.md) | LED / buzzer / FUNC — pause/stasis, layered overrides, **wireless OTA** |
 | [**Implementation handoff**](docs/implementation-handoff-prompt.md) | Copy-paste prompt + ordered tasks for agents / new contributors |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
 | [**Roadmap**](docs/roadmap.md) | Progress, milestones, future work |

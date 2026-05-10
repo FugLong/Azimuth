@@ -19,6 +19,7 @@ enum class PolicyOverride : uint8_t {
   BatteryCritical,
   SetupAp,
   Stasis,
+  Update,
 };
 
 void init();

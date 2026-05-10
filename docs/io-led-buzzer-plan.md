@@ -24,7 +24,7 @@ It builds on code that already exists: `azimuth_io_led` defines `RgbPreset` (Rai
 |-------|---------------------|
 | **Single tap** | **Toggle pause (stasis).** If running → enter stasis; if in stasis → resume normal operation. |
 | **Double tap** | **Reserved** (not assigned for V1 — avoid accidental triggers; previous thermal **demo** hooks in `main.cpp` should be removed or repurposed). |
-| **Long press (hold)** | **Future:** enter **wireless update / OTA mode** (see [Wireless updates (future)](#wireless-updates-future-ota)). Not required for first pause implementation. |
+| **Long press (hold ~2 s)** | **Triggers wireless firmware update** — see [Wireless updates (OTA)](#wireless-updates-future--ota). Single-tap on the same press is suppressed (no accidental pause). |
 
 ### Stasis (paused) — functional requirements
 
@@ -107,15 +107,25 @@ The buzzer already plays structured tunes for battery and thermal events. Extend
 
 ## Wireless updates (future / OTA)
 
-**Goal:** Let users refresh firmware **over Wi‑Fi** without USB, aligned with a **long-press** path on FUNC (after pause/resume is stable).
+**Status:** Shipped as of 2026-05-08. The historical "future" framing is kept below for context — concrete implementation summary first.
 
-**Feasibility:** ESP32 (Arduino / ESP-IDF) supports **OTA** via dual **app partitions** (`ota_0` / `ota_1`) and `HTTPUpdate` or custom HTTPS fetch. This repo today ships **USB web flasher** + optional manifest check from the portal — **OTA is additive**, not replacing USB recovery.
+**What ships today:**
 
-**Likely building blocks (for a later milestone):**
+- New **`src/track_update.{h,cpp}`** — chunked HTTPS pull state machine (`Idle → Connecting → Downloading → Finalizing → Success/Failed`).
+- Pulls `firmware/<board>/firmware.bin` from the **same GitHub Pages release** the manifest check already trusts. The URL is derived at runtime from `AZIMUTH_RELEASE_MANIFEST_URL` (overridable with compile-time `AZIMUTH_RELEASE_FIRMWARE_URL`).
+- **TLS** pinned to **ISRG Root X1** (Let's Encrypt), shared with the manifest check via `azimuth_net::releaseRootCaCert()` — a network MitM with a private CA cannot push a build.
+- Writes through the Arduino-ESP32 **`Update`** class (not `HTTPUpdate` — that has a known ESP32-C3 MD5-mismatch regression in 2025+ Arduino frameworks; see [esphome#13255](https://github.com/esphome/esphome/issues/13255)).
+- The default PlatformIO partition table for `seeed_xiao_esp32c3` / `esp32-c3-devkitc-02` (4 MB flash) already includes **`ota_0`** / **`ota_1`** / **`otadata`** — no `board_build.partitions` change needed, so **NVS preferences survive the upgrade**.
+- Cooperative tick: `azimuth_update::tick()` is called from `networkLoop()`. Each tick reads up to **4 KB** from the TLS socket and writes one flash sector, so the WebServer + IMU loop stay responsive and the user can watch progress.
+- **Triggers:**
+  - **FUNC long-press (~2 s)** — added to `io_button` with deferred-release suppression so the press doesn't also fire single-tap pause.
+  - **Portal button** — `Install over Wi-Fi` in the update banner *and* the Device card. New routes `POST /api/update` and `GET /api/update_status`.
+- **LED override** — new `PolicyOverride::Update` (cyan throb at 360 ms; matching fast blink on status-only boards) wins over ambient/setup-AP/stasis but yields to thermal hold.
+- **Buzzer cues** — `playUpdateStartTune` (rising fifth), `playUpdateOkTune` (resolved arpeggio just before reboot), `playUpdateFailTune` (descending stern). Distinct from FUNC / pause / battery / thermal motifs.
+- **Safety gates** — refuses to begin in Offline-Mode AP (no internet), during thermal hold, with battery ≤15 % and not charging (a brownout mid-write would brick), or while another OTA is active. Stasis is forced **on** during the download so radio bandwidth and CPU go to the fetch.
+- **Recovery** — USB **esp-web-tools** flasher path is unchanged. If OTA fails, the device aborts the half-written slot and stays on the working image; the failure tune + portal status both show the reason.
 
-- Partition table with **OTA slots** (PlatformIO `board_build.partitions` or custom CSV).
-- **Trusted URL** or **upload endpoint** on-device (only in a dedicated “update mode” to shrink attack surface).
-- **Long-press FUNC** → enter **update mode** (distinct LED + optional lightweight HTTP server or documented SSID behavior); exit safely on success or revert.
+**Original feasibility framing (kept for archaeological reference):** ESP32 (Arduino / ESP-IDF) supports OTA via dual app partitions (`ota_0` / `ota_1`) and `HTTPUpdate` or custom HTTPS fetch. This repo previously shipped USB web flasher + manifest check from the portal — OTA is now additive, not replacing USB recovery.
 
 Document detailed threat model and UX in a dedicated note when implementation starts; until then treat as **roadmap**, not V1-blocking.
 
@@ -140,10 +150,12 @@ Document detailed threat model and UX in a dedicated note when implementation st
 
 - Palette / axis hue; micro-interactions.
 
-### Phase 4 — Long-press + OTA
+### Phase 4 — Long-press + OTA *(shipped)*
 
-- Button driver: hold detection.
-- Partition scheme + OTA pull or upload mode.
+- Button driver: hold detection (`io_button::setLongPressCallback`, ~2 s window, suppresses single-tap on the same gesture).
+- OTA module (`track_update`) reuses the default partition table's `ota_0` / `ota_1` slots — no `board_build.partitions` change.
+- HTTPS pull from the same trusted release URL as the manifest check (TLS pinned to ISRG Root X1).
+- Cyan-throb LED override + start/ok/fail buzzer cues; portal exposes `Install over Wi‑Fi` button + live progress (`POST /api/update`, `GET /api/update_status`).
 
 ---
 

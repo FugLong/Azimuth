@@ -8,6 +8,7 @@
 #include "io_buzzer.h"
 #include "power_policy.h"
 #include "thermal_monitor.h"
+#include "track_update.h"
 
 namespace azimuth_net {
 namespace {
@@ -156,6 +157,11 @@ void networkLoop() {
       gRuntime.webSta.handleClient();
     }
   }
+
+  // Drive the OTA chunk pump every loop tick (cheap when idle; ~one 4 KB write
+  // per call when active). Must run before the background block so a brief
+  // adaptive-sleep window doesn't gate progress.
+  azimuth_update::tick();
 
   if (now - gRuntime.lastBackgroundTickMs >= azimuth_power::networkBackgroundPeriodMs()) {
     gRuntime.lastBackgroundTickMs = now;

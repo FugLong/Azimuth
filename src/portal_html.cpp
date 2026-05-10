@@ -37,6 +37,42 @@ body{
 }
 .banner.banner-update a{color:var(--acc);font-weight:600;text-decoration:none}
 .banner.banner-update a:hover{text-decoration:underline}
+.banner.banner-update #btnUpdateBannerWifi{margin-right:.4rem}
+.banner.banner-update-progress{
+  display:none;background:rgba(61,158,229,.1);border-color:rgba(61,158,229,.45);
+  padding:.95rem 1.05rem
+}
+.banner.banner-update-progress strong{font-weight:700;color:var(--tx)}
+.update-progress-bar{
+  height:.6rem;background:var(--bg2);border:1px solid var(--bd);border-radius:999px;
+  overflow:hidden;margin:.5rem 0 .35rem
+}
+.update-progress-bar span{
+  display:block;height:100%;width:0;
+  background:linear-gradient(90deg,#4eb0f2,var(--acc));
+  transition:width .3s ease
+}
+.update-progress-bar span.indeterminate{
+  width:38%;background:linear-gradient(90deg,transparent,var(--acc),transparent);
+  animation:updateProgressPulse 1.4s linear infinite
+}
+@keyframes updateProgressPulse{
+  0%{transform:translateX(-100%)}100%{transform:translateX(280%)}
+}
+.update-progress-meta{
+  font-size:.78rem;color:var(--tx-soft);font-variant-numeric:tabular-nums
+}
+.update-progress-hint{
+  margin:.45rem 0 0;font-size:.72rem;color:var(--muted);line-height:1.5
+}
+.update-card-row{
+  align-items:center;justify-content:space-between;gap:.65rem;
+  margin:0 0 .85rem;padding:.65rem .75rem;
+  border:1px solid var(--bd);border-radius:11px;background:var(--bg2)
+}
+.update-card-row .btn{flex-shrink:0}
+.update-card-label{font-size:.85rem;font-weight:600;color:var(--tx)}
+.update-card-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;line-height:1.45}
 .card{
   background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:1rem;
   box-shadow:var(--shadow)
@@ -462,7 +498,13 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 </div>
 <p class="hint" id="attHudMeta" style="margin:.5rem 0 0">Waiting for pose…</p>
 </section>
-<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <button type="button" class="btn btn-sec btn-sm" id="btnUpdateBannerWifi">Install over Wi‑Fi</button> <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<div class="banner banner-update-progress" id="updateProgressBanner" role="status" aria-live="polite" style="display:none">
+<div><strong id="updateProgressTitle">Installing firmware…</strong></div>
+<div class="update-progress-bar" aria-hidden="true"><span id="updateProgressFill"></span></div>
+<div class="update-progress-meta" id="updateProgressMeta">Connecting…</div>
+<p class="update-progress-hint">Don’t close this page or unplug the device. The board reboots into the new firmware automatically when the download completes.</p>
+</div>
 <section class="settings-workspace" id="settingsWorkspace" aria-live="polite">
 <div class="settings-head">
 <div class="settings-head-top">
@@ -647,6 +689,13 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <div class="card section-card" id="cardDevice" data-section="device">
 <div class="hd">Device</div>
 <p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
+<div class="row update-card-row">
+<div>
+<div class="update-card-label">Wireless update</div>
+<div class="update-card-sub" id="updateCardSub">Pulls the latest signed build from the release server (or force re‑pulls the current one) and reboots into it.</div>
+</div>
+<button type="button" class="btn btn-sec" id="btnUpdateWifi">Install over Wi‑Fi</button>
+</div>
 <label for="batteryCapacity">Battery capacity (mAh)</label>
 <input id="batteryCapacity" type="number" min="100" max="5000" step="50" value="800" aria-label="Battery capacity mAh">
 <div class="row battery-cal-meta"><span>Battery cal offset</span><strong id="batteryCalOffsetVal">0 mV</strong></div>
@@ -685,7 +734,8 @@ window.AppState=(function(){
       lastUserActivityMs:Date.now(),
       lastStatusOkMs:0,
       pollTimer:0
-    }
+    },
+    lastStatus:null
   };
 })();
 </script>
@@ -758,7 +808,15 @@ window.AppApi=(function(){
   async function postFactoryReset(){
     return requestJson('/api/factory_reset',{method:'POST',headers:MUTATION_HEADERS});
   }
-  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset};
+  async function postUpdate(){
+    return requestJson('/api/update',{method:'POST',headers:MUTATION_HEADERS});
+  }
+  async function getUpdateStatus(){
+    const {response:r,json:j}=await requestJson('/api/update_status');
+    if(!r.ok)throw new Error(j.error||('Update status failed ('+r.status+')'));
+    return j;
+  }
+  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset,postUpdate,getUpdateStatus};
 })();
 </script>
 <script>
@@ -1311,6 +1369,7 @@ window.AppViews=(function(){
 
   function applyShell(j){
     const ap=!!j.setup_ap;
+    window.AppState.lastStatus=j;
     applyHero(j);
     if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyStatus==='function'){
       window.AppPoseMascot.applyStatus(j);
@@ -1324,6 +1383,40 @@ window.AppViews=(function(){
         const lk=$('updateBannerLink');
         if(lk&&j.fw_flasher_url){lk.href=j.fw_flasher_url}
       }else{ub.style.display='none'}
+    }
+    if(j.fw_ota&&window.AppUpdateProgress){
+      const o=j.fw_ota;
+      if(o.active){
+        if(typeof window.AppUpdateProgress.show==='function'){
+          window.AppUpdateProgress.show(o);
+        }
+        if(typeof window.AppUpdateProgress.apply==='function'){
+          window.AppUpdateProgress.apply(o);
+        }
+      }else if((o.phase==='success'||o.phase==='failed')&&typeof window.AppUpdateProgress.apply==='function'){
+        window.AppUpdateProgress.apply(o);
+      }
+    }
+    const wifiBtn=$('btnUpdateWifi');
+    const subEl=$('updateCardSub');
+    const hasNewer=!!(j.fw_update_available&&j.fw_latest_version);
+    if(wifiBtn){
+      const blocked=ap||!j.wifi_connected||j.thermal_hold;
+      wifiBtn.disabled=!!blocked;
+      wifiBtn.textContent=hasNewer?'Install over Wi‑Fi':'Reinstall over Wi‑Fi';
+      wifiBtn.title=blocked
+        ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
+        :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
+                  :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    }
+    if(subEl){
+      subEl.textContent=hasNewer
+        ?('New build '+j.fw_latest_version+' available — pulls and reboots into it.')
+        :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).');
+    }
+    const bannerBtn=$('btnUpdateBannerWifi');
+    if(bannerBtn){
+      bannerBtn.disabled=!!(ap||!j.wifi_connected||j.thermal_hold);
     }
     $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
@@ -1523,14 +1616,187 @@ window.AppControllers=(function(){
     }catch(e){setMsg('Request failed','err')}
   }
 
-  return {onScan,onSave,onReboot,onBatteryCal,onFactoryReset};
+  /**
+   * Map the device's begin-update result string to a friendly message and a
+   * boolean for whether we should start polling progress.
+   */
+  function describeBeginResult(result){
+    switch(result){
+      case'started':return{ok:true,msg:'Update started. Don’t close this page or unplug the device.'};
+      case'already_active':return{ok:true,msg:'Update already in progress.'};
+      case'no_network':return{ok:false,msg:'Can’t update: device isn’t connected to your Wi‑Fi.'};
+      case'offline_ap':return{ok:false,msg:'Can’t update from the Offline‑Mode AP. Join your Wi‑Fi first.'};
+      case'thermal_hold':return{ok:false,msg:'Can’t update during thermal hold. Let the device cool, then power-cycle.'};
+      case'battery_critical':return{ok:false,msg:'Battery too low (≤15%). Plug into USB to charge first.'};
+      case'partition_unavailable':return{ok:false,msg:'No spare OTA slot available on this build.'};
+      case'http_error':return{ok:false,msg:'Couldn’t reach the release server. Try again in a moment.'};
+      case'chip_busy':return{ok:false,msg:'Chip is busy. Try again in a few seconds.'};
+      default:return{ok:false,msg:'Update failed: '+(result||'unknown')};
+    }
+  }
+
+  async function onUpdateNow(){
+    const last=(window.AppState&&window.AppState.lastStatus)||{};
+    const cur=last.fw_version||'?';
+    const latest=last.fw_latest_version||'';
+    const hasNewer=!!(last.fw_update_available&&latest);
+    const prompt=hasNewer
+      ?('Install firmware '+latest+' over Wi‑Fi? (currently '+cur+'). The device will reboot when the download completes.')
+      :('Re‑install firmware '+cur+' over Wi‑Fi? The device pulls the same build from the release server again and reboots — useful for forcing a known-good flash. Continue?');
+    if(!confirm(prompt))return;
+    setMsg('Asking the device to fetch firmware…','');
+    try{
+      const {response:r,json:j}=await window.AppApi.postUpdate();
+      const desc=describeBeginResult((j&&j.result)||'');
+      if(!desc.ok&&!r.ok){
+        setMsg(desc.msg,'err');
+        return;
+      }
+      setMsg(desc.msg,desc.ok?'ok':'err');
+      if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.show==='function'){
+        window.AppUpdateProgress.show(j);
+      }
+    }catch(e){setMsg('Network error','err')}
+  }
+
+  return {onScan,onSave,onReboot,onBatteryCal,onFactoryReset,onUpdateNow};
+})();
+</script>
+<script>
+window.AppUpdateProgress=(function(){
+  const POLL_MS=900;
+  let timer=0;
+  let visible=false;
+
+  function $(id){return document.getElementById(id)}
+
+  function setBar(pct,indeterminate){
+    const fill=$('updateProgressFill');
+    if(!fill)return;
+    if(indeterminate){
+      fill.classList.add('indeterminate');
+      fill.style.width='';
+    }else{
+      fill.classList.remove('indeterminate');
+      const p=Math.max(0,Math.min(100,Math.round(Number(pct)||0)));
+      fill.style.width=p+'%';
+    }
+  }
+
+  function setMeta(text){
+    const el=$('updateProgressMeta');
+    if(el)el.textContent=text||'';
+  }
+
+  function setTitle(text){
+    const el=$('updateProgressTitle');
+    if(el)el.textContent=text||'Installing firmware…';
+  }
+
+  function show(initial){
+    const banner=$('updateProgressBanner');
+    if(!banner)return;
+    visible=true;
+    banner.style.display='block';
+    setTitle('Installing firmware…');
+    setMeta('Connecting…');
+    setBar(0,true);
+    if(initial&&initial.phase){
+      apply({phase:initial.phase,progress_percent:0,written_bytes:0,total_bytes:0});
+    }
+    schedule();
+  }
+
+  function hide(){
+    visible=false;
+    const banner=$('updateProgressBanner');
+    if(banner)banner.style.display='none';
+    if(timer){clearTimeout(timer);timer=0}
+  }
+
+  function bytesText(written,total){
+    if(!total||total<=0)return '';
+    const kbW=Math.round(written/1024);
+    const kbT=Math.round(total/1024);
+    return kbW+' / '+kbT+' KB';
+  }
+
+  function apply(j){
+    if(!j)return;
+    const phase=j.phase||'idle';
+    const pct=Number(j.progress_percent)||0;
+    const w=Number(j.written_bytes)||0;
+    const t=Number(j.total_bytes)||0;
+    if(phase==='downloading'){
+      setBar(pct,t<=0);
+      setMeta((t>0?(pct+'%  '):'')+bytesText(w,t)+'  · streaming firmware');
+      setTitle('Installing firmware…');
+    }else if(phase==='connecting'){
+      setBar(0,true);
+      setMeta('Negotiating with the release server…');
+    }else if(phase==='finalizing'){
+      setBar(100,false);
+      setMeta('Verifying & flipping the boot slot…');
+    }else if(phase==='success'){
+      setBar(100,false);
+      setMeta('Done. Rebooting into the new build…');
+      setTitle('Update complete');
+      setTimeout(hide,4500);
+    }else if(phase==='failed'){
+      setBar(0,false);
+      const err=(j.error&&String(j.error))||'unknown error';
+      setMeta('Failed: '+err+' · device kept the old firmware.');
+      setTitle('Update failed');
+    }else{
+      hide();
+    }
+  }
+
+  async function poll(){
+    timer=0;
+    if(!visible)return;
+    try{
+      const j=await window.AppApi.getUpdateStatus();
+      apply(j);
+      if(j.phase==='downloading'||j.phase==='connecting'||j.phase==='finalizing'){
+        schedule();
+      }
+    }catch(e){
+      // Device often goes briefly unreachable around finalize/restart; keep
+      // polling until we either get success or give up.
+      schedule();
+    }
+  }
+
+  function schedule(){
+    if(timer)clearTimeout(timer);
+    timer=setTimeout(poll,POLL_MS);
+  }
+
+  function init(){
+    // Pick up an OTA already in progress if the user reloaded the page.
+    if(window.AppApi&&typeof window.AppApi.getUpdateStatus==='function'){
+      window.AppApi.getUpdateStatus().then(j=>{
+        if(j&&(j.active||j.phase==='success'||j.phase==='failed')){
+          if(j.phase==='success'||j.phase==='failed'){
+            show(j);
+            apply(j);
+          }else{
+            show(j);
+          }
+        }
+      }).catch(()=>{});
+    }
+  }
+
+  return{init,show,hide,apply};
 })();
 </script>
 <script>
 const {$,setToggle,syncRangeLabels,clamp255,setLedRgb,syncLedManualUi,fillInput,nudgeInputPaint}=window.AppUi;
 const {applyShell}=window.AppViews;
 const {applyOtAxesFromStatus}=window.AppStateFns;
-const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset}=window.AppControllers;
+const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset,onUpdateNow}=window.AppControllers;
 const uiTouched=window.AppState.uiTouched;
 const monitorCfg=(window.AppConfig&&window.AppConfig.monitor)||{};
 const POWER_IDLE_POLL_ACTIVE_MS=monitorCfg.idlePollActiveMs||25000;
@@ -1809,6 +2075,13 @@ $('btnSave').onclick=()=>onSave(hydrateForm);
 $('btnReboot').onclick=()=>onReboot();
 $('btnBatteryCal').onclick=()=>onBatteryCal(hydrateForm);
 $('btnFactory').onclick=()=>onFactoryReset();
+const _btnUpdateWifi=$('btnUpdateWifi');
+if(_btnUpdateWifi)_btnUpdateWifi.onclick=()=>onUpdateNow();
+const _btnUpdateBannerWifi=$('btnUpdateBannerWifi');
+if(_btnUpdateBannerWifi)_btnUpdateBannerWifi.onclick=()=>onUpdateNow();
+if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.init==='function'){
+  window.AppUpdateProgress.init();
+}
 if(window.AppSections&&typeof window.AppSections.init==='function'){
   window.AppSections.init();
 }

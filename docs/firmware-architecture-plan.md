@@ -83,7 +83,7 @@ Phases are intentionally ordered by **risk vs payoff**. Ship behavior-preserving
 ## Cross-cutting product behaviors (see I/O plan)
 
 - **Pause / stasis (FUNC single tap):** Requires a **runtime gate** for UDP (and likely Hatire) separate from NVS `udp_on`, plus power-policy hooks (modem sleep). Prefer a small **`track_network`** API (e.g. set/get stasis) called from `main` on button events rather than scattering globals.
-- **Wireless OTA (later):** Likely touches **partition table**, **`track_network` or a dedicated update module**, and **long-press** handling in `io_button`. Keep OTA code paths isolated so USB flashing and current manifest check remain the fallback.
+- **Wireless OTA *(shipped)*:** Lives in **`src/track_update.{h,cpp}`** (kept fully isolated — IMU debug builds get stubs). Uses the **default partition table's existing `ota_0` / `ota_1` / `otadata`** slots, so `platformio.ini` and stored NVS are unchanged. Driven by `io_button` long-press *and* `POST /api/update`; cooperative chunk pump runs from `networkLoop`. TLS root pin is shared with the existing manifest check via `azimuth_net::releaseRootCaCert()`. USB flashing and the per-boot manifest version banner remain the recovery and discovery fallbacks.
 
 ---
 

@@ -45,10 +45,14 @@ High-level goals (in dependency order):
    - Split src/track_network.cpp into logical files (wifi session, http/api, prefs, opentrack/udp) behind the same track_network.h public API.
    - Optional: table-driven battery threshold latches in main.cpp.
 
-6) Future — FUNC long-press + wireless OTA (do NOT block pause on this)
-   - Extend io_button with hold detection (debounced, distinct from double-tap).
-   - Partition table with OTA slots; HTTPUpdate or HTTPS fetch from trusted manifest; dedicated “update mode” LED/buzzer UX.
-   - Security: document-only threat model first; implement minimal safe path (e.g. confirm version, rollback partition layout).
+6) FUNC long-press + wireless OTA *(shipped 2026-05-08)*
+   - `io_button::setLongPressCallback(...)` — fires once at ~2 s hold, then suppresses single-tap on release of the same press.
+   - **`src/track_update.{h,cpp}`** — chunked HTTPS pull state machine, uses Arduino `Update` class directly (avoids HTTPUpdate ESP32-C3 MD5-mismatch regression). TLS pinned to ISRG Root X1 (shared with manifest check via `azimuth_net::releaseRootCaCert()`).
+   - Default partition table on `seeed_xiao_esp32c3` / `esp32-c3-devkitc-02` already includes `ota_0` / `ota_1` / `otadata`, so no `board_build.partitions` change — NVS preferences survive.
+   - Triggers: long-press *or* `POST /api/update`. Live progress on `GET /api/update_status`. Portal shows **Install over Wi‑Fi** in the banner + Device card, plus a blue progress card.
+   - Distinct cyan‑throb LED override + start / ok / fail buzzer tunes.
+   - Refuses to start in Offline AP, thermal hold, or battery ≤15 % off-charger. Stasis is forced on for the duration so radio bandwidth/CPU go to the fetch.
+   - USB esp-web-tools flasher remains the recovery path.
 
 Constraints:
 - Match existing code style (namespaces azimuth_*, minimal unrelated refactors).
@@ -63,7 +67,7 @@ When done, update docs and this handoff file if the actual order or APIs differ 
 
 ## Status (maintenance)
 
-**Last implementation pass:** CI builds **`azimuth_main_diy`** (artifacts) + **`azimuth_main_pcb`** (compile-only) on `main`. **Pause/stasis:** `trackNetworkSetStasis` / `trackNetworkStasisActive`, UDP + Hatire gated in firmware, modem sleep forced in stasis, FUNC double-tap idle, thermal emergency clears stasis. **LED:** `io_led_policy` priority stack + `PolicyOverride` in `io_led`; **`led_mode`** in NVS + portal + `/api/status`. **`track_network.cpp` split** not done yet — next refactor PR.
+**Last implementation pass:** CI builds **`azimuth_main_diy`** (artifacts) + **`azimuth_main_pcb`** (compile-only) on `main`. **Pause/stasis:** `trackNetworkSetStasis` / `trackNetworkStasisActive`, UDP + Hatire gated in firmware, modem sleep forced in stasis, FUNC double-tap idle, thermal emergency clears stasis. **LED:** `io_led_policy` priority stack + `PolicyOverride` in `io_led`; **`led_mode`** in NVS + portal + `/api/status`. **OTA:** **`track_update`** module — chunked HTTPS pull from same trusted release URL as manifest check; long-press FUNC (~2 s) + portal **Install over Wi‑Fi** button trigger; `POST /api/update` + `GET /api/update_status`; cyan-throb LED override + start/ok/fail buzzer tunes; refuses to start in Offline AP / thermal hold / battery ≤15 % off-charger. **`track_network.cpp` split** not done yet — next refactor PR.
 ```
 
 ---
@@ -77,7 +81,7 @@ When done, update docs and this handoff file if the actual order or APIs differ 
 | Pause/stasis | Highest user value; touches main loop, network, buzzer, LED — establishes APIs LedPolicy will consume. |
 | LedPolicy + portal | Builds on stasis as one override layer. |
 | Split `track_network` | Easier once new hooks (stasis, prefs) are clear; reduces merge pain if done too early without design. |
-| OTA last | Partition changes and security deserve isolation; depends on stable button + network boundaries. |
+| OTA last | Partition changes and security deserve isolation; depends on stable button + network boundaries. *(Shipped — kept default partition table to avoid NVS migration; isolated module.)* |
 
 ---
 

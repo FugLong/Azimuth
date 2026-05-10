@@ -35,7 +35,7 @@ Saving **new Wi‑Fi** triggers a **reboot**. If the board cannot join that netw
 
 On **`azimuth_main_pcb`**, the Azimuth board’s **common-anode** RGB uses **inverted** PWM on **IO0** (green, **R8**), **IO1** (red, **R7**), **IO3** (blue, **R6**), with simple ballast scaling in firmware vs those resistors (DIY builds without that LED layout keep a simple GPIO3 status line instead).
 
-**FUNC** (**IO7**, pull-up, switch to GND): **single tap** toggles **Pause** (see below). **Double-tap** is reserved (no action). A **long press** may be used later for **wireless update mode** (OTA — not in current firmware).
+**FUNC** (**IO7**, pull-up, switch to GND): **single tap** toggles **Pause** (see below). **Double-tap** is reserved (no action). **Long press (~2 s)** triggers a **wireless firmware update** (see [Wireless updates](#wireless-updates-ota)).
 
 ## Pause (FUNC single tap)
 
@@ -65,9 +65,26 @@ Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **inp
 
 ## Firmware updates
 
-On home Wi‑Fi, firmware may do **one** check per boot against the published installer metadata. If a **newer** version exists, the portal can show a link to the **USB web flasher** (updates are still **USB-only**, not over-the-air install). Your running version appears under **Device** on the portal; the flasher page shows the version it ships.
+### Wireless updates (OTA)
 
-**Flasher:** [https://fuglong.github.io/Azimuth/](https://fuglong.github.io/Azimuth/) (Chrome or Edge).
+The board can pull the latest signed build from the same trusted GitHub Pages release the version banner already tracks, write it into the **standby OTA partition**, and reboot into it — no USB cable required.
+
+| Trigger | What to expect |
+|---------|----------------|
+| **Portal button** | On home Wi‑Fi, the **Device** section (and the yellow update banner when a newer version is published) has an **Install over Wi‑Fi** button. A blue progress card appears showing percent / KB downloaded. |
+| **FUNC long-press** (~2 s) | Hold **FUNC** for about two seconds — you'll hear a **rising 4-note tune** when the download starts. Single-tap pause is suppressed for that press. |
+
+While the OTA runs, the LED switches to a **fast cyan throb** (or a fast blink on status-LED-only boards). On success the board plays a **resolved arpeggio** and reboots into the new image automatically; on failure it plays a **stern descending tone** and stays on the current image. Tracking is **paused** during the download to give all bandwidth and CPU to the fetch.
+
+The board **refuses to start** an OTA when:
+
+- It’s in **Offline-Mode AP** (no internet route).
+- A **thermal-hold** event has cut Wi‑Fi.
+- Battery is **≤15 %** and not on USB charge — a brownout mid-write would brick the device.
+
+If wireless updates aren’t appropriate (no Wi‑Fi, lost device, or you want to flash a custom build), the **USB web flasher** is unchanged and remains the recovery path.
+
+**USB flasher:** [https://fuglong.github.io/Azimuth/](https://fuglong.github.io/Azimuth/) (Chrome or Edge). Your running version appears under **Device** in the portal.
 
 ## Power, heat, and battery
 

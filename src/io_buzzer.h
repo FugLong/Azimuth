@@ -22,6 +22,12 @@ void playBatteryPanicPulse();
 void playStasisEnterTune();
 /** Resume from stasis. */
 void playStasisExitTune();
+/** Wireless update started (long-press FUNC or portal trigger). */
+void playUpdateStartTune();
+/** Wireless update finished successfully (just before reboot into new image). */
+void playUpdateOkTune();
+/** Wireless update failed; device stays on current image. */
+void playUpdateFailTune();
 void tick();
 
 /** 0 = mute; 1–100 is UI level (firmware applies a curve to PWM duty). */

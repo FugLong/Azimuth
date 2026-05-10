@@ -1,6 +1,6 @@
 {
   "name": "Azimuth (DIY)",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "new_install_prompt_erase": true,
   "new_install_improv_wait_time": 0,
   "builds": [

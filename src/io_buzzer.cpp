@@ -79,6 +79,30 @@ static const MelodyNote kStasisExitTune[] = {
     {988, 75},
 };
 
+/** Distinct two-step "OTA armed" — clearly different from FUNC tune. */
+static const MelodyNote kUpdateStartTune[] = {
+    {659, 60},
+    {784, 60},
+    {1047, 60},
+    {1319, 110},
+};
+
+/** Resolved major arpeggio — "new firmware booting". */
+static const MelodyNote kUpdateOkTune[] = {
+    {523, 60},
+    {659, 60},
+    {784, 60},
+    {1047, 90},
+    {1319, 140},
+};
+
+/** Two stern descending tones — "rolled back, still on old image". */
+static const MelodyNote kUpdateFailTune[] = {
+    {587, 110},
+    {466, 110},
+    {349, 200},
+};
+
 static const MelodyNote* gMelodyNotes = nullptr;
 static uint8_t gMelodyNoteCount = 0;
 
@@ -209,6 +233,18 @@ void playStasisEnterTune() {
 
 void playStasisExitTune() {
   startMelody(kStasisExitTune, sizeof(kStasisExitTune) / sizeof(kStasisExitTune[0]));
+}
+
+void playUpdateStartTune() {
+  startMelody(kUpdateStartTune, sizeof(kUpdateStartTune) / sizeof(kUpdateStartTune[0]));
+}
+
+void playUpdateOkTune() {
+  startMelody(kUpdateOkTune, sizeof(kUpdateOkTune) / sizeof(kUpdateOkTune[0]));
+}
+
+void playUpdateFailTune() {
+  startMelody(kUpdateFailTune, sizeof(kUpdateFailTune) / sizeof(kUpdateFailTune[0]));
 }
 
 void tick() {

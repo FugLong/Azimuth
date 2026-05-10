@@ -35,6 +35,10 @@ bool trackNetworkStasisActive() {
   return false;
 }
 
+const char* trackNetworkBeginFirmwareUpdate() {
+  return "chip_busy";
+}
+
 #else
 
 #include <DNSServer.h>
@@ -43,6 +47,7 @@ bool trackNetworkStasisActive() {
 #include <WiFiUdp.h>
 
 #include "track_network_internal.h"
+#include "track_update.h"
 
 namespace azimuth_net {
 
@@ -116,6 +121,10 @@ void trackNetworkSetStasis(bool active) {
 
 bool trackNetworkStasisActive() {
   return azimuth_net::gRuntime.stasisActive;
+}
+
+const char* trackNetworkBeginFirmwareUpdate() {
+  return azimuth_update::beginResultString(azimuth_update::beginUpdate());
 }
 
 #endif  // !IMU_DEBUG_MODE

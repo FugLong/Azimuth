@@ -1,7 +1,7 @@
 const {$,setToggle,syncRangeLabels,clamp255,setLedRgb,syncLedManualUi,fillInput,nudgeInputPaint}=window.AppUi;
 const {applyShell}=window.AppViews;
 const {applyOtAxesFromStatus}=window.AppStateFns;
-const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset}=window.AppControllers;
+const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset,onUpdateNow}=window.AppControllers;
 const uiTouched=window.AppState.uiTouched;
 const monitorCfg=(window.AppConfig&&window.AppConfig.monitor)||{};
 const POWER_IDLE_POLL_ACTIVE_MS=monitorCfg.idlePollActiveMs||25000;
@@ -280,6 +280,13 @@ $('btnSave').onclick=()=>onSave(hydrateForm);
 $('btnReboot').onclick=()=>onReboot();
 $('btnBatteryCal').onclick=()=>onBatteryCal(hydrateForm);
 $('btnFactory').onclick=()=>onFactoryReset();
+const _btnUpdateWifi=$('btnUpdateWifi');
+if(_btnUpdateWifi)_btnUpdateWifi.onclick=()=>onUpdateNow();
+const _btnUpdateBannerWifi=$('btnUpdateBannerWifi');
+if(_btnUpdateBannerWifi)_btnUpdateBannerWifi.onclick=()=>onUpdateNow();
+if(window.AppUpdateProgress&&typeof window.AppUpdateProgress.init==='function'){
+  window.AppUpdateProgress.init();
+}
 if(window.AppSections&&typeof window.AppSections.init==='function'){
   window.AppSections.init();
 }

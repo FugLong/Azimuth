@@ -128,6 +128,13 @@ String portalHttpUrl();
 void sendJson(WebServer& http, int code, const JsonDocument& doc);
 void registerRoutes(WebServer& http, bool captiveProbeRedirect);
 void performFirmwareUpdateCheckOnce();
+/**
+ * Trust anchor used for the GitHub Pages manifest + OTA download (Let's Encrypt
+ * ISRG Root X1, plus an optional compile-time override via
+ * `-DAZIMUTH_RELEASE_MANIFEST_CA_CERT=...`). Returned pointer lives for the
+ * program lifetime.
+ */
+const char* releaseRootCaCert();
 
 void applyThermalEmergency();
 void startOfflineApPortal();

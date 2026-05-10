@@ -26,6 +26,42 @@ body{
 }
 .banner.banner-update a{color:var(--acc);font-weight:600;text-decoration:none}
 .banner.banner-update a:hover{text-decoration:underline}
+.banner.banner-update #btnUpdateBannerWifi{margin-right:.4rem}
+.banner.banner-update-progress{
+  display:none;background:rgba(61,158,229,.1);border-color:rgba(61,158,229,.45);
+  padding:.95rem 1.05rem
+}
+.banner.banner-update-progress strong{font-weight:700;color:var(--tx)}
+.update-progress-bar{
+  height:.6rem;background:var(--bg2);border:1px solid var(--bd);border-radius:999px;
+  overflow:hidden;margin:.5rem 0 .35rem
+}
+.update-progress-bar span{
+  display:block;height:100%;width:0;
+  background:linear-gradient(90deg,#4eb0f2,var(--acc));
+  transition:width .3s ease
+}
+.update-progress-bar span.indeterminate{
+  width:38%;background:linear-gradient(90deg,transparent,var(--acc),transparent);
+  animation:updateProgressPulse 1.4s linear infinite
+}
+@keyframes updateProgressPulse{
+  0%{transform:translateX(-100%)}100%{transform:translateX(280%)}
+}
+.update-progress-meta{
+  font-size:.78rem;color:var(--tx-soft);font-variant-numeric:tabular-nums
+}
+.update-progress-hint{
+  margin:.45rem 0 0;font-size:.72rem;color:var(--muted);line-height:1.5
+}
+.update-card-row{
+  align-items:center;justify-content:space-between;gap:.65rem;
+  margin:0 0 .85rem;padding:.65rem .75rem;
+  border:1px solid var(--bd);border-radius:11px;background:var(--bg2)
+}
+.update-card-row .btn{flex-shrink:0}
+.update-card-label{font-size:.85rem;font-weight:600;color:var(--tx)}
+.update-card-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;line-height:1.45}
 .card{
   background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:1rem;
   box-shadow:var(--shadow)

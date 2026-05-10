@@ -20,6 +20,7 @@ void tick(uint32_t nowMs, bool imuPoseStreaming) {
 #include "battery_monitor.h"
 #include "thermal_monitor.h"
 #include "track_network.h"
+#include "track_update.h"
 
 #include <cstring>
 
@@ -28,6 +29,14 @@ namespace azimuth_io_led_policy {
 void tick(uint32_t nowMs, bool imuPoseStreaming) {
   (void)nowMs;
   using PO = azimuth_io_led::PolicyOverride;
+
+  // OTA in progress wins over everything except thermal hold (which kills Wi‑Fi
+  // and so cannot coexist with a download anyway).
+  if (azimuth_update::isActive()) {
+    azimuth_io_led::setPolicyOverride(PO::Update);
+    azimuth_io_led::tick();
+    return;
+  }
 
   if (trackNetworkThermalHoldActive()) {
     azimuth_io_led::setPolicyOverride(PO::ThermalHold);

@@ -48,5 +48,13 @@ window.AppApi=(function(){
   async function postFactoryReset(){
     return requestJson('/api/factory_reset',{method:'POST',headers:MUTATION_HEADERS});
   }
-  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset};
+  async function postUpdate(){
+    return requestJson('/api/update',{method:'POST',headers:MUTATION_HEADERS});
+  }
+  async function getUpdateStatus(){
+    const {response:r,json:j}=await requestJson('/api/update_status');
+    if(!r.ok)throw new Error(j.error||('Update status failed ('+r.status+')'));
+    return j;
+  }
+  return {getStatus,getPose,scanNetworks,postConfig,postReboot,postFactoryReset,postUpdate,getUpdateStatus};
 })();

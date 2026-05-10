@@ -145,6 +145,9 @@ bool applyPolicyVisual() {
       case PolicyOverride::Stasis:
         period = 700;
         break;
+      case PolicyOverride::Update:
+        period = 180;
+        break;
       default:
         break;
     }
@@ -216,6 +219,14 @@ bool applyPolicyVisual() {
       r = 0;
       g = static_cast<uint8_t>(v / 3U);
       b = static_cast<uint8_t>((static_cast<uint16_t>(v) * 2U) / 3U);
+      break;
+    }
+    case PolicyOverride::Update: {
+      // Quick cyan/blue throb during OTA: helps users see "don't unplug".
+      const uint8_t v = trianglePulse(t, 360U);
+      r = 0;
+      g = static_cast<uint8_t>(v / 2U);
+      b = v;
       break;
     }
     default:

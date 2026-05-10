@@ -97,6 +97,17 @@ void onFuncButtonSingleTap() {
 
 void onFuncButtonDoubleTap() {}
 
+void onFuncButtonLongPress() {
+#if !IMU_DEBUG_MODE
+  if (trackNetworkThermalHoldActive()) {
+    return;
+  }
+  // Result string is logged by the portal too via /api/update_status; we don't
+  // want to chatter on USB serial here.
+  (void)trackNetworkBeginFirmwareUpdate();
+#endif
+}
+
 #if !IMU_DEBUG_MODE
 /**
  * Hatire / OpenTrack USB packet (same layout as Nano33_PC_Head_Tracker IO.h).
@@ -249,6 +260,7 @@ void setup() {
   azimuth_io_buzzer::init();
   azimuth_io_button::init();
   azimuth_io_button::setTapCallbacks(onFuncButtonSingleTap, onFuncButtonDoubleTap);
+  azimuth_io_button::setLongPressCallback(onFuncButtonLongPress);
   azimuth_battery::init();
   azimuth_thermal::init();
   azimuth_io_led::setStatus(true);

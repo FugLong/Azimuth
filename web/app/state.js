@@ -5,6 +5,7 @@ window.AppState=(function(){
       lastUserActivityMs:Date.now(),
       lastStatusOkMs:0,
       pollTimer:0
-    }
+    },
+    lastStatus:null
   };
 })();

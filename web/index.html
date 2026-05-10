@@ -72,7 +72,13 @@
 </div>
 <p class="hint" id="attHudMeta" style="margin:.5rem 0 0">Waiting for pose…</p>
 </section>
-<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<p class="banner banner-update" id="updateBanner" role="status">New firmware <strong id="updateBannerLatest">—</strong> is available (this device: <strong id="updateBannerCur">—</strong>). <button type="button" class="btn btn-sec btn-sm" id="btnUpdateBannerWifi">Install over Wi‑Fi</button> <a href="#" id="updateBannerLink" target="_blank" rel="noopener">Open USB installer</a></p>
+<div class="banner banner-update-progress" id="updateProgressBanner" role="status" aria-live="polite" style="display:none">
+<div><strong id="updateProgressTitle">Installing firmware…</strong></div>
+<div class="update-progress-bar" aria-hidden="true"><span id="updateProgressFill"></span></div>
+<div class="update-progress-meta" id="updateProgressMeta">Connecting…</div>
+<p class="update-progress-hint">Don’t close this page or unplug the device. The board reboots into the new firmware automatically when the download completes.</p>
+</div>
 <section class="settings-workspace" id="settingsWorkspace" aria-live="polite">
 <div class="settings-head">
 <div class="settings-head-top">
@@ -257,6 +263,13 @@
 <div class="card section-card" id="cardDevice" data-section="device">
 <div class="hd">Device</div>
 <p class="sub" style="margin:0 0 .75rem">Firmware <strong id="fwVer">—</strong> · Battery: <strong id="battState">stub</strong>.</p>
+<div class="row update-card-row">
+<div>
+<div class="update-card-label">Wireless update</div>
+<div class="update-card-sub" id="updateCardSub">Pulls the latest signed build from the release server (or force re‑pulls the current one) and reboots into it.</div>
+</div>
+<button type="button" class="btn btn-sec" id="btnUpdateWifi">Install over Wi‑Fi</button>
+</div>
 <label for="batteryCapacity">Battery capacity (mAh)</label>
 <input id="batteryCapacity" type="number" min="100" max="5000" step="50" value="800" aria-label="Battery capacity mAh">
 <div class="row battery-cal-meta"><span>Battery cal offset</span><strong id="batteryCalOffsetVal">0 mV</strong></div>
@@ -296,6 +309,7 @@
 <script src="app/pose_mascot.js"></script>
 <script src="app/views.js"></script>
 <script src="app/controllers.js"></script>
+<script src="app/update_progress.js"></script>
 <script src="app/main.js"></script>
 </body>
 </html>

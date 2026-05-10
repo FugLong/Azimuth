@@ -110,6 +110,7 @@ window.AppViews=(function(){
 
   function applyShell(j){
     const ap=!!j.setup_ap;
+    window.AppState.lastStatus=j;
     applyHero(j);
     if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyStatus==='function'){
       window.AppPoseMascot.applyStatus(j);
@@ -123,6 +124,40 @@ window.AppViews=(function(){
         const lk=$('updateBannerLink');
         if(lk&&j.fw_flasher_url){lk.href=j.fw_flasher_url}
       }else{ub.style.display='none'}
+    }
+    if(j.fw_ota&&window.AppUpdateProgress){
+      const o=j.fw_ota;
+      if(o.active){
+        if(typeof window.AppUpdateProgress.show==='function'){
+          window.AppUpdateProgress.show(o);
+        }
+        if(typeof window.AppUpdateProgress.apply==='function'){
+          window.AppUpdateProgress.apply(o);
+        }
+      }else if((o.phase==='success'||o.phase==='failed')&&typeof window.AppUpdateProgress.apply==='function'){
+        window.AppUpdateProgress.apply(o);
+      }
+    }
+    const wifiBtn=$('btnUpdateWifi');
+    const subEl=$('updateCardSub');
+    const hasNewer=!!(j.fw_update_available&&j.fw_latest_version);
+    if(wifiBtn){
+      const blocked=ap||!j.wifi_connected||j.thermal_hold;
+      wifiBtn.disabled=!!blocked;
+      wifiBtn.textContent=hasNewer?'Install over Wi‑Fi':'Reinstall over Wi‑Fi';
+      wifiBtn.title=blocked
+        ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
+        :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
+                  :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
+    }
+    if(subEl){
+      subEl.textContent=hasNewer
+        ?('New build '+j.fw_latest_version+' available — pulls and reboots into it.')
+        :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).');
+    }
+    const bannerBtn=$('btnUpdateBannerWifi');
+    if(bannerBtn){
+      bannerBtn.disabled=!!(ap||!j.wifi_connected||j.thermal_hold);
     }
     $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
