@@ -65,9 +65,9 @@ If NVS has no `wifi_tx` value yet, firmware defaults to **balanced** TX so track
 
 ## 5. Firmware update check (HTTPS)
 
-On STA, **once per boot**, shortly after the device has **associated** and had a short stack settle (~300 ms), firmware performs **one** HTTPS `GET` to the published manifest to decide if the portal should show an “update available” banner. **Timeouts are short** so a slow CDN does not hold the device in a long active session.
+On STA, **once per boot** (with retry/backoff on failure), shortly after the device has **associated** and had a short stack settle (~300 ms), firmware performs an HTTPS `GET` to the published manifest to decide if the portal should show an “update available” banner. **Timeouts are short** so a slow CDN does not hold the device in a long active session.
 
-Updates are still **USB-only**; this is only a **notification** path.
+That check is **notification + eligibility context** for updates. **Installing** a new build is still a **user action**: **USB web flasher**, or **wireless OTA** from the portal / FUNC long-press when allowed (see [**Using Azimuth → Wireless updates**](using-azimuth.md#wireless-updates-ota)).
 
 ---
 

@@ -12,7 +12,7 @@ This document tracks **estimated** progress and planned work toward a **V1** rel
 | Custom PCB — **V0.1** | **100%** (design) · **assembled units received** | **Azimuth_Design**: layout + nets per [wiring.md](wiring.md); **ERC and DRC clean**. **V0.1** fab complete; **boards in hand**; **bring-up / testing in progress**. **Panelization** still optional for future arrays. |
 | Firmware | **~90%** | **`azimuth_main_*`**: Hatire + Wi‑Fi UDP, **NVS** portal, **Offline Mode AP**, power/thermal, **pause/stasis**, **wireless OTA**, modular networking (`track_network_*.cpp`), LED policy + portal. Polish: **battery ADC** refinement, optional **`main.cpp`** split, NVS schema versioning (Phase 3). |
 | 3D enclosure | **~90%+** | **Design nearly complete** — publication / fab validation still ahead |
-| End-user docs & release | **~70%** | README + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal / OTA documented; enclosure + deeper troubleshooting TBD |
+| End-user docs & release | **~85%** | **[user-guide.md](user-guide.md)** (manual) + **[quickstart.md](quickstart.md)** + **[using-azimuth.md](using-azimuth.md)**; **`VERSION`** / USB flasher / portal / OTA documented; enclosure assembly + field troubleshooting still thin |
 
 **Visual (rough):**
 
@@ -42,13 +42,13 @@ Use this as a checklist; tighten or relax before tagging V1.
 - [ ] **PCB (bring-up)** — **In progress:** validate IMU, USB serial, Hatire, and Wi‑Fi/UDP on **production** boards (breadboard path already exercised).
 - [x] **Firmware core (tracking + wireless)** — Networking split into `track_network_*.cpp`; pins and features match [wiring.md](wiring.md). Optional: further `imu/` / `platform/` layering ([Phase 1](#phase-1--io-architecture-power) table).
 - [ ] **I/O** — Status LED, **FUNC1** button, buzzer as on PCB; debouncing and **product** behavior documented (bring-up demos exist in firmware).
-- [ ] **Battery** — Voltage readout (**GPIO4** / XIAO **D2**; same on DIY and **Azimuth_Design**), low-battery indication or policy (thresholds TBD).
+- [x] **Battery** — Voltage readout + curve-based **%** estimate (`battery_monitor`); portal capacity / cal offset; stepped alerts (~25% downward); **≤1%** emergency cues + Wi‑Fi cut; **≤15%** blocks wireless OTA off-charger; FUNC pause toggle suppressed **≤1%** — documented in **[user-guide.md](user-guide.md)**. Residual: ADC tuning / “bench your pack” refinement.
 - [x] **Wireless (MVP)** — WiFi STA + OpenTrack **UDP over network** working (credentials via **NVS portal** and optional **`secrets.h`**).
 - [x] **Wireless (product)** — On-device settings: **HTTP UI** + **NVS** (`Preferences`), `secrets.h` fallback, provisioning AP + captive portal when SSID missing or STA fails ([README](../README.md), [using-azimuth.md](using-azimuth.md)). Still open: **richer reconnection** / backoff policy, schema **versioning** (see Phase 3).
 - [x] **Updates (USB)** — GitHub Pages **esp-web-tools** flasher + repo **`VERSION`** / **`manifest.json`**; portal banner compares to hosted manifest.
 - [x] **Updates (OTA)** — **`track_update`** streams `firmware/<board>/firmware.bin` from the same trusted GitHub Pages release (Let's Encrypt root pinned) into the standby `ota_0`/`ota_1` slot via the Arduino `Update` class, then reboots into it. Triggered by **FUNC long-press (~2 s)** or the portal **“Install over Wi‑Fi”** button (banner + Device card). Refuses to start in Offline‑Mode AP, during thermal hold, or with battery ≤15 % off‑charger; USB flasher remains recovery.
 - [ ] **Enclosure** — At least the **battery** reference enclosure; optional second slim shell documented if wired-only variant is offered. **Design ~90%+ complete** (2026-05); publish / verify fit & manufacturing next.
-- [ ] **User-facing docs** — Build, flash, OpenTrack connection (USB + wireless), troubleshooting.
+- [x] **User-facing docs (baseline)** — **[user-guide.md](user-guide.md)** manual + existing guides; deeper troubleshooting + enclosure still expanding.
 
 ---
 
@@ -62,7 +62,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 | LED: patterns for status, **stasis (pause)**, setup, battery, thermal | 🟩 **`io_led_policy`** + NVS **`led_mode`** · thermal/battery/setup/stasis layered |
 | Buttons: **FUNC = pause/stasis** (UDP off + low power + cues); long-press **OTA** | 🟩 single-tap pause · double reserved · long-hold (~2 s) triggers Wi‑Fi OTA |
 | Buzzer: tones for feedback (optional minimal set for V1) | 🟨 (FUNC chime on PCB; wider set ⬜) |
-| ADC: battery voltage, calibration constants, filtering | ⬜ |
+| ADC: battery voltage, calibration constants, filtering | 🟩 implemented · calibration polish optional |
 | Power / charging behavior documented (what XIAO handles vs firmware) | ⬜ |
 | Refactor `main.cpp` into layers (e.g. `imu/`, `io/`, `platform/`) without changing behavior | ⬜ |
 
@@ -91,7 +91,7 @@ Use this as a checklist; tighten or relax before tagging V1.
 |------|--------|
 | Define artifact: release binaries + manifest/versioning | ✅ ( **`VERSION`**, **`web-flasher/manifest.json`**, CI sync, semver in firmware) |
 | Web-based flasher (e.g. **esp-web-tools** / browser serial) or documented one-click flow | ✅ ( **`.github/workflows/github-pages-flasher.yml`**, **`web-flasher/`** ) |
-| On-device “newer build” hint | ✅ (HTTPS **`manifest.json`** once per STA boot; portal banner; no OTA) |
+| On-device “newer build” hint | ✅ (HTTPS **`manifest.json`** after STA associate + backoff on failure; portal banner — install is still **user-triggered** USB or Wi‑Fi OTA) |
 | Settings: schema, storage (NVS), migration between versions | 🟨 (NVS keys in use; **versioned schema** / migration ⬜) |
 | Document recovery if flash fails (USB bootloader, button combo, etc.) | 🟨 (README bootloader note; expand if needed) |
 
@@ -145,3 +145,4 @@ These are common for head trackers; pick what matches your audience.
 | 2026-05-02 | **Assembled V0.1 boards received**; **bring-up / testing in progress**. **Enclosure:** design **started** (not in repo yet). **Firmware:** power/thermal + modular I/O bring-up on PCB; **battery ADC** still open. README + roadmap + parts-list + kicad snapshot lines updated. |
 | 2026-05-08 | **Wireless updates (OTA) shipped.** New **`track_update`** module pulls `firmware/<board>/firmware.bin` from the same trusted GitHub Pages release into the standby `ota_0` / `ota_1` slot via the Arduino `Update` class (TLS pinned to ISRG Root X1, async chunk pump in `networkLoop`), then reboots into it. Triggered by **FUNC long-press (~2 s)** *or* the portal **“Install over Wi‑Fi”** button (banner + Device card). Distinct **cyan throb** LED override + **start / ok / fail** buzzer tunes. Refuses to start in Offline‑Mode AP, during thermal hold, or with battery ≤15 % off‑charger. USB flasher remains the recovery path. Default partition table already had `ota_0` / `ota_1` slots — no NVS migration. Roadmap, [`io-led-buzzer-plan.md`](io-led-buzzer-plan.md), [`firmware-architecture-plan.md`](firmware-architecture-plan.md), and [`using-azimuth.md`](using-azimuth.md) updated. |
 | 2026-05-10 | **Docs sweep:** Firmware snapshot **~90%**; **`track_network`** split reflected across [development.md](development.md), [firmware-architecture-plan.md](firmware-architecture-plan.md), [implementation-handoff-prompt.md](implementation-handoff-prompt.md), [power-and-thermal.md](power-and-thermal.md) (portal `/api/status` activity + UDP streaming vs modem sleep). **Enclosure** progress set to **~90%+** (design). |
+| 2026-05-10 | **User Guide** ([user-guide.md](user-guide.md)): end-user manual; battery policy / OTA wording aligned with firmware; [development.md](development.md) + [power-and-thermal.md](power-and-thermal.md) updated for wireless OTA (manifest check ≠ USB-only). |

@@ -1,6 +1,6 @@
 # Development
 
-Build flags, **PlatformIO** environments, **CI**, and how the firmware repo is laid out. End-user setup and OpenTrack are in [**using-azimuth.md**](using-azimuth.md) and [**quickstart.md**](quickstart.md).
+Build flags, **PlatformIO** environments, **CI**, and how the firmware repo is laid out. End-user setup and OpenTrack: [**user-guide.md**](user-guide.md), [**using-azimuth.md**](using-azimuth.md), [**quickstart.md**](quickstart.md).
 
 ## Requirements
 
@@ -62,7 +62,7 @@ pio run -e azimuth_main_pcb
 - **`scripts/pio_set_version.py`** injects it as **`AZIMUTH_FW_VERSION`** into **`azimuth_main_diy`** / **`azimuth_main_pcb`** builds.
 - **`web-flasher/manifest.json`** and **`web-flasher/manifest-pcb.json`** fields **`version`** are synced by **`scripts/sync_manifest_version.py`** (via **`prepare_web_flasher_firmware.sh`** and the GitHub Pages workflow) so the USB installer and running firmware agree.
 - **Intended scheme:** align with board generations—e.g. board **0.2** ships **0.2.0**, then patch bumps until a **1.0** board ships **1.0.0**, etc.
-- **Update hint on device:** After STA is up, firmware may fetch the published **`manifest.json`** once per boot (default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner linking to the USB installer. **No OTA install**—users still flash from the browser. Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. That HTTPS fetch validates TLS against a pinned root CA (with optional **`AZIMUTH_RELEASE_MANIFEST_CA_CERT`** override).
+- **Update hint on device:** After STA is up, firmware fetches the published **`manifest.json`** (with retry/backoff; default URL in **`platformio.ini`**). If the hosted **`version`** is newer (numeric semver), the portal shows a banner. **Installing** the new build is **manual**: **USB flasher** and/or **wireless OTA** (portal **Install over Wi‑Fi** / FUNC long-press) when conditions allow — see [**user-guide.md**](user-guide.md). Forks can override **`AZIMUTH_RELEASE_MANIFEST_URL`** / **`AZIMUTH_RELEASE_FLASHER_URL`**. The manifest HTTPS fetch validates TLS against a pinned root CA (with optional **`AZIMUTH_RELEASE_MANIFEST_CA_CERT`** override).
 - **esp-web-tools / Improv:** The web installer can show live firmware info when the device implements **Improv Serial** and a non-zero **`new_install_improv_wait_time`**. Azimuth does **not** implement Improv yet (**wait time 0**), so the page does not auto-compare the connected board to the hosted build—use the portal **Device** line and the update banner on Wi‑Fi.
 
 ## CI and browser flasher

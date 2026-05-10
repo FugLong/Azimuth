@@ -27,9 +27,10 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | | |
 |:---|:---|
 | **Install or update firmware (USB)** | [**Azimuth web flasher**](https://fuglong.github.io/Azimuth/) — use **Chrome** or **Edge** and a **data** USB cable. |
-| **Update firmware over Wi‑Fi** | Open the portal, hit **Install over Wi‑Fi** in the **Device** card or update banner — *or* hold **FUNC** for ~2 s on the board. The chip pulls the latest signed build from the same release URL and reboots into the standby OTA slot. See [**using-azimuth.md → Wireless updates**](docs/using-azimuth.md#firmware-updates). |
+| **Update firmware over Wi‑Fi** | Open the portal, hit **Install over Wi‑Fi** in the **Device** card or update banner — *or* hold **FUNC** for ~2 s on the PCB. The chip pulls the latest **official** build from the same GitHub Pages release URL (HTTPS) and reboots into the standby OTA slot. See [**User Guide → Updates**](docs/user-guide.md#9-firmware-updates). |
 | **Settings (Wi‑Fi, OpenTrack, device)** | [**http://azimuth.local:8080**](http://azimuth.local:8080) — only after the board is on your home network. First time? Connect to **Azimuth-Tracker** (**Offline Mode**) and follow the [**quick start**](docs/quickstart.md). |
-| **Step-by-step: Wi‑Fi → OpenTrack** | [**docs/quickstart.md**](docs/quickstart.md) |
+| **Manual (how to use the device)** | [**docs/user-guide.md**](docs/user-guide.md) |
+| **Short Wi‑Fi → OpenTrack path** | [**docs/quickstart.md**](docs/quickstart.md) |
 
 ---
 
@@ -52,7 +53,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 ## Need to know
 
 - **Flashing** — Browser install needs **Chrome** or **Edge** (Web Serial). If the installer offers **erase flash**, use it for a clean device (same effect as a full settings reset).
-- **First Wi‑Fi setup** — Join **Azimuth-Tracker** (**Offline Mode**), open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md).
+- **First Wi‑Fi setup** — Join **Azimuth-Tracker** (**Offline Mode**), open **`http://192.168.4.1`**, save your home network. Details: [**quick start**](docs/quickstart.md) · full walkthrough: [**User Guide**](docs/user-guide.md).
 - **OpenTrack** — Use **either** UDP **or** Hatire as the input, not both at once. Defaults and axis mapping: [**Using Azimuth**](docs/using-azimuth.md#opentrack-on-the-pc).
 - **Power, heat, tuning** — Normal for Wi‑Fi on a small module; portal **Tracking & radio** settings; full behavior + battery notes: [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md).
 
@@ -60,8 +61,9 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 
 | Doc | Audience |
 |-----|----------|
+| [**User Guide**](docs/user-guide.md) | **Manual** — Wi‑Fi, portal, FUNC, OpenTrack, updates, battery, troubleshooting |
 | [**Quick start**](docs/quickstart.md) | Fast path from flash to tracking over Wi‑Fi |
-| [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
+| [**Using Azimuth**](docs/using-azimuth.md) | Settings portal reference, OpenTrack (USB + Wi‑Fi), tips |
 | [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md) | Wi‑Fi power saving, portal polling, defaults; battery runtime / PCB pack polarity |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
 | [**Firmware architecture plan**](docs/firmware-architecture-plan.md) | Maintainers — module layout (**network split done**), CI, remaining refactors |

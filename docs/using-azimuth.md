@@ -1,6 +1,8 @@
 # Using Azimuth
 
-How to reach the **settings portal**, connect **OpenTrack**, and interpret a few common behaviors. For the shortest path from a new flash to tracking, start with [**quickstart.md**](quickstart.md).
+How to reach the **settings portal**, connect **OpenTrack**, and interpret a few common behaviors.
+
+**Step-by-step manual:** [**user-guide.md**](user-guide.md) · **Shortest path:** [**quickstart.md**](quickstart.md)
 
 ## Settings portal URLs
 
@@ -67,7 +69,7 @@ Use **either** **Hatire Arduino** (USB) **or** **UDP over network** as the **inp
 
 ### Wireless updates (OTA)
 
-The board can pull the latest signed build from the same trusted GitHub Pages release the version banner already tracks, write it into the **standby OTA partition**, and reboot into it — no USB cable required.
+The board can pull the latest **official release** build from the same **HTTPS / GitHub Pages** source the version banner already trusts, write it into the **standby OTA partition**, and reboot into it — no USB cable required. (Firmware image signing inside the binary is **not** implemented yet; transport trust is TLS to that release host.)
 
 | Trigger | What to expect |
 |---------|----------------|

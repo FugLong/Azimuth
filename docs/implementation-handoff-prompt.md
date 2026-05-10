@@ -29,7 +29,8 @@ You are implementing firmware and documentation changes for the Azimuth reposito
 - docs/io-led-buzzer-plan.md — LED/buzzer layers, FUNC button behavior
 - docs/firmware-architecture-plan.md — module layout (network split complete), CI
 - docs/power-and-thermal.md — modem sleep, portal polling, UDP/streaming interaction
-- docs/using-azimuth.md — end-user facing
+- docs/user-guide.md — end-user manual (prefer this for “how do I use it?”)
+- docs/using-azimuth.md — portal / OpenTrack reference detail
 
 Constraints:
 - Match existing code style (namespaces azimuth_*, minimal unrelated refactors).
