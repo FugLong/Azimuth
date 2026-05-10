@@ -131,6 +131,19 @@ window.AppControllers=(function(){
     }
   }
 
+  function lockUpdateButtons(reason){
+    const ids=['btnUpdateManualWifi','btnUpdateBannerWifi'];
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){
+        el.disabled=true;
+        if(reason)el.title=reason;
+      }
+    });
+    const banner=document.getElementById('updateBanner');
+    if(banner)banner.style.display='none';
+  }
+
   async function onUpdateNow(){
     const last=(window.AppState&&window.AppState.lastStatus)||{};
     const cur=last.fw_version||'?';
@@ -140,12 +153,20 @@ window.AppControllers=(function(){
       ?('Install firmware '+latest+' over Wi‑Fi? (currently '+cur+'). The device will reboot when the download completes.')
       :('Re‑install firmware '+cur+' over Wi‑Fi? The device pulls the same build from the release server again and reboots — useful for forcing a known-good flash. Continue?');
     if(!confirm(prompt))return;
+    // Lock the buttons immediately so a double-click or "did it click?" retry
+    // doesn't hit /api/update twice. Banner is also hidden right away — the
+    // progress card takes over as the source of truth.
+    lockUpdateButtons('Wireless update starting…');
     setMsg('Asking the device to fetch firmware…','');
     try{
       const {response:r,json:j}=await window.AppApi.postUpdate();
       const desc=describeBeginResult((j&&j.result)||'');
       if(!desc.ok&&!r.ok){
         setMsg(desc.msg,'err');
+        // Re-enable so the user can retry; the next /api/status poll will
+        // reset the disabled state correctly anyway.
+        const ids=['btnUpdateManualWifi','btnUpdateBannerWifi'];
+        ids.forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=false});
         return;
       }
       setMsg(desc.msg,desc.ok?'ok':'err');

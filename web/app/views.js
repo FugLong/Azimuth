@@ -115,9 +115,14 @@ window.AppViews=(function(){
     if(window.AppPoseMascot&&typeof window.AppPoseMascot.applyStatus==='function'){
       window.AppPoseMascot.applyStatus(j);
     }
+    const ota=j.fw_ota||{};
+    const otaBusy=!!(ota.active||ota.phase==='connecting'||ota.phase==='downloading'||ota.phase==='finalizing');
     const ub=$('updateBanner');
     if(ub){
-      if(!ap&&j.fw_update_available&&j.fw_latest_version){
+      // While an OTA is running (or just finished) the dedicated progress card
+      // is the source of truth — hide the "new firmware available" warning so
+      // the user isn't tempted to click Install again mid-flash.
+      if(!ap&&!otaBusy&&j.fw_update_available&&j.fw_latest_version){
         ub.style.display='block';
         $('updateBannerLatest').textContent=j.fw_latest_version;
         $('updateBannerCur').textContent=j.fw_version||'—';
@@ -141,9 +146,11 @@ window.AppViews=(function(){
     const manualBtn=$('btnUpdateManualWifi');
     const manualSubEl=$('updateManualSub');
     const hasNewer=!!(j.fw_update_available&&j.fw_latest_version);
-    const blocked=ap||!j.wifi_connected||j.thermal_hold;
+    const blocked=ap||!j.wifi_connected||j.thermal_hold||otaBusy;
     const updateTitle=blocked
-      ?(ap?'Join your Wi‑Fi to enable wireless updates':(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected'))
+      ?(otaBusy?'Wireless update in progress…'
+        :(ap?'Join your Wi‑Fi to enable wireless updates'
+          :(j.thermal_hold?'Cooling — try again after a power cycle':'Wi‑Fi not connected')))
       :(hasNewer?('Install firmware '+j.fw_latest_version+' from the release server')
                 :('Force re‑pull firmware '+(j.fw_version||'?')+' from the release server'));
     if(manualBtn){
@@ -151,13 +158,15 @@ window.AppViews=(function(){
       manualBtn.title=updateTitle;
     }
     if(manualSubEl){
-      manualSubEl.textContent=hasNewer
-        ?('Manual OTA will install '+j.fw_latest_version+' from the release server and reboot.')
-        :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).');
+      manualSubEl.textContent=otaBusy
+        ?'Wireless update is running — see the progress card above.'
+        :(hasNewer
+          ?('Manual OTA will install '+j.fw_latest_version+' from the release server and reboot.')
+          :('Force re‑pull '+(j.fw_version||'the current build')+' from the release server (no version check).'));
     }
     const bannerBtn=$('btnUpdateBannerWifi');
     if(bannerBtn){
-      bannerBtn.disabled=!!(ap||!j.wifi_connected||j.thermal_hold);
+      bannerBtn.disabled=!!blocked;
     }
     $('subLine').textContent=ap?'Offline mode · direct AP access':'On your network · idle until you use this page';
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';

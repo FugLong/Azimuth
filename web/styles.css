@@ -145,6 +145,9 @@ code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.85em;color:var
   box-shadow:none;
 }
 .danger-details{margin:0}
+.danger-details + .danger-details{
+  margin-top:.95rem;padding-top:.95rem;border-top:1px solid var(--bd)
+}
 .danger-details>summary{
   cursor:pointer;list-style:none;font-size:.8125rem;font-weight:500;color:var(--muted);
   padding:.15rem 0;line-height:1.45
