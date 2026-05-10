@@ -86,7 +86,12 @@ Constants live in **`include/azimuth_hw.h`**. SPI map, straps, power, and option
 |------|------|
 | **`src/main.cpp`** | IMU bring-up, rotation vector, Hatire + optional OpenTrack UDP; pins from **`include/azimuth_hw.h`** ([**wiring.md**](wiring.md)). |
 | **`include/opentrack_pose.h`** | Fusion Euler → Hatire / UDP **Rot 0–2** with NVS axis map + per-slot invert. |
-| **`src/track_network.cpp`** | Wi‑Fi, portal, UDP, stasis, NVS in **`azimuth_main_*`**; stubs in **`azimuth_debug_*`**. |
+| **`src/track_network.cpp`** | Public API façade + `NetworkRuntime` / **`gRuntime`** (`azimuth_main_*`); stubs in **`azimuth_debug_*`**. |
+| **`src/track_network_internal.h`** | Shared networking declarations (prefs helpers, routes, UDP hooks). |
+| **`src/track_network_wifi.cpp`** | STA/AP, **`networkLoop`**, thermal emergency, offline portal, firmware-update check scheduling. |
+| **`src/track_network_http.cpp`** | HTTP routes, `/api/*` JSON, captive portal redirects, HTTPS manifest fetch. |
+| **`src/track_network_prefs.cpp`** | NVS merge/read helpers, adaptive modem sleep, stasis. |
+| **`src/track_network_udp.cpp`** | OpenTrack host resolution, UDP socket, **`sendOpentrackUdp`**. |
 | **`src/io_led_policy.cpp`** | LED priority: thermal, battery, setup AP, pause, then ambient (`azimuth_main_*`). |
 | **`src/portal_html.cpp`** | Settings UI in PROGMEM (**`azimuth_main_*`** only; filtered out of debug build). |
 | **`platformio.ini`** | `espressif32`; **`azimuth_main_diy`** / **`azimuth_main_pcb`** (see [**hardware-profiles.md**](hardware-profiles.md)); SparkFun **BNO08x**; **`azimuth_main_*`** adds version script, **ArduinoJson**, default release URLs. |

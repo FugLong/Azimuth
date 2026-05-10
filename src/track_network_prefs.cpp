@@ -108,6 +108,21 @@ void applyAdaptiveWifiSleep() {
     return;
   }
 
+  // Portal-idle alone must not enable modem sleep while OpenTrack UDP is
+  // streaming — WiFi light sleep adds jitter and burst drops on UDP. Hatire-only
+  // (no UDP TX) still allows sleep once portal HTTP goes idle.
+  const uint32_t nowMs = millis();
+  constexpr uint32_t kUdpStreamWakeWindowMs = 2000;
+  const bool udpStreaming =
+      gRuntime.udpSendEnabled && (nowMs - gRuntime.lastUdpTxMs < kUdpStreamWakeWindowMs);
+  if (udpStreaming) {
+    if (gRuntime.wifiSleepEnabled) {
+      WiFi.setSleep(false);
+      gRuntime.wifiSleepEnabled = false;
+    }
+    return;
+  }
+
   const uint32_t idleForMs = millis() - gRuntime.lastPortalActivityMs;
   const bool shouldSleep =
       idleForMs >= azimuth_power::wifiSleepIdleDelayMs();

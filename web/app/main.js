@@ -4,12 +4,17 @@ const {applyOtAxesFromStatus}=window.AppStateFns;
 const {onScan,onSave,onReboot,onBatteryCal,onFactoryReset,onUpdateNow}=window.AppControllers;
 const uiTouched=window.AppState.uiTouched;
 const monitorCfg=(window.AppConfig&&window.AppConfig.monitor)||{};
-const POWER_IDLE_POLL_ACTIVE_MS=monitorCfg.idlePollActiveMs||25000;
-const POWER_IDLE_POLL_HEARTBEAT_MS=monitorCfg.idlePollHeartbeatMs||60000;
+const POWER_IDLE_POLL_ACTIVE_MS=monitorCfg.idlePollActiveMs||18000;
+const POWER_IDLE_POLL_VISIBLE_MS=monitorCfg.idlePollVisibleMs||12000;
 const POWER_IDLE_GRACE_MS=monitorCfg.idleGraceMs||60000;
 const POWER_BOOTSTRAP_RETRY_MS=monitorCfg.bootstrapRetryMs||3000;
 const ACTIVITY_RESCHEDULE_MIN_MS=monitorCfg.activityRescheduleMinMs||1500;
 const STALE_UI_AFTER_FAILURES=monitorCfg.staleUiAfterFailures||2;
+const BOOT_SYNC_BURST_COUNT=monitorCfg.bootSyncBurstCount||6;
+const BOOT_SYNC_BURST_GAP_MS=monitorCfg.bootSyncBurstGapMs||5000;
+const FOCUS_SYNC_BURST_COUNT=monitorCfg.focusSyncBurstCount||4;
+const FOCUS_SYNC_BURST_GAP_MS=monitorCfg.focusSyncBurstGapMs||3500;
+const MANIFEST_PENDING_POLL_MS=monitorCfg.manifestPendingPollMs||5000;
 const IMU_LIVE_POLL_MS=monitorCfg.posePreviewPollMs||700;
 const TAB_COORD_KEY='azimuth.portal.activeTabs.v1';
 const TAB_HEARTBEAT_MS=3000;
@@ -21,6 +26,10 @@ let posePollTimer=0;
 let tabHeartbeatTimer=0;
 let tabAdmitted=true;
 const tabId='tab_'+Math.random().toString(36).slice(2)+'_'+Date.now().toString(36);
+/** One-shot shorter delay after `/api/status` (e.g. manifest check still running on device). */
+let preferNextPollMs=null;
+let burstSeriesId=0;
+let didBootStatusBurst=false;
 
 function syncTrackingHeroFromPose(j){
   const htr=$('heroTrack');
@@ -94,14 +103,47 @@ async function hydrateForm(){
   hydrateOk=true;
   window.AppState.power.lastStatusOkMs=Date.now();
   clearBootstrapTimer();
+  if(j.fw_update_check_done===false&&!j.setup_ap){
+    preferNextPollMs=MANIFEST_PENDING_POLL_MS;
+  }
+  if(!didBootStatusBurst){
+    didBootStatusBurst=true;
+    scheduleStatusBurst({count:BOOT_SYNC_BURST_COUNT,gapMs:BOOT_SYNC_BURST_GAP_MS});
+  }
+}
+/**
+ * Extra `/api/status` polls spaced by `gapMs` (boot, tab focus, OTA reload).
+ * Cancels any previous burst series so navigations do not stack timers.
+ */
+function scheduleStatusBurst(opts){
+  const count=(opts&&opts.count)||4;
+  const gapMs=(opts&&opts.gapMs)||4000;
+  if(!count||gapMs<=0)return;
+  const series=++burstSeriesId;
+  markUserActivity(true);
+  let fired=0;
+  function tick(){
+    if(series!==burstSeriesId)return;
+    if(fired>=count)return;
+    fired++;
+    pollOnly().finally(()=>{
+      if(series!==burstSeriesId)return;
+      if(fired<count)setTimeout(tick,gapMs);
+    });
+  }
+  setTimeout(tick,gapMs);
 }
 async function pollOnly(){
   try{
-    applyLiveStatus(await window.AppApi.getStatus());
+    const j=await window.AppApi.getStatus();
+    applyLiveStatus(j);
     hydrateOk=true;
     pollFailCount=0;
     window.AppState.power.lastStatusOkMs=Date.now();
     clearBootstrapTimer();
+    if(j.fw_update_check_done===false&&!j.setup_ap){
+      preferNextPollMs=MANIFEST_PENDING_POLL_MS;
+    }
   }catch(e){
     pollFailCount++;
     if(pollFailCount>=STALE_UI_AFTER_FAILURES){
@@ -187,9 +229,17 @@ function shouldPollNow(){
 }
 function pollDelayMs(){
   if(!shouldPollNow())return 0;
-  return (Date.now()-lastUserActivityMs)<=POWER_IDLE_GRACE_MS
-    ?POWER_IDLE_POLL_ACTIVE_MS
-    :POWER_IDLE_POLL_HEARTBEAT_MS;
+  if(preferNextPollMs!=null){
+    const v=preferNextPollMs;
+    preferNextPollMs=null;
+    return v;
+  }
+  // Visible tab: keep polling at least every `idlePollVisibleMs` even when the
+  // user is not touching the screen (hardware FUNC pause, reading settings).
+  if((Date.now()-lastUserActivityMs)>POWER_IDLE_GRACE_MS){
+    return POWER_IDLE_POLL_VISIBLE_MS;
+  }
+  return POWER_IDLE_POLL_ACTIVE_MS;
 }
 function clearPollTimer(){
   if(pollTimer){
@@ -315,6 +365,7 @@ document.addEventListener('visibilitychange',()=>{
     markUserActivity(true);
     if(tabAdmitted){
       pollOnly();
+      scheduleStatusBurst({count:FOCUS_SYNC_BURST_COUNT,gapMs:FOCUS_SYNC_BURST_GAP_MS});
       schedulePosePoll();
     }
     if(!hydrateOk)scheduleBootstrapRetry();
@@ -322,6 +373,24 @@ document.addEventListener('visibilitychange',()=>{
     clearPollTimer();
     clearPosePollTimer();
     clearBootstrapTimer();
+    burstSeriesId++;
+  }
+});
+window.addEventListener('pageshow',e=>{
+  if(!e.persisted)return;
+  refreshTabAdmission();
+  markUserActivity(true);
+  if(tabAdmitted){
+    pollOnly();
+    scheduleStatusBurst({count:FOCUS_SYNC_BURST_COUNT,gapMs:FOCUS_SYNC_BURST_GAP_MS});
+    schedulePosePoll();
+  }
+});
+window.addEventListener('online',()=>{
+  markUserActivity(true);
+  if(tabAdmitted&&!document.hidden){
+    pollOnly();
+    scheduleStatusBurst({count:2,gapMs:2500});
   }
 });
 window.addEventListener('storage',e=>{

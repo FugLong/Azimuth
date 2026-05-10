@@ -171,9 +171,9 @@ Document detailed threat model and UX in a dedicated note when implementation st
 
 - `src/io_led.cpp` / `io_led.h` — presets, rainbow, status, manual RGB, brightness.
 - `src/io_buzzer.cpp` — tunes and volume curve.
-- `src/io_button.cpp` — debounce, single/double tap; **long-press TBD**.
+- `src/io_button.cpp` — debounce, single/double tap, **long-press (~2 s) → wireless OTA**.
 - `src/main.cpp` — pose path, FUNC callbacks, `setStatus`.
-- `src/track_network.cpp` — UDP gated by `gUdpSendEnabled` + connection; **add stasis gate**.
+- `src/track_network_udp.cpp` / prefs — UDP gated by NVS **`udp_on`**, link state, **`stasisActive`**, and OpenTrack target readiness (`track_network.h` façade).
 - Portal — `rgb_brightness`, buzzer volume, `udp_enabled`.
 
 ---

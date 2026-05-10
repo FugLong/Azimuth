@@ -2,7 +2,7 @@
 
 This is the **single place** for how firmware manages **power and thermal** behavior, plus **planning notes** for battery runtime and **PCB battery wiring**. Day-to-day portal steps stay in [**Using Azimuth**](using-azimuth.md) (see **Portal sections** and **Power, heat, and battery** there).
 
-Implementation code: mainly [`src/track_network.cpp`](../src/track_network.cpp), [`src/power_policy.cpp`](../src/power_policy.cpp), and [`src/portal_html.cpp`](../src/portal_html.cpp).
+Implementation code: [`src/power_policy.cpp`](../src/power_policy.cpp) (fixed cadences + modem-sleep delay), networking modules under **`track_network_*.cpp`** / [`track_network_internal.h`](../src/track_network_internal.h) (adaptive sleep, HTTP, UDP), and embedded UI in [`src/portal_html.cpp`](../src/portal_html.cpp) (generated from `web/` via **`scripts/portal_codegen.py`**).
 
 **Portal knobs:** **Tracking & radio** — **Wi‑Fi TX power**, **IMU report interval**. The web UI is for **settings, monitoring, and update links**, not a high‑refresh dashboard; non‑tracking paths use relaxed timings (see below). **Save** and **reboot** use normal HTTP — no extra artificial delay beyond the usual `handleClient` slice (tens of ms).
 
@@ -32,7 +32,9 @@ Previously, firmware could keep **`WiFi.setSleep(false)`** in station mode so th
 
 **Pause / stasis** (FUNC single tap, see [**using-azimuth.md**](using-azimuth.md)) forces modem sleep on STA while connected — independent of portal idle timing — so the radio stays in a low-duty posture until you resume. Thermal emergency / battery cut still override networking regardless of pause.
 
-**While idle is measured from:** interactive portal requests (e.g. loading the page, `/api/config`, scan, reboot, reset). Passive `/api/status` polling is intentionally excluded so always-open monitoring tabs do not keep modem sleep disabled.
+**Portal activity clock** (`lastPortalActivityMs`) advances on interactive routes **and** on **`GET /api/status`** / **`GET /api/pose`** (so an open settings tab that polls JSON still counts as “using” the portal for sleep policy).
+
+**While OpenTrack UDP is actively streaming** (UDP enabled in NVS, not in stasis, and a packet was sent recently), firmware **defers** modem sleep so light sleep does not add jitter to high-rate UDP — see `applyAdaptiveWifiSleep()` in **`track_network_prefs.cpp`**.
 
 **Not sleeping:** **Azimuth‑Setup** AP / captive portal, or when **not** connected as STA — sleep stays off so setup and recovery stay reliable.
 
@@ -71,9 +73,9 @@ Updates are still **USB-only**; this is only a **notification** path.
 
 ## 6. Portal page polling (browser)
 
-The settings page is mostly static. After the first load (which calls `/api/status` to fill the form), the script **polls `/api/status` every 25 seconds** while the tab is **visible** — only to refresh the **stats line**, banners, and toggle sync. Polling **pauses** when the tab is hidden (`document.hidden`).
+The settings page is mostly static. After the first load (which calls `/api/status` to fill the form), the script **polls `/api/status`** on a **power-aware schedule** while the tab is **visible** (defaults in `web/app/config.js`: ~**18 s** after recent pointer activity, ~**12 s** when the tab is visible but input‑idle, bursts after load / tab focus / manifest pending — see `web/app/main.js`). Polling **pauses** when the tab is hidden (`document.hidden`) and uses **tab coordination** so several copies of the page do not all hammer the device.
 
-That rate is **much slower** than once per second; it is **not** the tracking rate.
+That rate is **much slower** than tracking; it is **not** the IMU pose rate.
 
 ---
 
@@ -85,7 +87,7 @@ That rate is **much slower** than once per second; it is **not** the tracking ra
 | Sliced `trackNetworkLoop` | Less HTTP/DNS/sleep work per second | No |
 | Adjustable `wifi_tx` (default balanced) | Less TX current on **low** | No (may affect Wi‑Fi range) |
 | Short update check after associate | One bounded HTTPS session per boot | No |
-| ~25 s portal poll, hidden tab pause | Less HTTP when UI open | No |
+| Portal poll cadence + hidden-tab pause | Less HTTP when UI open | No |
 | IMU interval (user setting) | Fewer reports → less USB/Wi‑Fi **traffic** from poses | **Yes** — this is the main tracking “refresh” control |
 
 ---

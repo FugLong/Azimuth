@@ -64,7 +64,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 | [**Using Azimuth**](docs/using-azimuth.md) | Settings portal, OpenTrack (USB + Wi‑Fi), tips & troubleshooting |
 | [**Power, heat, and battery (firmware)**](docs/power-and-thermal.md) | Wi‑Fi power saving, portal polling, defaults; battery runtime / PCB pack polarity |
 | [**Development**](docs/development.md) | Building firmware, CI, versioning, repo layout |
-| [**Firmware architecture plan**](docs/firmware-architecture-plan.md) | Maintainers — module splits, CI breadth, refactor phases |
+| [**Firmware architecture plan**](docs/firmware-architecture-plan.md) | Maintainers — module layout (**network split done**), CI, remaining refactors |
 | [**I/O experience plan**](docs/io-led-buzzer-plan.md) | LED / buzzer / FUNC — pause/stasis, layered overrides, **wireless OTA** |
 | [**Implementation handoff**](docs/implementation-handoff-prompt.md) | Copy-paste prompt + ordered tasks for agents / new contributors |
 | [**Wiring**](docs/wiring.md) · [**Hardware profiles**](docs/hardware-profiles.md) · [**Parts / BOM**](docs/parts-list.md) · [**KiCad**](docs/kicad.md) | Pinouts (DIY + PCB), PlatformIO, BOM, KiCad |
@@ -83,14 +83,14 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 |------|:--------:|--------|
 | Hardware / BOM | 100% | [Parts list](docs/parts-list.md) |
 | Azimuth custom PCB ([`Azimuth_Design`](kicad/Azimuth_Design/)) — **V0.1** | **100%** (layout) · **units received** | Assembled boards **under test**. RGB / buzzer / FUNC in firmware for bring-up — see [wiring](docs/wiring.md) / [parts-list](docs/parts-list.md) — [roadmap](docs/roadmap.md) |
-| Firmware | 60–75% | Tracking + Wi‑Fi + portal + Hatire + release + modular I/O scaffold; **battery ADC** and polish still open — [roadmap](docs/roadmap.md) |
-| 3D enclosure | Starting | **Design in progress** (not released yet) |
+| Firmware | ~90% | Tracking + Wi‑Fi + portal + Hatire + **wireless OTA** + modular **`track_network_*`**; **battery ADC** polish and optional **`main`** layering remain — [roadmap](docs/roadmap.md) |
+| 3D enclosure | ~90%+ | **Design nearly complete** — publish / validate next |
 
 ```
 Hardware/BOM   [████████████████████] 100%
 PCB (V0.1)     [████████████████████] 100% design · boards received · testing
-Firmware       [███████████████░░░░░] 60–75%
-Enclosure      [█░░░░░░░░░░░░░░░░░░░] in progress (design)
+Firmware       [██████████████████░░] ~90%
+Enclosure      [██████████████████░░] ~90%+ (design)
 ```
 
 **Detailed roadmap:** [docs/roadmap.md](docs/roadmap.md)

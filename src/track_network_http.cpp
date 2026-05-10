@@ -228,6 +228,7 @@ void appendStatusDevice(JsonDocument& doc) {
 }
 
 void handleStatus(WebServer& http) {
+  markPortalActivity();
   JsonDocument doc;
   appendStatusWifi(doc, http);
   appendStatusTracking(doc);
@@ -238,6 +239,7 @@ void handleStatus(WebServer& http) {
 }
 
 void handlePose(WebServer& http) {
+  markPortalActivity();
   JsonDocument doc;
   const uint32_t nowMs = millis();
   const bool poseFresh = (!gRuntime.stasisActive) && gRuntime.poseValid &&
