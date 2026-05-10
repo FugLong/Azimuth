@@ -110,14 +110,20 @@ python3 scripts/portal_codegen.py --generate  # regenerate src/portal_html.cpp f
 
 `web/index.html` is the source entry point and references `web/styles.css` + `web/app/*`.
 
-**Portal logo (inline SVG in the header):** Source file is `logo/AzimuthLogo.dxf`. After editing the DXF, regenerate the embedded SVG with a venv that has **`ezdxf`** installed:
+**Portal logo (header):** Pick one workflow — **`AzimuthLogo_Dark.png`** / **`AzimuthLogo_Light.png`** are the usual raster masters (also copied to **`web-flasher/logo/`** by GitHub Pages).
 
-```bash
-.venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal   # updates web/index.html
-python3 scripts/portal_codegen.py --generate
-```
+| Goal | Command |
+|------|---------|
+| **Pixel-perfect (recommended if “white gap” is painted, not a vector hole)** | [`scripts/portal_logo_embed_png.py`](../scripts/portal_logo_embed_png.py) inlines the PNG as a base64 `<img>` — no vectorization. |
+| **Vector from PNG** (smaller flash, editable paths; loses subtle raster detail) | Prefer **`--key-white`** so painted white / transparency trace as **background**, dark ink only: `python3 scripts/logo_png_to_svg.py --key-white --white-threshold 248` (needs **`vtracer`** / `./scripts/run_logo_trace.sh -- --key-white`). Then `python3 scripts/minify_portal_logo.py logo/AzimuthLogo_traced.svg --patch-web` |
+| **Illustrator SVG** | `python3 scripts/minify_portal_logo.py --patch-web` (default **`logo/AzimuthLogo.svg`** if present) |
+| **DXF geometry only** | `.venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal` |
 
-Alternatively, trace `logo/AzimuthLogo_Dark.png` → `logo/AzimuthLogo_traced.svg` via `scripts/logo_png_to_svg.py`, then pipe `scripts/minify_portal_logo.py` output into `web/index.html` manually. PNG filenames **`AzimuthLogo_Dark.png`** / **`AzimuthLogo_Light.png`** in `logo/` are also copied to **`web-flasher/logo/`** by the GitHub Pages workflow for the USB installer page.
+Always finish with **`python3 scripts/portal_codegen.py --generate`**.
+
+**PNG → DWG:** this repo does **not** convert raster → DWG. Use **CAD** (import/trace PNG, then Save As DXF/DWG). For the **website**, use PNG embed or traced SVG — not DWG.
+
+**`minify_portal_logo.py`** maps **`#333` → `currentColor`**, fixes Illustrator **`px`** strokes/fonts to **user units**, keeps **4** decimal places on floats, and bumps ultra-thin hairline strokes slightly so they survive minification.
 
 ---
 

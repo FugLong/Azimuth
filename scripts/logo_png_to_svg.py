@@ -14,6 +14,13 @@ Re-run web post-process only (no Pillow/vtracer):
 
 Default input: logo/AzimuthLogo_Dark.png (dark artwork; flattened on white for tracing).
 Default output: logo/AzimuthLogo_traced.svg (commit this file; venv is not committed).
+
+**White / “paper” becomes empty (no vector ink):** use `--key-white` — near-white RGB
+and transparent pixels become **white** in the trace image; everything else becomes **black**.
+VTracer then outputs paths only for the dark artwork (good when “gaps” are painted white,
+not real vector holes).
+
+  python3 scripts/logo_png_to_svg.py --key-white --white-threshold 248
 """
 from __future__ import annotations
 
@@ -34,6 +41,45 @@ def flatten_on_white(src: Path, max_side: int) -> Path:
     bg.paste(im, mask=im.split()[3])
     tmp = Path(tempfile.mkstemp(suffix=".png", prefix="az_logo_")[1])
     bg.save(tmp, format="PNG", optimize=True)
+    return tmp
+
+
+def black_on_white_for_binary_trace(
+    src: Path,
+    max_side: int,
+    *,
+    white_threshold: int,
+    alpha_cutoff: int,
+) -> Path:
+    """Map source PNG to pure black (ink) on pure white (background) for vtracer binary.
+
+    - Transparent / low-alpha → background (white).
+    - R,G,B all >= white_threshold → background (illustrator “paper”).
+    - Else → foreground (black).
+    """
+    from PIL import Image  # noqa: E402
+
+    im = Image.open(src).convert("RGBA")
+    im.thumbnail((max_side, max_side), Image.Resampling.LANCZOS)
+    w, h = im.size
+    px = im.load()
+    out = Image.new("RGB", (w, h), (255, 255, 255))
+    opx = out.load()
+    wt = max(0, min(255, white_threshold))
+    ac = max(0, min(255, alpha_cutoff))
+    ink = (0, 0, 0)
+    paper = (255, 255, 255)
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a <= ac:
+                opx[x, y] = paper
+            elif r >= wt and g >= wt and b >= wt:
+                opx[x, y] = paper
+            else:
+                opx[x, y] = ink
+    tmp = Path(tempfile.mkstemp(suffix=".png", prefix="az_keyw_")[1])
+    out.save(tmp, format="PNG", optimize=True)
     return tmp
 
 
@@ -62,6 +108,23 @@ def main() -> None:
         action="store_true",
         help="Only run web post-process on existing --output (no vtracer)",
     )
+    p.add_argument(
+        "--key-white",
+        action="store_true",
+        help="Treat near-white + transparent as background; trace only dark ink (see docstring)",
+    )
+    p.add_argument(
+        "--white-threshold",
+        type=int,
+        default=248,
+        help="With --key-white: pixel is paper if R,G,B are all >= this (0-255)",
+    )
+    p.add_argument(
+        "--alpha-cutoff",
+        type=int,
+        default=40,
+        help="With --key-white: alpha <= this counts as transparent/paper",
+    )
     args = p.parse_args()
 
     out = args.output.resolve()
@@ -86,7 +149,15 @@ def main() -> None:
         print("Missing vtracer. Run: ./scripts/run_logo_trace.sh", file=sys.stderr)
         raise SystemExit(1) from e
 
-    tmp_png = flatten_on_white(inp, args.max_side)
+    if args.key_white:
+        tmp_png = black_on_white_for_binary_trace(
+            inp,
+            args.max_side,
+            white_threshold=args.white_threshold,
+            alpha_cutoff=args.alpha_cutoff,
+        )
+    else:
+        tmp_png = flatten_on_white(inp, args.max_side)
     try:
         vtracer.convert_image_to_svg_py(
             str(tmp_png),

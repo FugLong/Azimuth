@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 r"""
 Convert `logo/AzimuthLogo.dxf` into a one-line inline SVG for the portal
-(`web/index.html` logo-wrap; same embedding style as `minify_portal_logo.py`).
+(`web/index.html` logo-wrap). **Use this only if you are not using** `logo/AzimuthLogo.svg`
++ `minify_portal_logo.py` — vector effects and masks are lost here.
+
+**DWG:** read **DXF only** — Save As → DXF from CAD. Native `.dwg` is not parsed in-repo.
+
+Full-sheet **artboard rectangles** are skipped so `evenodd` fill does not become a solid slab.
 
 Requires ezdxf (use repo venv):
 
   python3 -m venv .venv
   .venv/bin/pip install ezdxf
-  .venv/bin/python scripts/dxf_simple_to_portal_svg.py
   .venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal
   python3 scripts/portal_codegen.py --generate
 
-`--patch-portal` updates `web/index.html` (portal source); regenerate `src/portal_html.cpp`
-with `portal_codegen.py` before building firmware.
+`--patch-portal` updates `web/index.html`; regenerate `src/portal_html.cpp` with
+`portal_codegen.py` before building firmware.
+
+Optional: `scripts/minify_portal_logo.py` can embed a hand-tuned **`logo/AzimuthLogo.svg`**
+if you maintain SVG separately (Illustrator `px` stroke quirks apply).
 
 DXF entities are converted via `ezdxf.path.make_path` (LWPOLYLINE, SPLINE,
 HATCH, CIRCLE, etc.); **INSERT** blocks are expanded recursively.
@@ -95,6 +102,34 @@ def dxf_to_minified_svg(
     w = xmax - xmin
     h = ymax - ymin
 
+    def _skip_artboard_frame(poly: list[tuple[float, float]], tol: float = 6.0) -> bool:
+        """CAD exports often include a full-sheet rectangle; merged into one evenodd path it
+        reads as a solid slab with tiny holes — skip that contour."""
+        if len(poly) < 4:
+            return False
+        nx = [float(x) - xmin for x, _ in poly]
+        ny = [float(ymax) - float(y) for _, y in poly]
+        if max(nx) - min(nx) < max(w, h) * 0.85:
+            return False
+        if max(ny) - min(ny) < max(w, h) * 0.85:
+            return False
+        return (
+            abs(min(nx)) <= tol
+            and abs(min(ny)) <= tol
+            and abs(max(nx) - w) <= tol
+            and abs(max(ny) - h) <= tol
+            and len(poly) <= 6
+        )
+
+    filtered = [p for p in all_pts if not _skip_artboard_frame(p)]
+    if filtered:
+        all_pts = filtered
+        xs = [x for poly in all_pts for x, _ in poly]
+        ys = [y for poly in all_pts for _, y in poly]
+        xmin, xmax = min(xs), max(xs)
+        ymin, ymax = min(ys), max(ys)
+        w = xmax - xmin
+        h = ymax - ymin
     def fmt(n: float) -> str:
         if abs(n - round(n)) < 1e-6:
             return str(int(round(n)))
@@ -114,7 +149,8 @@ def dxf_to_minified_svg(
     vb_w = fmt(w)
     vb_h = fmt(h)
     head = (
-        f'<svg viewBox="0 0 {vb_w} {vb_h}" fill="currentColor" role="img" '
+        f'<svg viewBox="0 0 {vb_w} {vb_h}" preserveAspectRatio="xMidYMid meet" '
+        'fill="currentColor" role="img" '
         'aria-labelledby="azLogoTitle"><title id="azLogoTitle">Azimuth</title> '
         f'<path fill-rule="{fill_rule}" d="{d_attr}"/>'
     )

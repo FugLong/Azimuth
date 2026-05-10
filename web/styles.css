@@ -14,8 +14,9 @@ body{
 }
 .wrap{max-width:34rem;margin:0 auto;padding:clamp(1rem,4vw,2rem) clamp(1rem,3vw,1.25rem) 7.2rem}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:1.1rem}
-.logo-wrap{width:min(92vw,232px);margin:0 auto;color:#e8eef5;filter:drop-shadow(0 3px 20px rgba(61,158,229,.2))}
-.logo-wrap svg{display:block;width:100%;height:auto}
+.logo-wrap{width:min(92vw,232px);max-width:100%;margin:0 auto;color:#e8eef5;filter:drop-shadow(0 3px 20px rgba(61,158,229,.2));flex-shrink:0}
+.logo-wrap svg{display:block;width:100%;height:auto;vertical-align:top;shape-rendering:geometricPrecision}
+.logo-wrap .portal-logo-img{display:block;width:100%;height:auto;vertical-align:top}
 .sub{color:var(--muted);font-size:.8125rem;margin:.5rem 0 0;max-width:22rem;line-height:1.45}
 .banner{
   display:none;background:var(--acc-dim);border:1px solid var(--bd);border-radius:12px;
