@@ -110,6 +110,15 @@ python3 scripts/portal_codegen.py --generate  # regenerate src/portal_html.cpp f
 
 `web/index.html` is the source entry point and references `web/styles.css` + `web/app/*`.
 
+**Portal logo (inline SVG in the header):** Source file is `logo/AzimuthLogo.dxf`. After editing the DXF, regenerate the embedded SVG with a venv that has **`ezdxf`** installed:
+
+```bash
+.venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal   # updates web/index.html
+python3 scripts/portal_codegen.py --generate
+```
+
+Alternatively, trace `logo/AzimuthLogo_Dark.png` → `logo/AzimuthLogo_traced.svg` via `scripts/logo_png_to_svg.py`, then pipe `scripts/minify_portal_logo.py` output into `web/index.html` manually. PNG filenames **`AzimuthLogo_Dark.png`** / **`AzimuthLogo_Light.png`** in `logo/` are also copied to **`web-flasher/logo/`** by the GitHub Pages workflow for the USB installer page.
+
 ---
 
 **Related:** [README](../README.md) · [using-azimuth.md](using-azimuth.md) · [quickstart.md](quickstart.md)

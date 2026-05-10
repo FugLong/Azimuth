@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""
-Convert `logo/AzimuthLogo_dxf_SIMPLE.dxf` into a one-line inline SVG for
-`src/portal_html.cpp` (same embedding style as `minify_portal_logo.py`).
+Convert `logo/AzimuthLogo.dxf` into a one-line inline SVG for the portal
+(`web/index.html` logo-wrap; same embedding style as `minify_portal_logo.py`).
 
 Requires ezdxf (use repo venv):
 
@@ -9,10 +9,16 @@ Requires ezdxf (use repo venv):
   .venv/bin/pip install ezdxf
   .venv/bin/python scripts/dxf_simple_to_portal_svg.py
   .venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal
+  python3 scripts/portal_codegen.py --generate
 
-DXF uses SPLINE entities; we flatten each spline to a polyline, flip Y for SVG,
-normalize to a 0-based viewBox, and emit one <path> with fill-rule="evenodd"
-for sane compound fills.
+`--patch-portal` updates `web/index.html` (portal source); regenerate `src/portal_html.cpp`
+with `portal_codegen.py` before building firmware.
+
+DXF entities are converted via `ezdxf.path.make_path` (LWPOLYLINE, SPLINE,
+HATCH, CIRCLE, etc.); **INSERT** blocks are expanded recursively.
+Each path is flattened with `Path.flattening()`, Y is flipped for SVG,
+bbox is normalized to a 0-based viewBox, and one `<path>` is emitted with
+fill-rule="evenodd". **MTEXT** is skipped.
 """
 from __future__ import annotations
 
@@ -22,8 +28,8 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-DEFAULT_DXF = ROOT / "logo" / "AzimuthLogo_dxf_SIMPLE.dxf"
-PORTAL_CPP = ROOT / "src" / "portal_html.cpp"
+DEFAULT_DXF = ROOT / "logo" / "AzimuthLogo.dxf"
+WEB_INDEX_HTML = ROOT / "web" / "index.html"
 
 
 def _short_floats(s: str, max_decimals: int = 2) -> str:
@@ -45,18 +51,42 @@ def dxf_to_minified_svg(
 ) -> str:
     try:
         import ezdxf
+        from ezdxf.path import make_path
     except ImportError as e:
         raise SystemExit(
             "ezdxf is required. From repo root: python3 -m venv .venv && "
             ".venv/bin/pip install ezdxf"
         ) from e
 
+    def walk_layout(layout):
+        """Yield drawable entities, expanding INSERT recursively."""
+        for ent in layout:
+            if ent.dxftype() == "INSERT":
+                yield from walk_layout(ent.virtual_entities())
+            else:
+                yield ent
+
     doc = ezdxf.readfile(str(dxf_path))
-    msp = list(doc.modelspace())
     all_pts: list[list[tuple[float, float]]] = []
-    for e in msp:
-        pts = list(e.construction_tool().flattening(flat_tol))
-        all_pts.append([(float(p.x), float(p.y)) for p in pts])
+    for ent in walk_layout(doc.modelspace()):
+        if ent.dxftype() == "MTEXT":
+            continue
+        try:
+            path = make_path(ent)
+        except TypeError:
+            continue
+        if path is None:
+            continue
+        for sub in path.sub_paths():
+            pts = list(sub.flattening(flat_tol))
+            if len(pts) < 2:
+                continue
+            all_pts.append([(float(p.x), float(p.y)) for p in pts])
+
+    if not all_pts:
+        raise SystemExit(
+            f"No drawable geometry in {dxf_path} — check DXF layers / contents."
+        )
 
     xs = [x for poly in all_pts for x, _ in poly]
     ys = [y for poly in all_pts for _, y in poly]
@@ -94,17 +124,17 @@ def dxf_to_minified_svg(
     return out
 
 
-def patch_portal_cpp(svg_line: str) -> None:
-    raw = PORTAL_CPP.read_text(encoding="utf-8")
+def patch_logo_wrap(html_path: pathlib.Path, svg_line: str) -> None:
+    raw = html_path.read_text(encoding="utf-8")
     start = raw.find('<div class="logo-wrap">')
     if start < 0:
-        raise SystemExit("portal_html.cpp: logo-wrap div not found")
+        raise SystemExit(f"{html_path}: logo-wrap div not found")
     end = raw.find("</div>", start)
     if end < 0:
-        raise SystemExit("portal_html.cpp: closing </div> for logo-wrap not found")
+        raise SystemExit(f"{html_path}: closing </div> for logo-wrap not found")
     end += len("</div>")
     new_block = f'<div class="logo-wrap">{svg_line}</div>'
-    PORTAL_CPP.write_text(raw[:start] + new_block + raw[end:], encoding="utf-8")
+    html_path.write_text(raw[:start] + new_block + raw[end:], encoding="utf-8")
 
 
 def main() -> None:
@@ -124,7 +154,7 @@ def main() -> None:
     ap.add_argument(
         "--patch-portal",
         action="store_true",
-        help=f"Replace logo in {PORTAL_CPP.relative_to(ROOT)}",
+        help=f"Replace logo-wrap in {WEB_INDEX_HTML.relative_to(ROOT)} (then run portal_codegen.py)",
     )
     args = ap.parse_args()
     if not args.dxf.is_file():
@@ -134,8 +164,12 @@ def main() -> None:
         args.dxf, flat_tol=args.flat_tol, fill_rule=args.fill_rule
     )
     if args.patch_portal:
-        patch_portal_cpp(svg)
-        print(f"Patched {PORTAL_CPP.relative_to(ROOT)}", file=sys.stderr)
+        patch_logo_wrap(WEB_INDEX_HTML, svg)
+        print(
+            f"Patched {WEB_INDEX_HTML.relative_to(ROOT)} — run:\n"
+            f"  python3 scripts/portal_codegen.py --generate",
+            file=sys.stderr,
+        )
     else:
         print(svg)
 

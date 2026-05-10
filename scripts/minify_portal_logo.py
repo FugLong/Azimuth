@@ -6,10 +6,11 @@ Minify an SVG to one line for embedding in src/portal_html.cpp.
 
 Optional: python3 scripts/minify_portal_logo.py path/to/other.svg
 
-For the production logo from CAD, prefer generating from the simple DXF
-(updates portal in one step):
+For the production logo from CAD, prefer generating from `logo/AzimuthLogo.dxf`
+(patch `web/index.html`, then regenerate firmware HTML):
 
   .venv/bin/python scripts/dxf_simple_to_portal_svg.py --patch-portal
+  python3 scripts/portal_codegen.py --generate
 """
 from __future__ import annotations
 
