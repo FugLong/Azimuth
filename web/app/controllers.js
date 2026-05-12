@@ -48,6 +48,7 @@ window.AppControllers=(function(){
       mdns_on:$('mdnsToggle').classList.contains('on'),
       hostname:$('hostname').value.trim().toLowerCase(),
       imu_period_ms:parseInt($('imuPeriod').value,10)||10,
+      imu_dynamic:$('imuDynamicToggle')?$('imuDynamicToggle').classList.contains('on'):false,
       wifi_tx:parseInt($('wifiTx').value,10),
       battery_capacity_mah:parseInt($('batteryCapacity').value,10),
       rgb_brightness:parseInt($('rgbBrightness').value,10),

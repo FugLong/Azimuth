@@ -71,7 +71,8 @@ window.AppSections=(function(){
     }
     if(st){
       const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-      st.textContent=(j.stasis?'Paused':'~'+hz+' Hz');
+      const dyn=!!j.imu_dynamic;
+      st.textContent=(j.stasis?'Paused':(dyn?('Var ~'+hz):('~'+hz+' Hz')));
     }
     if(sd){
       const pct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';

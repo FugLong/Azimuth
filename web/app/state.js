@@ -1,6 +1,6 @@
 window.AppState=(function(){
   return {
-    uiTouched:{udp:false,mdns:false,hatire:false},
+    uiTouched:{udp:false,mdns:false,hatire:false,imuDyn:false},
     power:{
       lastUserActivityMs:Date.now(),
       lastStatusOkMs:0,

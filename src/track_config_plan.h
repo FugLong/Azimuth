@@ -36,6 +36,7 @@ struct OtAxesField {
 
 struct ConfigPlanInput {
   uint16_t prevImuPeriodMs = 10;
+  bool prevImuDynamic = false;
   bool prevMdnsOn = true;
   std::string prevHostname;
   std::string prevSsid;
@@ -48,6 +49,7 @@ struct ConfigPlanInput {
   ConfigField<bool> hatireUsb;
   ConfigField<bool> mdnsOn;
   ConfigField<int> imuPeriodMs;
+  ConfigField<bool> imuDynamic;
   ConfigField<int> wifiTx;
   OtAxesField otAxes;
   ConfigField<int> rgbBrightness;
@@ -83,6 +85,8 @@ struct ConfigApplyPlan {
   bool mdnsOnValue = true;
   bool writeImuPeriodMs = false;
   uint16_t imuPeriodMsValue = 10;
+  bool writeImuDynamic = false;
+  bool imuDynamicValue = false;
   bool writeWifiTx = false;
   uint8_t wifiTxValue = 0;
   bool writeOtAxes = false;

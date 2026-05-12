@@ -141,6 +141,9 @@ window.AppViews=(function(){
         }
       }else if((o.phase==='success'||o.phase==='failed')&&typeof window.AppUpdateProgress.apply==='function'){
         window.AppUpdateProgress.apply(o);
+      }else if(typeof window.AppUpdateProgress.hide==='function'){
+        // OTA returned to idle (usually after reboot): clear any stale progress UI.
+        window.AppUpdateProgress.hide();
       }
     }
     const manualBtn=$('btnUpdateManualWifi');
@@ -218,6 +221,7 @@ window.AppViews=(function(){
     }
     if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
     if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
+    if(!uiTouched.imuDyn&&$('imuDynamicToggle'))setToggle('imuDynamicToggle',!!j.imu_dynamic);
     if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
     updateSoundLightCard(j);
     const box=$('clientIpBox'),val=$('clientIpVal');

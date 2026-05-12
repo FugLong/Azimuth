@@ -8,6 +8,8 @@
 
 void trackNetworkLoadTrackingPrefs() {}
 uint16_t trackNetworkImuRotationPeriodMs() { return 10; }
+bool trackNetworkImuDynamicEnabled() { return false; }
+bool trackNetworkTakeImuPrefsDirty() { return false; }
 bool trackNetworkHatireUsbEnabled() { return true; }
 
 void trackNetworkInit() {}
@@ -65,6 +67,14 @@ void trackNetworkLoadTrackingPrefs() {
 
 uint16_t trackNetworkImuRotationPeriodMs() {
   return azimuth_net::imuPeriodMsValue();
+}
+
+bool trackNetworkImuDynamicEnabled() {
+  return azimuth_net::gRuntime.imuDynamicRuntime;
+}
+
+bool trackNetworkTakeImuPrefsDirty() {
+  return azimuth_net::takeImuReportPrefsDirty();
 }
 
 bool trackNetworkHatireUsbEnabled() {

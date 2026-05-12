@@ -47,8 +47,9 @@ function syncTrackingHeroFromPose(j){
   }
   const im=j.imu_period_ms;
   const hz=im?Math.round(1000/im):'—';
-  htr.textContent='~'+hz+' Hz';
-  if(htrk)htrk.textContent=im?'Update rate':'';
+  const dyn=!!j.imu_dynamic;
+  htr.textContent=dyn?('Var · ~'+hz+' Hz peak'):('~'+hz+' Hz');
+  if(htrk)htrk.textContent=dyn?'Variable IMU rate':(im?'Update rate':'');
 }
 
 function applyLiveStatus(j){
@@ -64,6 +65,10 @@ async function hydrateForm(){
   fillInput($('otPort'),j.ot_port||4242);
   const p=j.imu_period_ms||10;
   $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
+  if(!uiTouched.imuDyn){
+    const imuDynEl=$('imuDynamicToggle');
+    if(imuDynEl)setToggle('imuDynamicToggle',!!j.imu_dynamic);
+  }
   $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
   const bc=$('batteryCapacity');
   if(bc){
@@ -97,7 +102,7 @@ async function hydrateForm(){
   syncRangeLabels();
   syncLedManualUi();
   applyOtAxesFromStatus(j.ot_axes);
-  uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
+  uiTouched.udp=uiTouched.mdns=uiTouched.hatire=uiTouched.imuDyn=false;
   applyLiveStatus(j);
   nudgeInputPaint();
   hydrateOk=true;
@@ -303,6 +308,13 @@ function schedulePowerAwarePoll(){
 }
 $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
+const imuDynToggleEl=$('imuDynamicToggle');
+if(imuDynToggleEl){
+  imuDynToggleEl.onclick=()=>{
+    uiTouched.imuDyn=true;
+    setToggle('imuDynamicToggle',!$('imuDynamicToggle').classList.contains('on'));
+  };
+}
 $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
 [0,1,2].forEach(i=>{const id='otInv'+i;$(id).onclick=()=>setToggle(id,!$(id).classList.contains('on'));});
 const _rb=$('rgbBrightness'),_bv=$('buzzerVolume');

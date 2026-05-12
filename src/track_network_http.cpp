@@ -117,6 +117,7 @@ void appendStatusTracking(JsonDocument& doc) {
   }
   doc["ot_using_dns"] = (!gRuntime.otHostIsLiteralIp && gRuntime.otHostTrimmed.length() > 0);
   doc["imu_period_ms"] = mergedImuPeriodMs();
+  doc["imu_dynamic"] = mergedImuDynamic();
   doc["hatire_usb"] = mergedHatireUsb();
   doc["hostname"] = mergedHostname();
   doc["mdns_on"] = mergedMdnsOn();
@@ -250,6 +251,7 @@ void handlePose(WebServer& http) {
   doc["stasis"] = gRuntime.stasisActive;
   doc["thermal_hold"] = gRuntime.thermalHoldActive;
   doc["imu_period_ms"] = mergedImuPeriodMs();
+  doc["imu_dynamic"] = mergedImuDynamic();
   if (poseFresh) {
     doc["pose_yaw_deg"] = gRuntime.poseYawDeg;
     doc["pose_pitch_deg"] = gRuntime.posePitchDeg;
@@ -369,6 +371,7 @@ void parseOtAxesField(const JsonDocument& body, azimuth_cfg::OtAxesField& out) {
 azimuth_cfg::ConfigPlanInput parseConfigPlanInput(const JsonDocument& body) {
   azimuth_cfg::ConfigPlanInput in;
   in.prevImuPeriodMs = mergedImuPeriodMs();
+  in.prevImuDynamic = mergedImuDynamic();
   in.prevMdnsOn = mergedMdnsOn();
   in.prevHostname = mergedHostname().c_str();
   in.prevSsid = mergedSsid().c_str();
@@ -381,6 +384,7 @@ azimuth_cfg::ConfigPlanInput parseConfigPlanInput(const JsonDocument& body) {
   parseField<bool>(body, "hatire_usb", in.hatireUsb);
   parseField<bool>(body, "mdns_on", in.mdnsOn);
   parseField<int>(body, "imu_period_ms", in.imuPeriodMs);
+  parseField<bool>(body, "imu_dynamic", in.imuDynamic);
   parseField<int>(body, "wifi_tx", in.wifiTx);
   parseOtAxesField(body, in.otAxes);
   parseField<int>(body, "rgb_brightness", in.rgbBrightness);
@@ -417,6 +421,9 @@ void applyPlanToPrefs(const azimuth_cfg::ConfigApplyPlan& plan) {
   if (plan.writeMdnsOn) gRuntime.prefs.putBool("mdns_on", plan.mdnsOnValue);
   if (plan.writeImuPeriodMs) {
     gRuntime.prefs.putUInt("imu_period_ms", static_cast<uint32_t>(plan.imuPeriodMsValue));
+  }
+  if (plan.writeImuDynamic) {
+    gRuntime.prefs.putBool("imu_dyn", plan.imuDynamicValue);
   }
   if (plan.writeWifiTx) gRuntime.prefs.putUInt("wifi_tx", static_cast<uint32_t>(plan.wifiTxValue));
   if (plan.writeOtAxes) applyOtAxesPrefs(plan.otAxesValue);
@@ -511,6 +518,9 @@ void handleConfigPost(WebServer& http) {
   applyStaWifiTxPower();
 
   const bool restarting = plan.wifiCredChanged || plan.rebootRequired;
+  if (!restarting && (plan.writeImuDynamic || plan.writeImuPeriodMs)) {
+    markImuReportPrefsDirty();
+  }
   JsonDocument ok;
   ok["ok"] = true;
   ok["restarting"] = restarting;

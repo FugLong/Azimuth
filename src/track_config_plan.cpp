@@ -68,6 +68,10 @@ ConfigApplyPlan buildConfigApplyPlan(const ConfigPlanInput& in) {
     fail(plan, "type.imu_period_ms", "imu_period_ms must be integer");
     return plan;
   }
+  if (in.imuDynamic.present && !in.imuDynamic.typeOk) {
+    fail(plan, "type.imu_dynamic", "imu_dynamic must be boolean");
+    return plan;
+  }
   if (in.wifiTx.present && !in.wifiTx.typeOk) {
     fail(plan, "type.wifi_tx", "wifi_tx must be integer");
     return plan;
@@ -242,9 +246,15 @@ ConfigApplyPlan buildConfigApplyPlan(const ConfigPlanInput& in) {
   if (in.imuPeriodMs.present) {
     plan.writeImuPeriodMs = true;
     plan.imuPeriodMsValue = static_cast<uint16_t>(in.imuPeriodMs.value);
-    if (in.imuPeriodMs.value != static_cast<int>(in.prevImuPeriodMs)) {
+    const bool dynEffective =
+        in.imuDynamic.present ? in.imuDynamic.value : in.prevImuDynamic;
+    if (in.imuPeriodMs.value != static_cast<int>(in.prevImuPeriodMs) && !dynEffective) {
       plan.rebootRequired = true;
     }
+  }
+  if (in.imuDynamic.present) {
+    plan.writeImuDynamic = true;
+    plan.imuDynamicValue = in.imuDynamic.value;
   }
   if (in.wifiTx.present) {
     plan.writeWifiTx = true;

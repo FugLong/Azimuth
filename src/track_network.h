@@ -7,6 +7,10 @@
 /** Wi‑Fi, OpenTrack UDP, NVS, HTTP portal — full impl. in `azimuth_main_*`; stubs in `azimuth_debug_*`. */
 void trackNetworkLoadTrackingPrefs();
 uint16_t trackNetworkImuRotationPeriodMs();
+/** NVS: slows IMU/UDP when head is still to save battery; peak rate follows `trackNetworkImuRotationPeriodMs()`. */
+bool trackNetworkImuDynamicEnabled();
+/** Portal saved IMU prefs without reboot — main applies rotation-vector interval once. */
+bool trackNetworkTakeImuPrefsDirty();
 bool trackNetworkHatireUsbEnabled();
 const OtAxisMapConfig& trackNetworkOtAxisMap();
 

@@ -69,7 +69,8 @@ window.AppPoseMascot=(function(){
     const ap=!!j.setup_ap;
     if(ap)return'Offline AP · pose N/A on this page';
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-    const parts=['~'+hz+' Hz'];
+    const dyn=!!j.imu_dynamic;
+    const parts=[dyn?('Var peak ~'+hz+' Hz'):('~'+hz+' Hz')];
     if(j.thermal_hold){
       parts.push('Wi‑Fi off (thermal)');
     }else if(j.stasis){

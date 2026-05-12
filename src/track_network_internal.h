@@ -72,7 +72,10 @@ struct NetworkRuntime {
   Preferences prefs;
   bool prefsOpened = false;
   uint16_t imuPeriodMsRuntime = 10;
+  bool imuDynamicRuntime = false;
   bool hatireUsbRuntime = true;
+  /** Set when portal saves IMU interval / dynamic prefs without reboot — main applies BNO08x period. */
+  bool imuReportPrefsDirty = false;
   OtAxisMapConfig otAxisMapRuntime{};
   uint32_t lastPortalActivityMs = 0;
   uint32_t lastUdpTxMs = 0;
@@ -96,10 +99,13 @@ bool ensurePrefsOpen();
 wifi_power_t wifiTxFromProfile(uint8_t profile);
 uint8_t mergedWifiTxProfile();
 uint16_t mergedImuPeriodMs();
+bool mergedImuDynamic();
 bool mergedHatireUsb();
 bool mergedMdnsOn();
 String mergedHostname();
 void refreshRuntimeFromPrefs();
+void markImuReportPrefsDirty();
+bool takeImuReportPrefsDirty();
 void applyStaWifiTxPower();
 void markPortalActivity();
 void applyAdaptiveWifiSleep();

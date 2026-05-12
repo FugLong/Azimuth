@@ -552,6 +552,11 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <div class="card section-card" id="cardTrackRadio" data-section="tracking">
 <div class="hd">Tracking & radio</div>
 <p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. The portal is tuned for low steady load; saves and reboots still go through immediately.</p>
+<div class="row" style="margin-bottom:.75rem">
+<span>Variable IMU rate</span>
+<button type="button" class="toggle" id="imuDynamicToggle" aria-label="Toggle variable IMU rate"></button>
+</div>
+<p class="hint" style="margin-top:0;margin-bottom:.65rem">When on, the device lowers IMU and UDP rate while your head is calm (saves battery). The slow end is usually <strong>~20–35 ms</strong> depending on your peak setting — not a hard jump to 25 Hz. The interval below is the <strong>peak</strong> rate when variable is on, or a fixed rate when off.</p>
 <label for="imuPeriod">IMU report interval</label>
 <select id="imuPeriod" aria-label="IMU period">
 <option value="5">200 Hz (5 ms) — lowest latency</option>
@@ -565,7 +570,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <option value="1" selected>Balanced (~8.5 dBm) — default</option>
 <option value="2">High (~19.5 dBm) — weak AP / long range</option>
 </select>
-<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
+<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device when variable rate is <strong>off</strong>. With variable rate on, interval changes apply without a reboot.</p>
 </div>
 
 <div class="card section-card" id="cardTrackingOutput" data-section="tracking">
@@ -733,7 +738,7 @@ pre.stats{font-size:.72rem;color:var(--muted);white-space:pre-wrap;margin:.75rem
 <script>
 window.AppState=(function(){
   return {
-    uiTouched:{udp:false,mdns:false,hatire:false},
+    uiTouched:{udp:false,mdns:false,hatire:false,imuDyn:false},
     power:{
       lastUserActivityMs:Date.now(),
       lastStatusOkMs:0,
@@ -1045,7 +1050,8 @@ window.AppSections=(function(){
     }
     if(st){
       const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-      st.textContent=(j.stasis?'Paused':'~'+hz+' Hz');
+      const dyn=!!j.imu_dynamic;
+      st.textContent=(j.stasis?'Paused':(dyn?('Var ~'+hz):('~'+hz+' Hz')));
     }
     if(sd){
       const pct=(j.battery_percent!=null)?(((Number(j.battery_percent)>100)?'100+%':(j.battery_percent+'%'))):'—';
@@ -1152,7 +1158,8 @@ window.AppPoseMascot=(function(){
     const ap=!!j.setup_ap;
     if(ap)return'Offline AP · pose N/A on this page';
     const hz=j.imu_period_ms?Math.round(1000/j.imu_period_ms):'—';
-    const parts=['~'+hz+' Hz'];
+    const dyn=!!j.imu_dynamic;
+    const parts=[dyn?('Var peak ~'+hz+' Hz'):('~'+hz+' Hz')];
     if(j.thermal_hold){
       parts.push('Wi‑Fi off (thermal)');
     }else if(j.stasis){
@@ -1416,6 +1423,9 @@ window.AppViews=(function(){
         }
       }else if((o.phase==='success'||o.phase==='failed')&&typeof window.AppUpdateProgress.apply==='function'){
         window.AppUpdateProgress.apply(o);
+      }else if(typeof window.AppUpdateProgress.hide==='function'){
+        // OTA returned to idle (usually after reboot): clear any stale progress UI.
+        window.AppUpdateProgress.hide();
       }
     }
     const manualBtn=$('btnUpdateManualWifi');
@@ -1493,6 +1503,7 @@ window.AppViews=(function(){
     }
     if(!uiTouched.udp)setToggle('udpToggle',!!j.udp_enabled);
     if(!uiTouched.mdns)setToggle('mdnsToggle',!!j.mdns_on);
+    if(!uiTouched.imuDyn&&$('imuDynamicToggle'))setToggle('imuDynamicToggle',!!j.imu_dynamic);
     if(!uiTouched.hatire)setToggle('hatireToggle',j.hatire_usb!==false);
     updateSoundLightCard(j);
     const box=$('clientIpBox'),val=$('clientIpVal');
@@ -1577,6 +1588,7 @@ window.AppControllers=(function(){
       mdns_on:$('mdnsToggle').classList.contains('on'),
       hostname:$('hostname').value.trim().toLowerCase(),
       imu_period_ms:parseInt($('imuPeriod').value,10)||10,
+      imu_dynamic:$('imuDynamicToggle')?$('imuDynamicToggle').classList.contains('on'):false,
       wifi_tx:parseInt($('wifiTx').value,10),
       battery_capacity_mah:parseInt($('batteryCapacity').value,10),
       rgb_brightness:parseInt($('rgbBrightness').value,10),
@@ -1888,8 +1900,9 @@ function syncTrackingHeroFromPose(j){
   }
   const im=j.imu_period_ms;
   const hz=im?Math.round(1000/im):'—';
-  htr.textContent='~'+hz+' Hz';
-  if(htrk)htrk.textContent=im?'Update rate':'';
+  const dyn=!!j.imu_dynamic;
+  htr.textContent=dyn?('Var · ~'+hz+' Hz peak'):('~'+hz+' Hz');
+  if(htrk)htrk.textContent=dyn?'Variable IMU rate':(im?'Update rate':'');
 }
 
 function applyLiveStatus(j){
@@ -1905,6 +1918,10 @@ async function hydrateForm(){
   fillInput($('otPort'),j.ot_port||4242);
   const p=j.imu_period_ms||10;
   $('imuPeriod').value=[5,10,20,40].includes(p)?String(p):'10';
+  if(!uiTouched.imuDyn){
+    const imuDynEl=$('imuDynamicToggle');
+    if(imuDynEl)setToggle('imuDynamicToggle',!!j.imu_dynamic);
+  }
   $('wifiTx').value=([0,1,2].includes(j.wifi_tx))?String(j.wifi_tx):'1';
   const bc=$('batteryCapacity');
   if(bc){
@@ -1938,7 +1955,7 @@ async function hydrateForm(){
   syncRangeLabels();
   syncLedManualUi();
   applyOtAxesFromStatus(j.ot_axes);
-  uiTouched.udp=uiTouched.mdns=uiTouched.hatire=false;
+  uiTouched.udp=uiTouched.mdns=uiTouched.hatire=uiTouched.imuDyn=false;
   applyLiveStatus(j);
   nudgeInputPaint();
   hydrateOk=true;
@@ -2144,6 +2161,13 @@ function schedulePowerAwarePoll(){
 }
 $('udpToggle').onclick=()=>{uiTouched.udp=true;setToggle('udpToggle',!$('udpToggle').classList.contains('on'))};
 $('mdnsToggle').onclick=()=>{uiTouched.mdns=true;setToggle('mdnsToggle',!$('mdnsToggle').classList.contains('on'))};
+const imuDynToggleEl=$('imuDynamicToggle');
+if(imuDynToggleEl){
+  imuDynToggleEl.onclick=()=>{
+    uiTouched.imuDyn=true;
+    setToggle('imuDynamicToggle',!$('imuDynamicToggle').classList.contains('on'));
+  };
+}
 $('hatireToggle').onclick=()=>{uiTouched.hatire=true;setToggle('hatireToggle',!$('hatireToggle').classList.contains('on'))};
 [0,1,2].forEach(i=>{const id='otInv'+i;$(id).onclick=()=>setToggle(id,!$(id).classList.contains('on'));});
 const _rb=$('rgbBrightness'),_bv=$('buzzerVolume');

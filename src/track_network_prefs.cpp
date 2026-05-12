@@ -50,6 +50,13 @@ uint16_t mergedImuPeriodMs() {
   return static_cast<uint16_t>(v);
 }
 
+bool mergedImuDynamic() {
+  if (!gRuntime.prefsOpened) {
+    return false;
+  }
+  return gRuntime.prefs.getBool("imu_dyn", false);
+}
+
 bool mergedHatireUsb() { return gRuntime.prefs.getBool("hatire_usb", true); }
 
 bool mergedMdnsOn() { return gRuntime.prefs.getBool("mdns_on", true); }
@@ -75,10 +82,21 @@ void refreshRuntimeFromPrefs() {
     return;
   }
   gRuntime.imuPeriodMsRuntime = mergedImuPeriodMs();
+  gRuntime.imuDynamicRuntime = mergedImuDynamic();
   gRuntime.hatireUsbRuntime = mergedHatireUsb();
   gRuntime.otAxisMapRuntime = mergedOtAxisMap();
   azimuth_battery::setCapacityMah(mergedBatteryCapacityMah());
   azimuth_battery::setCalibrationOffsetMv(mergedBatteryCalOffsetMv());
+}
+
+void markImuReportPrefsDirty() { gRuntime.imuReportPrefsDirty = true; }
+
+bool takeImuReportPrefsDirty() {
+  if (!gRuntime.imuReportPrefsDirty) {
+    return false;
+  }
+  gRuntime.imuReportPrefsDirty = false;
+  return true;
 }
 
 void applyStaWifiTxPower() {

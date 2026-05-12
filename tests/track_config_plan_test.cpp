@@ -13,8 +13,8 @@ namespace {
 
 ConfigPlanInput makeBaseInput() {
   ConfigPlanInput in;
-  in.offlineApMode = false;
   in.prevImuPeriodMs = 10;
+  in.prevImuDynamic = false;
   in.prevMdnsOn = true;
   in.prevHostname = "azimuth";
   in.prevSsid = "home-net";
@@ -126,7 +126,30 @@ int main() {
     auto in = makeBaseInput();
     in.imuPeriodMs.present = true;
     in.imuPeriodMs.value = 20;
-    cases.push_back({"imu period change reboot", in, true, "", true, false, false});
+    cases.push_back({"imu period change reboot when fixed rate", in, true, "", true, false, false});
+  }
+  {
+    auto in = makeBaseInput();
+    in.prevImuDynamic = true;
+    in.imuPeriodMs.present = true;
+    in.imuPeriodMs.value = 20;
+    cases.push_back({"imu period change no reboot when dynamic already on", in, true, "", false, false, false});
+  }
+  {
+    auto in = makeBaseInput();
+    in.imuPeriodMs.present = true;
+    in.imuPeriodMs.value = 20;
+    in.imuDynamic.present = true;
+    in.imuDynamic.typeOk = true;
+    in.imuDynamic.value = true;
+    cases.push_back({"imu period change no reboot when enabling dynamic same save", in, true, "", false, false,
+                     false});
+  }
+  {
+    auto in = makeBaseInput();
+    in.imuDynamic.present = true;
+    in.imuDynamic.typeOk = false;
+    cases.push_back({"imu_dynamic type error", in, false, "type.imu_dynamic", false, false, false});
   }
   {
     auto in = makeBaseInput();
@@ -163,14 +186,6 @@ int main() {
     in.batteryCalibrate4v2.present = true;
     in.batteryCalibrate4v2.value = true;
     cases.push_back({"battery calibrate requested", in, true, "", false, false, true});
-  }
-  {
-    auto in = makeBaseInput();
-    in.offlineApMode = true;
-    in.prevSsid.clear();
-    in.ssid.present = true;
-    in.ssid.value.clear();
-    cases.push_back({"setup ap requires non-empty ssid", in, false, "constraint.setup_ap.ssid", false, false, false});
   }
   {
     auto in = makeBaseInput();

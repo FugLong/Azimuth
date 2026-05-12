@@ -31,6 +31,7 @@
 
 #if !IMU_DEBUG_MODE
 #include <string.h>
+#include "imu_dynamic.h"
 #include "opentrack_pose.h"
 #include "track_network.h"
 #endif
@@ -164,19 +165,64 @@ bool sendHatirePacket(float yawDeg, float pitchDeg, float rollDeg) {
   return true;
 }
 
+uint16_t gAppliedRvPeriodMs = 0;
+
+static uint16_t gRvSlowHoldWant = 0;
+static uint8_t gRvSlowHoldCount = 0;
+
+void applyRotationVectorPeriodMs(uint16_t periodMs) {
+  if (periodMs == gAppliedRvPeriodMs) {
+    return;
+  }
+  if (imu.enableRotationVector(periodMs)) {
+    gAppliedRvPeriodMs = periodMs;
+  }
+}
+
+/** Slower reporting (larger `want` ms) is debounced — frequent `enableRotationVector` when easing down causes hitches. */
+void applyRotationVectorPeriodDebounced(uint16_t want) {
+  if (want < gAppliedRvPeriodMs) {
+    gRvSlowHoldWant = 0;
+    gRvSlowHoldCount = 0;
+    applyRotationVectorPeriodMs(want);
+    return;
+  }
+  if (want == gAppliedRvPeriodMs) {
+    gRvSlowHoldWant = 0;
+    gRvSlowHoldCount = 0;
+    return;
+  }
+  if (want == gRvSlowHoldWant) {
+    ++gRvSlowHoldCount;
+  } else {
+    gRvSlowHoldWant = want;
+    gRvSlowHoldCount = 1;
+  }
+  if (gRvSlowHoldCount >= 3) {
+    applyRotationVectorPeriodMs(want);
+    gRvSlowHoldWant = 0;
+    gRvSlowHoldCount = 0;
+  }
+}
+
 #endif  // !IMU_DEBUG_MODE
 
 void enableReports() {
 #if IMU_DEBUG_MODE
   const uint16_t periodMs = kRotationVectorPeriodMs;
-#else
-  const uint16_t periodMs = trackNetworkImuRotationPeriodMs();
-#endif
   if (!imu.enableRotationVector(periodMs)) {
-#if IMU_DEBUG_MODE
     Serial.println(F("enableRotationVector failed"));
-#endif
   }
+#else
+  if (trackNetworkImuDynamicEnabled()) {
+    const uint16_t peak = trackNetworkImuRotationPeriodMs();
+    const uint16_t p0 = azimuth_imu_dynamic::armDynamicForPeak(peak);
+    applyRotationVectorPeriodMs(p0);
+  } else {
+    azimuth_imu_dynamic::resetState();
+    applyRotationVectorPeriodMs(trackNetworkImuRotationPeriodMs());
+  }
+#endif
 }
 
 void maybePlayBatteryThresholdAlert(bool& latched, int32_t prevPct, int32_t nowPct,
@@ -320,6 +366,18 @@ void loop() {
     hatireInitPacket();
   }
   gHatireUsbWasConnected = usbConnected;
+  if (trackNetworkTakeImuPrefsDirty()) {
+    gAppliedRvPeriodMs = 0;
+    gRvSlowHoldWant = 0;
+    gRvSlowHoldCount = 0;
+    if (trackNetworkImuDynamicEnabled()) {
+      applyRotationVectorPeriodMs(
+          azimuth_imu_dynamic::armDynamicForPeak(trackNetworkImuRotationPeriodMs()));
+    } else {
+      azimuth_imu_dynamic::resetState();
+      applyRotationVectorPeriodMs(trackNetworkImuRotationPeriodMs());
+    }
+  }
 #endif
 
   if (imu.wasReset()) {
@@ -367,6 +425,12 @@ void loop() {
   Serial.print(rollDeg, 1);
   Serial.println(F("°"));
 #else
+  if (trackNetworkImuDynamicEnabled()) {
+    const uint16_t peak = trackNetworkImuRotationPeriodMs();
+    const uint16_t want =
+        azimuth_imu_dynamic::computeNextPeriodMs(yawDeg, pitchDeg, rollDeg, nowMs, peak);
+    applyRotationVectorPeriodDebounced(want);
+  }
   // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
   // after a rotation-vector report (network work is internally time-sliced).
   trackNetworkPublishPoseSample(yawDeg, pitchDeg, rollDeg);

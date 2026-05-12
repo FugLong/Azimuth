@@ -122,6 +122,11 @@
 <div class="card section-card" id="cardTrackRadio" data-section="tracking">
 <div class="hd">Tracking & radio</div>
 <p class="hint">Faster IMU reports reduce latency and increase USB/Wi‑Fi load. The portal is tuned for low steady load; saves and reboots still go through immediately.</p>
+<div class="row" style="margin-bottom:.75rem">
+<span>Variable IMU rate</span>
+<button type="button" class="toggle" id="imuDynamicToggle" aria-label="Toggle variable IMU rate"></button>
+</div>
+<p class="hint" style="margin-top:0;margin-bottom:.65rem">When on, the device lowers IMU and UDP rate while your head is calm (saves battery). The slow end is usually <strong>~20–35 ms</strong> depending on your peak setting — not a hard jump to 25 Hz. The interval below is the <strong>peak</strong> rate when variable is on, or a fixed rate when off.</p>
 <label for="imuPeriod">IMU report interval</label>
 <select id="imuPeriod" aria-label="IMU period">
 <option value="5">200 Hz (5 ms) — lowest latency</option>
@@ -135,7 +140,7 @@
 <option value="1" selected>Balanced (~8.5 dBm) — default</option>
 <option value="2">High (~19.5 dBm) — weak AP / long range</option>
 </select>
-<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device so the sensor can resync.</p>
+<p class="hint" style="margin-top:.75rem;margin-bottom:0">Changing IMU interval reboots the device when variable rate is <strong>off</strong>. With variable rate on, interval changes apply without a reboot.</p>
 </div>
 
 <div class="card section-card" id="cardTrackingOutput" data-section="tracking">
