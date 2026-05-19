@@ -430,6 +430,11 @@ void loop() {
     const uint16_t want =
         azimuth_imu_dynamic::computeNextPeriodMs(yawDeg, pitchDeg, rollDeg, nowMs, peak);
     applyRotationVectorPeriodDebounced(want);
+    float act = 0.0f;
+    float rawOmega = 0.0f;
+    float smoothMs = 0.0f;
+    azimuth_imu_dynamic::readDynamicTelemetry(&act, &smoothMs, &rawOmega);
+    trackNetworkPublishImuDynamicTelemetry(gAppliedRvPeriodMs, want, act, rawOmega, smoothMs);
   }
   // Pose path before `trackNetworkLoop()` so USB/UDP leave the device with minimal delay
   // after a rotation-vector report (network work is internally time-sliced).

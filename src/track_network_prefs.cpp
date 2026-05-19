@@ -52,9 +52,9 @@ uint16_t mergedImuPeriodMs() {
 
 bool mergedImuDynamic() {
   if (!gRuntime.prefsOpened) {
-    return false;
+    return true;
   }
-  return gRuntime.prefs.getBool("imu_dyn", false);
+  return gRuntime.prefs.getBool("imu_dyn", true);
 }
 
 bool mergedHatireUsb() { return gRuntime.prefs.getBool("hatire_usb", true); }
@@ -84,6 +84,9 @@ void refreshRuntimeFromPrefs() {
   gRuntime.imuPeriodMsRuntime = mergedImuPeriodMs();
   gRuntime.imuDynamicRuntime = mergedImuDynamic();
   gRuntime.hatireUsbRuntime = mergedHatireUsb();
+  if (!gRuntime.imuDynamicRuntime) {
+    gRuntime.imuDynTelemLastUpdateMs = 0;
+  }
   gRuntime.otAxisMapRuntime = mergedOtAxisMap();
   azimuth_battery::setCapacityMah(mergedBatteryCapacityMah());
   azimuth_battery::setCalibrationOffsetMv(mergedBatteryCalOffsetMv());
@@ -97,6 +100,16 @@ bool takeImuReportPrefsDirty() {
   }
   gRuntime.imuReportPrefsDirty = false;
   return true;
+}
+
+void publishImuDynamicTelemetry(uint16_t appliedReportMs, uint16_t controllerWantMs,
+                                float activityDegPerSec, float rawOmegaDegPerSec, float smoothedPeriodMs) {
+  gRuntime.imuDynTelemAppliedMs = appliedReportMs;
+  gRuntime.imuDynTelemWantMs = controllerWantMs;
+  gRuntime.imuDynTelemActivityDegPerSec = activityDegPerSec;
+  gRuntime.imuDynTelemRawOmegaDegPerSec = rawOmegaDegPerSec;
+  gRuntime.imuDynTelemSmoothedPeriodMs = smoothedPeriodMs;
+  gRuntime.imuDynTelemLastUpdateMs = millis();
 }
 
 void applyStaWifiTxPower() {

@@ -15,6 +15,7 @@ bool trackNetworkHatireUsbEnabled() { return true; }
 void trackNetworkInit() {}
 void trackNetworkLoop() {}
 void trackNetworkPublishPoseSample(float, float, float) {}
+void trackNetworkPublishImuDynamicTelemetry(uint16_t, uint16_t, float, float, float) {}
 void trackNetworkSendOpentrackUdp(float, float, float) {}
 
 void trackNetworkApplyThermalEmergency() {}
@@ -103,6 +104,13 @@ void trackNetworkPublishPoseSample(float yawDeg, float pitchDeg, float rollDeg) 
   azimuth_net::gRuntime.poseRollDeg = rollDeg;
   azimuth_net::gRuntime.poseLastMs = millis();
   azimuth_net::gRuntime.poseValid = true;
+}
+
+void trackNetworkPublishImuDynamicTelemetry(uint16_t appliedReportMs, uint16_t controllerWantMs,
+                                            float activityDegPerSec, float rawOmegaDegPerSec,
+                                            float smoothedPeriodMs) {
+  azimuth_net::publishImuDynamicTelemetry(appliedReportMs, controllerWantMs, activityDegPerSec,
+                                          rawOmegaDegPerSec, smoothedPeriodMs);
 }
 
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg) {

@@ -72,10 +72,17 @@ struct NetworkRuntime {
   Preferences prefs;
   bool prefsOpened = false;
   uint16_t imuPeriodMsRuntime = 10;
-  bool imuDynamicRuntime = false;
+  bool imuDynamicRuntime = true;
   bool hatireUsbRuntime = true;
   /** Set when portal saves IMU interval / dynamic prefs without reboot — main applies BNO08x period. */
   bool imuReportPrefsDirty = false;
+  /** Last variable-rate telemetry (rotation-vector period + controller state). */
+  uint16_t imuDynTelemAppliedMs = 0;
+  uint16_t imuDynTelemWantMs = 0;
+  float imuDynTelemActivityDegPerSec = 0.0f;
+  float imuDynTelemRawOmegaDegPerSec = 0.0f;
+  float imuDynTelemSmoothedPeriodMs = 0.0f;
+  uint32_t imuDynTelemLastUpdateMs = 0;
   OtAxisMapConfig otAxisMapRuntime{};
   uint32_t lastPortalActivityMs = 0;
   uint32_t lastUdpTxMs = 0;
@@ -106,6 +113,8 @@ String mergedHostname();
 void refreshRuntimeFromPrefs();
 void markImuReportPrefsDirty();
 bool takeImuReportPrefsDirty();
+void publishImuDynamicTelemetry(uint16_t appliedReportMs, uint16_t controllerWantMs,
+                                float activityDegPerSec, float rawOmegaDegPerSec, float smoothedPeriodMs);
 void applyStaWifiTxPower();
 void markPortalActivity();
 void applyAdaptiveWifiSleep();

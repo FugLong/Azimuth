@@ -86,7 +86,7 @@ struct ConfigApplyPlan {
   bool writeImuPeriodMs = false;
   uint16_t imuPeriodMsValue = 10;
   bool writeImuDynamic = false;
-  bool imuDynamicValue = false;
+  bool imuDynamicValue = true;
   bool writeWifiTx = false;
   uint8_t wifiTxValue = 0;
   bool writeOtAxes = false;

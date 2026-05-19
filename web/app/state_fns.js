@@ -2,7 +2,7 @@ window.AppStateFns=(function(){
   const {$,setToggle,setMsg}=window.AppUi;
 
   function otAxesDefault(){
-    return[{src:0,inv:false},{src:2,inv:false},{src:1,inv:true}];
+    return[{src:0,inv:true},{src:2,inv:false},{src:1,inv:true}];
   }
 
   function applyOtAxesFromStatus(ax){

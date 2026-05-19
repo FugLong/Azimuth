@@ -17,6 +17,10 @@ const OtAxisMapConfig& trackNetworkOtAxisMap();
 void trackNetworkInit();
 void trackNetworkLoop();
 void trackNetworkPublishPoseSample(float yawDeg, float pitchDeg, float rollDeg);
+/** When variable IMU is on, call each rotation-vector frame with controller / BNO08x timing (debug / portal). */
+void trackNetworkPublishImuDynamicTelemetry(uint16_t appliedReportMs, uint16_t controllerWantMs,
+                                            float activityDegPerSec, float rawOmegaDegPerSec,
+                                            float smoothedPeriodMs);
 void trackNetworkSendOpentrackUdp(float yawDeg, float pitchDeg, float rollDeg);
 
 /** Cuts Wi‑Fi / portal / UDP for thermal protection (latched until cool reboot). */

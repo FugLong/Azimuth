@@ -73,6 +73,24 @@ bool validateMutatingRequest(WebServer& http) {
   return true;
 }
 
+void appendImuDynamicLiveJson(JsonDocument& doc, uint32_t nowMs) {
+  if (!mergedImuDynamic()) {
+    doc["imu_dynamic_live"] = nullptr;
+    return;
+  }
+  if (gRuntime.imuDynTelemLastUpdateMs == 0 ||
+      (nowMs - gRuntime.imuDynTelemLastUpdateMs) > 3000U) {
+    doc["imu_dynamic_live"] = nullptr;
+    return;
+  }
+  JsonObject o = doc["imu_dynamic_live"].to<JsonObject>();
+  o["applied_ms"] = gRuntime.imuDynTelemAppliedMs;
+  o["want_ms"] = gRuntime.imuDynTelemWantMs;
+  o["activity_deg_s"] = static_cast<double>(gRuntime.imuDynTelemActivityDegPerSec);
+  o["raw_deg_s"] = static_cast<double>(gRuntime.imuDynTelemRawOmegaDegPerSec);
+  o["smoothed_period_ms"] = static_cast<double>(gRuntime.imuDynTelemSmoothedPeriodMs);
+}
+
 void sendCaptiveRedirect(WebServer& http) {
   const String url = portalHttpUrl();
   http.sendHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -135,6 +153,7 @@ void appendStatusTracking(JsonDocument& doc) {
     doc["pose_roll_deg"] = nullptr;
   }
   appendOtAxesToJson(doc);
+  appendImuDynamicLiveJson(doc, nowMs);
 }
 
 void appendStatusBattery(JsonDocument& doc) {
@@ -252,6 +271,7 @@ void handlePose(WebServer& http) {
   doc["thermal_hold"] = gRuntime.thermalHoldActive;
   doc["imu_period_ms"] = mergedImuPeriodMs();
   doc["imu_dynamic"] = mergedImuDynamic();
+  appendImuDynamicLiveJson(doc, nowMs);
   if (poseFresh) {
     doc["pose_yaw_deg"] = gRuntime.poseYawDeg;
     doc["pose_pitch_deg"] = gRuntime.posePitchDeg;

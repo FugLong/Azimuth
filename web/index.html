@@ -126,7 +126,8 @@
 <span>Variable IMU rate</span>
 <button type="button" class="toggle" id="imuDynamicToggle" aria-label="Toggle variable IMU rate"></button>
 </div>
-<p class="hint" style="margin-top:0;margin-bottom:.65rem">When on, the device lowers IMU and UDP rate while your head is calm (saves battery). The slow end is usually <strong>~20–35 ms</strong> depending on your peak setting — not a hard jump to 25 Hz. The interval below is the <strong>peak</strong> rate when variable is on, or a fixed rate when off.</p>
+<p class="hint" style="margin-top:0;margin-bottom:.65rem">When on, the device lowers IMU and UDP rate while your head is calm (saves battery). The slow end is <strong>25 Hz (40 ms)</strong>. The interval below is the <strong>peak</strong> rate when variable is on, or a fixed rate when off.</p>
+<p id="imuDynLive" class="hint" style="display:none;margin-top:0" role="status" aria-live="polite"></p>
 <label for="imuPeriod">IMU report interval</label>
 <select id="imuPeriod" aria-label="IMU period">
 <option value="5">200 Hz (5 ms) — lowest latency</option>

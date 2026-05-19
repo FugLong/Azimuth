@@ -102,8 +102,9 @@ window.AppViews=(function(){
       }else{
         const im=j.imu_period_ms;
         const hz=im?Math.round(1000/im):'—';
-        htr.textContent='~'+hz+' Hz';
-        if(htrk)htrk.textContent=im?'Update rate':'';
+        const dyn=!!j.imu_dynamic;
+        htr.textContent=dyn?('Var · ~'+hz+' Hz peak'):('~'+hz+' Hz');
+        if(htrk)htrk.textContent=dyn?'Variable IMU rate':(im?'Update rate':'');
       }
     }
   }
@@ -244,6 +245,25 @@ window.AppViews=(function(){
           dh.style.display='block';
           dh.classList.add('warn');
           dh.textContent=j.wifi_connected?'Cannot resolve this hostname. Check spelling; avoid .local unless your router supports it.':'Join Wi‑Fi before hostnames can resolve.';
+        }
+      }
+    }
+    const imuLive=$('imuDynLive');
+    if(imuLive){
+      if(!j.imu_dynamic){
+        imuLive.style.display='none';
+        imuLive.textContent='';
+      }else{
+        imuLive.style.display='block';
+        const L=j.imu_dynamic_live;
+        if(!L){
+          imuLive.textContent='Variable rate on — live BNO timing appears here while the tracker is running.';
+        }else{
+          const hzFrom=(ms)=>ms?Math.round(1000/ms)+' Hz':'—';
+          const act=L.activity_deg_s!=null?Number(L.activity_deg_s):0;
+          const raw=L.raw_deg_s!=null?Number(L.raw_deg_s):0;
+          const sm=L.smoothed_period_ms!=null?Number(L.smoothed_period_ms):0;
+          imuLive.textContent='Live: BNO '+L.applied_ms+' ms (~'+hzFrom(L.applied_ms)+') · want '+L.want_ms+' ms · instant '+raw.toFixed(0)+'°/s · envelope '+act.toFixed(0)+'°/s · smoothed '+sm.toFixed(0)+' ms';
         }
       }
     }

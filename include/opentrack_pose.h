@@ -10,10 +10,10 @@ struct OtAxisMapConfig {
   bool invertRot[3];
 };
 
-/** README default: Rot0=yaw, Rot1=roll, Rot2=-pitch (OpenTrack Yaw/Pitch/Roll → 0/1/2). */
+/** Factory default: Rot0=-yaw, Rot1=roll, Rot2=-pitch (OpenTrack Yaw/Pitch/Roll → 0/1/2). */
 inline void otAxisMapSetDefault(OtAxisMapConfig* c) {
   c->srcForRot[0] = 0;
-  c->invertRot[0] = false;
+  c->invertRot[0] = true;
   c->srcForRot[1] = 2;
   c->invertRot[1] = false;
   c->srcForRot[2] = 1;
