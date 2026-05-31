@@ -198,14 +198,23 @@ def flash_images(port: str, images: list[tuple[int, Path]], erase: bool) -> None
         eprint("Erasing flash…")
         for attempt in range(CONNECT_RETRIES):
             try:
-                run_esptool([*write_args, "erase-flash"])
+                run_esptool([*write_args, "erase_flash"])
                 break
             except subprocess.CalledProcessError:
                 if attempt + 1 >= CONNECT_RETRIES:
                     raise
                 time.sleep(CONNECT_DELAY_S)
 
-    flash_cmd = [*write_args, "write-flash", "--flash-mode", "dio", "--flash-freq", "80m", "--flash-size", "4MB"]
+    flash_cmd = [
+        *write_args,
+        "write_flash",
+        "--flash_mode",
+        "dio",
+        "--flash_freq",
+        "80m",
+        "--flash_size",
+        "4MB",
+    ]
     for offset, path in images:
         flash_cmd.append(f"0x{offset:X}")
         flash_cmd.append(str(path))
@@ -220,7 +229,7 @@ def flash_images(port: str, images: list[tuple[int, Path]], erase: bool) -> None
             if attempt + 1 >= CONNECT_RETRIES:
                 raise SystemExit(
                     "Flash failed — could not stay connected to the bootloader.\n"
-                    "Try: hold BOOT/GPIO9, plug USB, run this command again immediately."
+                    "Try: press RST, then run this command again immediately."
                 ) from None
             if attempt % 8 == 0:
                 eprint("  Waiting for ROM bootloader…")
