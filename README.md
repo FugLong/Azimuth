@@ -26,7 +26,7 @@ Two supported builds—same core tracker firmware where both apply; use the row 
 
 | | |
 |:---|:---|
-| **Install or update firmware (USB)** | [**Azimuth web flasher**](https://fuglong.github.io/Azimuth/) — use **Chrome** or **Edge** and a **data** USB cable. |
+| **Install or update firmware (USB)** | [**Web flasher**](https://fuglong.github.io/Azimuth/) (**Chrome** / **Edge**). **First flash on a bare custom PCB?** [**Copy/paste USB guide**](docs/first-usb-flash.md) (one time; web/OTA after that). |
 | **Update firmware over Wi‑Fi** | Open the portal, hit **Install over Wi‑Fi** in the **Device** card or update banner — *or* hold **FUNC** for ~2 s on the PCB. The chip pulls the latest **official** build from the same GitHub Pages release URL (HTTPS) and reboots into the standby OTA slot. See [**User Guide → Updates**](docs/user-guide.md#9-firmware-updates). |
 | **Settings (Wi‑Fi, OpenTrack, device)** | [**http://azimuth.local:8080**](http://azimuth.local:8080) — only after the board is on your home network. First time? Connect to **Azimuth-Tracker** (**Offline Mode**) and follow the [**quick start**](docs/quickstart.md). |
 | **Manual (how to use the device)** | [**docs/user-guide.md**](docs/user-guide.md) |

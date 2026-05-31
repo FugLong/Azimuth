@@ -51,6 +51,8 @@ Firmware sets **`-DARDUINO_USB_MODE=1`** and **`-DARDUINO_USB_CDC_ON_BOOT=1`** s
 
 **Web flasher:** CI publishes both **`azimuth_main_diy`** and **`azimuth_main_pcb`** with a hardware selector in the installer UI. DIY remains the default selection.
 
+**First flash on a bare custom PCB (no firmware from the factory):** the module boot-loops; the browser [**web flasher**](https://fuglong.github.io/Azimuth/) is unreliable for that one-time case. Use [**first-usb-flash.md**](first-usb-flash.md), then web or OTA for updates afterward.
+
 ---
 
 ## GPIO contract (change only with firmware + doc update)

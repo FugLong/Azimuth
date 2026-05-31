@@ -34,8 +34,9 @@ The **same tracking firmware** runs on both where features overlap. The DIY buil
 
 1. Open the **Azimuth web flasher**: [https://fuglong.github.io/Azimuth/](https://fuglong.github.io/Azimuth/)
 2. Connect the board with a **data** USB cable.
-3. Choose **DIY** or **PCB** to match your hardware, then install.
-4. If the installer offers **erase flash**, use it for a clean install (same idea as a full factory reset).
+3. Choose **DIY** or **Custom PCB** to match your hardware, then install.
+
+**Azimuth custom PCB, straight from assembly with no firmware:** the **web flasher usually will not work** for that **very first** flash. Follow [**First-time USB flash**](first-usb-flash.md) (copy/paste commands). After that, use the web flasher or **OTA** like everyone else.
 
 ---
 

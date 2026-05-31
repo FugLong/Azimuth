@@ -31,6 +31,8 @@ The **JST PH polarity rules** in [Off-board pack (Azimuth PCB)](#off-board-pack-
 
 ## Azimuth PCB (`Azimuth_Design`)
 
+**First firmware (USB):** Bare boards from assembly need a one-time flash — [**first-usb-flash.md**](first-usb-flash.md) (copy/paste). After that, [web flasher](https://fuglong.github.io/Azimuth/) or OTA.
+
 **Manufacturing:** **V0.1** — design finalized; **assembled boards received**; **bring-up / testing in progress**. Status: **[roadmap](roadmap.md)**.
 
 Integrated board: **`kicad/Azimuth_Design/`**. Values and footprints below match **`Azimuth.kicad_sch`** / **`Azimuth.kicad_pcb`** in the repo (**ERC/DRC clean** in the current snapshot — re-run both after edits). **Tracked BOM (KiCad CLI):** [`kicad/Azimuth_Design/fab/Azimuth_bom.csv`](../kicad/Azimuth_Design/fab/Azimuth_bom.csv) — regenerate with **`./scripts/export_azimuth_bom.sh`** after schematic edits (that script also refreshes **[`Azimuth_bom_cost.txt`](../kicad/Azimuth_Design/fab/Azimuth_bom_cost.txt)** — **1× board, parts-only USD** ballpark from symbol **`Unit Price (USD)`** or the LCSC table in **`scripts/update_azimuth_sch_bom_fields.py`**). Board workflow: [kicad.md](kicad.md).
